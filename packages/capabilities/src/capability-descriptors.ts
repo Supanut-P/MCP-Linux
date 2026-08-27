@@ -44,6 +44,8 @@ export const capabilityDescriptors: readonly CapabilityDescriptor[] = Object.fre
   descriptor('window', 'native', 'WRITE', 'window', ['compositor or X11 window access'], false, true),
   descriptor('health', 'always', 'READ', 'diagnostics'),
   descriptor('system_info', 'native', 'READ', 'system'),
+  descriptor('journal', 'native', 'READ', 'system', ['journalctl'], true),
+  descriptor('network', 'native', 'READ', 'network', ['iproute2 and iproute2 ss'], true),
   descriptor('notification', 'native', 'WRITE', 'notification'),
   descriptor('file_dialog', 'native', 'WRITE', 'window'),
   descriptor('clipboard', 'native', 'WRITE', 'clipboard'),

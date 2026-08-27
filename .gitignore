@@ -48,6 +48,11 @@ docs/
 !docs/
 docs/*
 !docs/CHATGPT_LONG_SESSION.md
+!docs/superpowers/
+docs/superpowers/*
+!docs/superpowers/plans/
+docs/superpowers/plans/*
+!docs/superpowers/plans/*.md
 !docs/mcp/
 docs/mcp/*
 !docs/mcp/MCP_TASKS.md

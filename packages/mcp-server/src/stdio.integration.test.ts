@@ -26,7 +26,7 @@ describe('MCP stdio transport', () => {
       const first = await client.listTools();
       const second = await client.listTools();
 
-      expect(first.tools.map((tool) => tool.name)).toHaveLength(190);
+      expect(first.tools.map((tool) => tool.name)).toHaveLength(192);
       expect(first.tools.some((tool) => tool.name.startsWith('codex_'))).toBe(false);
       expect(second.tools.map((tool) => tool.name)).toEqual(first.tools.map((tool) => tool.name));
       expect(diagnostics).toContain('baitonghub-linux-mcp-stdio-test-diagnostic');

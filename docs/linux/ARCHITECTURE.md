@@ -2,7 +2,7 @@
 
 ## Runtime shape
 
-The v0.1 product is a headless Node.js runtime packaged with its own Node 24 x64
+The v0.2 product is a headless Node.js runtime packaged with its own Node 24 x64
 binary. MCP clients connect through STDIO, authenticated Streamable HTTP, or the
 official outbound-only OpenAI Secure MCP Tunnel.
 
@@ -10,6 +10,11 @@ The composition root is
 `packages/capabilities/src/platform/runtime-factory.ts`. It selects Linux
 providers, storage locations, permission profiles, and the advertised tool
 surface. Unsupported platform capabilities are not advertised.
+
+Read-only observability is composed by `LinuxObservabilityBackend`. It exposes
+`system_info` through Node/procfs and `df`, `journal` through `journalctl`, and
+`network` through `ip`, `ss`, `/etc/resolv.conf`, and Node DNS. Every external
+command passes through the fixed executable and argv-only command runner.
 
 ## Trust boundary
 

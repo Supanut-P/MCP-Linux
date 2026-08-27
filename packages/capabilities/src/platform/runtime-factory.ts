@@ -8,6 +8,7 @@ import { NodeBrowserCdpProtocol } from '../browser-cdp-protocol.js';
 import { capabilityToolNamesForPlatform } from '../capability-descriptors.js';
 import type { CapabilityToolName } from '../capability-tool-names.js';
 import { HealthCapabilityBackend } from '../health-backend.js';
+import { LinuxObservabilityBackend } from '../linux-observability-backend.js';
 import { LinuxNativeCapabilityBackend, type LinuxAtSpiProvider, type LinuxPortalProvider } from '../linux-native-backend.js';
 import { LocalCapabilityService, type CapabilityBackend } from '../local-capability-service.js';
 import { ShellCapabilityBackend } from '../shell-backend.js';
@@ -87,7 +88,9 @@ function linuxRuntime(
   const inputEvent = new LinuxNativeCapabilityBackend('input_event', nativeOptions);
   const vision = new LinuxNativeCapabilityBackend('vision', nativeOptions);
   const window = new LinuxNativeCapabilityBackend('window', nativeOptions);
-  const systemInfo = new LinuxNativeCapabilityBackend('system_info', nativeOptions);
+  const systemInfoObservability = new LinuxObservabilityBackend('system_info', nativeOptions);
+  const journal = new LinuxObservabilityBackend('journal', nativeOptions);
+  const network = new LinuxObservabilityBackend('network', nativeOptions);
   const notification = new LinuxNativeCapabilityBackend('notification', nativeOptions);
   const fileDialog = new LinuxNativeCapabilityBackend('file_dialog', nativeOptions);
   const clipboard = new LinuxNativeCapabilityBackend('clipboard', nativeOptions);
@@ -97,7 +100,9 @@ function linuxRuntime(
     input_event: inputEvent,
     vision,
     window,
-    system_info: systemInfo,
+    system_info: systemInfoObservability,
+    journal,
+    network,
     notification,
     file_dialog: fileDialog,
     clipboard,
@@ -111,7 +116,9 @@ function linuxRuntime(
     vision,
     window,
     health,
-    systemInfo,
+    systemInfo: systemInfoObservability,
+    journal,
+    network,
     notification,
     fileDialog,
     clipboard,

@@ -9,7 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 await import('./build-headless.mjs');
 if (process.platform !== 'linux' || process.arch !== 'x64') throw new Error('Headless Linux packaging currently requires Linux x64');
 
-const version = '0.1.0';
+const version = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')).version;
 const buildDir = path.join(root, 'apps', 'cli', 'build-headless');
 const packageRoot = path.join(root, 'dist', 'headless-package');
 const appDir = path.join(packageRoot, 'opt', 'baitonghub-linux-mcp');

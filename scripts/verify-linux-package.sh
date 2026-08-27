@@ -3,9 +3,10 @@ set -eu
 
 repository_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 installer_dir=${1:-"$repository_root/dist"}
-deb="$installer_dir/Baitonghub-Linux-mcp-0.1.0-amd64.deb"
-tarball="$installer_dir/Baitonghub-Linux-mcp-0.1.0-linux-x64.tar.gz"
-checksums="$installer_dir/Baitonghub-Linux-mcp-0.1.0-SHA256SUMS"
+version=$(node -p "require('$repository_root/package.json').version")
+deb="$installer_dir/Baitonghub-Linux-mcp-${version}-amd64.deb"
+tarball="$installer_dir/Baitonghub-Linux-mcp-${version}-linux-x64.tar.gz"
+checksums="$installer_dir/Baitonghub-Linux-mcp-${version}-SHA256SUMS"
 
 for artifact in "$deb" "$tarball" "$checksums"; do
   if [ ! -f "$artifact" ]; then

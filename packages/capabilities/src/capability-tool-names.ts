@@ -9,6 +9,8 @@ export const capabilityToolNames = Object.freeze([
   'window',
   'health',
   'system_info',
+  'journal',
+  'network',
   'notification',
   'file_dialog',
   'clipboard',

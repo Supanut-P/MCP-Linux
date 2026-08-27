@@ -55,6 +55,11 @@ async function doctor(): Promise<void> {
     const gitAvailable = executable('git');
     const rgAvailable = executable('rg');
     const secretToolAvailable = executable('secret-tool');
+    const journalctlAvailable = executable('journalctl');
+    const ipAvailable = executable('ip');
+    const ssAvailable = executable('ss');
+    const dfAvailable = executable('df');
+    const procAvailable = existsSync('/proc');
     const checks: Array<[string, 'PASS' | 'WARN' | 'FAIL', string]> = [
       ['os', process.platform === 'linux' && process.arch === 'x64' ? 'PASS' : 'FAIL', `${process.platform} ${process.arch}`],
       ['database', 'PASS', 'SQLite database ready'],
@@ -62,6 +67,11 @@ async function doctor(): Promise<void> {
       ['ripgrep', rgAvailable ? 'PASS' : 'FAIL', rgAvailable ? 'rg is available' : 'rg is not available'],
       ['workspaces', 'PASS', `${workspaces.length} workspace(s) registered`],
       ['secret-service', secretToolAvailable ? 'PASS' : 'WARN', secretToolAvailable ? 'secret-tool is available' : 'secret-tool is unavailable; set BAITONGHUB_LINUX_MCP_CHECKPOINT_KEY_BASE64 for headless CI'],
+      ['journalctl', journalctlAvailable ? 'PASS' : 'WARN', journalctlAvailable ? 'journalctl is available' : 'journalctl is unavailable; journal tool will be unavailable'],
+      ['iproute2-ip', ipAvailable ? 'PASS' : 'WARN', ipAvailable ? 'ip is available' : 'ip is unavailable; interface and route tools will be unavailable'],
+      ['iproute2-ss', ssAvailable ? 'PASS' : 'WARN', ssAvailable ? 'ss is available' : 'ss is unavailable; listener tools will be unavailable'],
+      ['df', dfAvailable ? 'PASS' : 'WARN', dfAvailable ? 'df is available' : 'df is unavailable; disk details will be unavailable'],
+      ['procfs', procAvailable ? 'PASS' : 'WARN', procAvailable ? '/proc is available' : '/proc is unavailable; process details will be empty'],
       ['mcp-port', portAvailable ? 'PASS' : 'FAIL', portAvailable ? '127.0.0.1 is available' : '127.0.0.1 is unavailable'],
     ];
     for (const [id, status, message] of checks) process.stdout.write(`[${status}] ${id}: ${message}\n`);

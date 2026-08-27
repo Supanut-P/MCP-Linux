@@ -23,7 +23,7 @@ describe('MCP tool registry', () => {
       'apply_patch', 'move_file', 'copy_file', 'delete_file', 'restore_deleted_file', 'process_start', 'process_list', 'process_status',
       'process_logs', 'process_stop', 'project_dev', 'project_test', 'project_lint',
       'project_typecheck', 'project_build', 'shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'vision_annotated_capture', 'ui_target_action', 'window', 'health',
-      'system_info', 'notification', 'file_dialog', 'clipboard', 'web_fetch',
+      'system_info', 'journal', 'network', 'notification', 'file_dialog', 'clipboard', 'web_fetch',
       'skills_list', 'skills_read', 'mcp_list', 'mcp_describe', 'mcp_call',
       'workspace_context', 'workspace_context_continue', 'workspace_full_scan', 'workspace_full_scan_continue',
       'workspace_snapshot', 'search_all', 'read_many_files',
@@ -62,6 +62,10 @@ describe('MCP tool registry', () => {
     expect(byName.get('window')?.parse({ operation: 'list' })).toMatchObject({ ok: true });
     expect(byName.get('window')?.parse({ operation: 'set_window_frame', parameters: { x: 0, y: 0, width: 800, height: 600 } })).toMatchObject({ ok: true });
     expect(byName.get('health')?.parse({ operation: 'check_all' })).toMatchObject({ ok: true });
+    expect(byName.get('system_info')?.parse({ operation: 'disk', path: '/' })).toMatchObject({ ok: true });
+    expect(byName.get('journal')?.parse({ unit: 'caddy.service', lines: 100 })).toMatchObject({ ok: true });
+    expect(byName.get('journal')?.parse({ unit: '../../etc/passwd.service' })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    expect(byName.get('network')?.parse({ operation: 'listeners', limit: 50 })).toMatchObject({ ok: true });
   });
 
   it('allows workspace discovery under the balanced tunnel profile', async () => {

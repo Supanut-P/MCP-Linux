@@ -47,6 +47,7 @@ export class HealthCapabilityBackend implements CapabilityBackend {
     if (tool === 'system_info' || tool === 'notification' || tool === 'file_dialog' || tool === 'clipboard') {
       return this.describe(tool, { available: this.platform === 'linux', ready: this.platform === 'linux', local: true });
     }
+    if (tool === 'journal' || tool === 'network') return this.describe(tool, { available: false, ready: false, local: true, reason: 'Backend is not configured' });
     if (tool === 'input_event' || tool === 'vision' || tool === 'window') return this.describe(tool, { available: false, ready: false, local: true, reason: 'Backend is not configured' });
     if (tool === 'dom_cdp') return this.describe(tool, await this.checkDelegated(this.domCdp, { action: 'status' }));
     return this.describe(tool, await this.checkDelegated(this.accessibility, { action: 'status' }));

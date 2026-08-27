@@ -11,6 +11,8 @@ export { BrowserCdpBackend, type BrowserCdpProtocol, type BrowserCdpTab } from '
 export { NodeBrowserCdpProtocol } from './browser-cdp-protocol.js';
 export { HealthCapabilityBackend } from './health-backend.js';
 export { WebFetchCapabilityBackend } from './web-fetch-backend.js';
+export { LinuxCommandRunner as BoundedLinuxCommandRunner, type LinuxCommandResult as BoundedLinuxCommandResult, type LinuxCommandRunnerOptions, type LinuxSpawn, type LinuxSpawnOptions } from './linux-command-runner.js';
+export { LinuxObservabilityBackend, type LinuxObservabilityBackendOptions, type LinuxObservabilityCapabilityName } from './linux-observability-backend.js';
 export {
   LinuxNativeCapabilityBackend,
   type LinuxAtSpiProvider,

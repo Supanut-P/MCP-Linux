@@ -3,7 +3,7 @@ import type { BrowserCdpProtocol, BrowserCdpTab } from '../browser-cdp-backend.j
 import { createPlatformCapabilityRuntime } from './runtime-factory.js';
 
 describe('createPlatformCapabilityRuntime', () => {
-  it('composes the Linux surface once for STDIO and HTTP callers', async () => {
+  it('composes the Linux v0.2 surface once for STDIO and HTTP callers', async () => {
     const runtime = createPlatformCapabilityRuntime({
       dataPath: '/home/alice/.local/share/baitonghub-linux-mcp',
       initialAllowedRoots: ['/home/alice/project'],
@@ -16,11 +16,11 @@ describe('createPlatformCapabilityRuntime', () => {
 
     expect(runtime.service.listTools()).toEqual([
       'shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window',
-      'health', 'system_info', 'notification', 'file_dialog', 'clipboard', 'web_fetch',
+      'health', 'system_info', 'journal', 'network', 'notification', 'file_dialog', 'clipboard', 'web_fetch',
     ]);
     await expect(runtime.health.execute({ operation: 'check_tool', tool: 'system_info' })).resolves.toMatchObject({
       ok: true,
-      value: { platform: 'linux', displayServer: 'headless', provider: 'node', available: true, ready: true },
+      value: { platform: 'linux', displayServer: 'headless', provider: 'node+procfs', available: true, ready: true },
     });
   });
 });

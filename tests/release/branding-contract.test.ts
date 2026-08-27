@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 const repositoryRoot = path.resolve(import.meta.dirname, '..', '..');
 
 describe('Baitonghub Linux MCP branding contract', () => {
-  it('uses the v0.1.0 package namespace across every workspace package', () => {
+  it('uses the v0.2.0 package namespace across every workspace package', () => {
     const manifests = trackedFiles().filter((file) => file === 'package.json' || /^(apps|packages)\/.+\/package\.json$/.test(file));
     expect(manifests.length).toBeGreaterThan(10);
     for (const manifest of manifests) {
@@ -16,7 +16,7 @@ describe('Baitonghub Linux MCP branding contract', () => {
       } else {
         expect(parsed.name).toMatch(/^@baitonghub-linux-mcp\//);
       }
-      expect(parsed.version).toBe('0.1.0');
+      expect(parsed.version).toBe('0.2.0');
     }
   });
 
@@ -38,10 +38,11 @@ describe('Baitonghub Linux MCP branding contract', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('declares the Linux product and application identifiers', () => {
-    const builder = readFileSync(path.join(repositoryRoot, 'apps', 'desktop', 'electron-builder.yml'), 'utf8');
-    expect(builder).toContain('appId: com.baitonghub.linuxmcp');
-    expect(builder).toContain('productName: Baitonghub-Linux-mcp');
+  it('keeps the public package Linux headless without a desktop application surface', () => {
+    expect(execFileSync('git', ['ls-files', 'apps/desktop'], { cwd: repositoryRoot, encoding: 'utf8' }).trim()).toBe('');
+    const rootPackage = JSON.parse(readFileSync(path.join(repositoryRoot, 'package.json'), 'utf8')) as { scripts?: Record<string, string> };
+    expect(rootPackage.scripts?.desktop).toBeUndefined();
+    expect(rootPackage.scripts?.['package:linux:headless']).toContain('@baitonghub-linux-mcp/cli');
   });
 });
 

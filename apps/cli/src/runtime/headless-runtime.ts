@@ -44,6 +44,7 @@ export async function createHeadlessRuntime(options: HeadlessRuntimeOptions = {}
   if (restore.error !== undefined) process.stderr.write(`baitonghub-linux-mcp restore warning: ${restore.error}\n`);
 
   const database = new SqliteDatabase(sqlitePath, { backupDirectory: path.join(dataPath, 'backups') });
+  let databaseClosed = false;
   try {
     const rawWorkspaceRepository = new SqliteWorkspaceRepository(database);
     const settingsRepository = new SqliteSettingsRepository(database);
@@ -107,6 +108,7 @@ export async function createHeadlessRuntime(options: HeadlessRuntimeOptions = {}
     }
 
     database.close();
+    databaseClosed = true;
     const runtime = createStdioMcpRuntime(dataPath, workspace, false, {
       permissionProfile: profile,
       ...(strictAllowedRoots === undefined ? {} : { strictAllowedRoots }),
@@ -114,7 +116,8 @@ export async function createHeadlessRuntime(options: HeadlessRuntimeOptions = {}
     await runtime.activityReady;
     return { dataPath, workspace, runtime, profile, ...(strictAllowedRoots === undefined ? {} : { strictAllowedRoots }), unrestricted: false };
   } catch (error) {
-    database.close();
+    // Avoid masking the original startup error with a second close() failure.
+    if (!databaseClosed) database.close();
     throw error;
   }
 }

@@ -258,13 +258,31 @@ export const windowCapabilitySchema = z.object({
 
 export const healthCapabilitySchema = z.object({
   operation: z.enum(['check_all', 'check_tool']).default('check_all'),
-  tool: z.enum(['shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window', 'health', 'system_info', 'notification', 'file_dialog', 'clipboard', 'web_fetch']).optional(),
+  tool: z.enum(['shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window', 'health', 'system_info', 'journal', 'network', 'notification', 'file_dialog', 'clipboard', 'web_fetch']).optional(),
   request_id: z.string().trim().min(1).max(128).optional(),
 }).strict();
 
 export const systemInfoCapabilitySchema = z.object({
-  operation: z.enum(['all', 'cpu', 'memory', 'disks', 'battery', 'uptime', 'os', 'processes']).default('all'),
+  operation: z.enum(['summary', 'all', 'cpu', 'memory', 'disk', 'disks', 'battery', 'uptime', 'os', 'processes', 'ports']).default('summary'),
+  path: pathSchema.optional(),
+  limit: z.number().int().min(1).max(500).optional(),
   top_count: z.number().int().min(1).max(50).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const journalCapabilitySchema = z.object({
+  operation: z.enum(['read', 'tail']).default('read'),
+  unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/).optional(),
+  priority: z.union([z.string().regex(/^(?:[0-7]|emerg|alert|crit|err|warning|notice|info|debug)$/), z.number().int().min(0).max(7)]).optional(),
+  since: z.string().trim().min(1).max(128).optional(),
+  lines: z.number().int().min(1).max(1_000).default(100),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const networkCapabilitySchema = z.object({
+  operation: z.enum(['interfaces', 'routes', 'dns', 'listeners', 'connectivity']).default('interfaces'),
+  host: z.string().trim().min(1).max(253).optional(),
+  limit: z.number().int().min(1).max(500).optional(),
   ...capabilityRequestSchema,
 }).strict();
 

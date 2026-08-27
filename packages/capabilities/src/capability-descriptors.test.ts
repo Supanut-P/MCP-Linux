@@ -21,12 +21,12 @@ describe('capability descriptors', () => {
     expect(descriptor?.requirements).toContain('XDG Screenshot portal and Tesseract');
   });
 
-  it('advertises only the v0.1 Linux capability surface', () => {
+  it('advertises only the Linux headless capability surface', () => {
     const linux = capabilityToolNamesForPlatform('linux');
 
     expect(linux).toEqual([
       'shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window',
-      'health', 'system_info', 'notification', 'file_dialog', 'clipboard', 'web_fetch',
+      'health', 'system_info', 'journal', 'network', 'notification', 'file_dialog', 'clipboard', 'web_fetch',
     ]);
   });
 });

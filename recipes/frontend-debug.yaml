@@ -1,0 +1,9 @@
+name: frontend-debug
+description: Inspect browser UI, console, network, and visual state.
+parallel:
+  - debug_ui
+  - console_context
+  - network_context
+  - capture_ui_state
+permissions:
+  - browser.read

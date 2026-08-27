@@ -1,0 +1,268 @@
+import path from 'node:path';
+import {
+  CheckpointService,
+  CodexService,
+  FileService,
+  GitService,
+  ProcessService,
+  ProjectService,
+  ProjectSnapshotService,
+  SearchService,
+  WorkspaceInfoService,
+  JsonWorkspaceIndexStore,
+  WorkspaceIndexService,
+  WorkspaceQueryService,
+  type FileActor,
+} from '@baitonghub-linux-mcp/application';
+import { AuditService } from '@baitonghub-linux-mcp/audit';
+import {
+  createPlatformCapabilityRuntime,
+  LocalCapabilityService,
+} from '@baitonghub-linux-mcp/capabilities';
+import { ALLOW_AI_DELETE_SETTING_KEY, DESTRUCTIVE_AUTO_APPROVAL_SETTING_KEY, DEFAULT_CODEX_TOOLS_ENABLED, DEFAULT_MCP_CALL_TIMEOUT_MS, DEFAULT_MCP_IDLE_TIMEOUT_MS, DEFAULT_PROCESS_TIMEOUT_MS, DEFAULT_MCP_POLL_WAIT_SECONDS, DEFAULT_SHELL_SYNCHRONOUS_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS, USER_SETTING_KEYS, loadCheckpointEncryptionKey, parseBooleanSetting, parseCustomPermissionSettings, parseDestructiveAutoApprovalPolicy, parseIntegerSetting, parsePathList, parseStringRecordSetting, type DestructiveAutoApprovalPolicy } from '@baitonghub-linux-mcp/shared';
+import {
+  EXTENSIONS_SETTINGS_KEY,
+  createLocalExtensionsService,
+  type ExtensionsService,
+} from '@baitonghub-linux-mcp/extensions';
+import { ActivityTracker, SharedActivitySnapshotLease, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices } from '@baitonghub-linux-mcp/mcp-server';
+import { permissionProfiles, type PermissionProfile, type PermissionProfileName } from '@baitonghub-linux-mcp/permissions';
+import {
+  AesGcmCheckpointCipher,
+  SqliteAuditRepository,
+  SqliteCheckpointRepository,
+  SqliteDatabase,
+  SqliteSettingsRepository,
+  SqliteWorkspaceRepository,
+} from '@baitonghub-linux-mcp/storage';
+import { SecretPolicy, WorkspacePathGuard, WorkspaceService, type Workspace } from '@baitonghub-linux-mcp/workspace';
+import { StrictWorkspaceRepository } from './strict-workspace-repository.js';
+
+export interface StdioMcpRuntime {
+  readonly services: McpApplicationServices;
+  readonly actor: FileActor;
+  readonly extensions: ExtensionsService;
+  readonly activityTracker: ActivityTracker;
+  readonly activityReady: Promise<void>;
+  readonly profileProvider: () => PermissionProfile;
+  readonly allowAiDeleteProvider: () => boolean;
+  readonly destructivePolicyProvider: () => DestructiveAutoApprovalPolicy;
+  readonly codexToolsEnabled: boolean;
+  close(): Promise<void>;
+}
+
+/** Builds Linux STDIO/HTTP MCP services within registered workspace roots. */
+export interface StdioMcpRuntimeOptions {
+  readonly permissionProfile?: PermissionProfileName;
+  readonly strictAllowedRoots?: readonly string[];
+}
+
+export function createStdioMcpRuntime(
+  dataPath: string,
+  workspace: Workspace,
+  _unrestricted: boolean = false,
+  options: StdioMcpRuntimeOptions = {},
+): StdioMcpRuntime {
+  void _unrestricted;
+  const databaseFilename = path.join(dataPath, 'baitonghub-linux-mcp.sqlite');
+  const database = new SqliteDatabase(databaseFilename, { backupDirectory: path.join(dataPath, 'backups') });
+  const rawWorkspaceRepository = new SqliteWorkspaceRepository(database);
+  const workspaceRepository = options.strictAllowedRoots === undefined
+    ? rawWorkspaceRepository
+    : new StrictWorkspaceRepository(rawWorkspaceRepository, options.strictAllowedRoots);
+  const workspaceIndex = new WorkspaceIndexService(workspaceRepository, new JsonWorkspaceIndexStore(path.join(dataPath, 'workspace-index')));
+  const settingsRepository = new SqliteSettingsRepository(database);
+  const auditRepository = new SqliteAuditRepository(database);
+  const auditService = new AuditService(auditRepository);
+  const checkpointRepository = new SqliteCheckpointRepository(database, new AesGcmCheckpointCipher(loadCheckpointEncryptionKey(dataPath, {
+    // Headless Linux prefers Secret Service/libsecret; an explicit base64 env key
+    // remains supported for non-interactive service accounts and CI.
+    useLinuxSecretService: process.platform === 'linux',
+  })));
+  const workspaceService = new WorkspaceService(workspaceRepository);
+  const profileName = options.permissionProfile ?? 'full';
+  const activeProfile = profileName === 'custom' ? customPermissionProfile(settingsRepository) : permissionProfiles[profileName];
+  const strictRoots = options.strictAllowedRoots !== undefined;
+  const effectiveUnrestricted = false;
+  const profileProvider = (): PermissionProfile => activeProfile;
+  const destructivePolicyProvider = (): DestructiveAutoApprovalPolicy => parseDestructiveAutoApprovalPolicy(
+    settingsRepository.get(DESTRUCTIVE_AUTO_APPROVAL_SETTING_KEY),
+    parseBooleanSetting(settingsRepository.get(ALLOW_AI_DELETE_SETTING_KEY), false),
+  );
+  const allowAiDeleteProvider = (): boolean => destructivePolicyProvider().approvals.delete_file;
+
+  const projectService = new ProjectService(workspaceRepository);
+  const processService = new ProcessService(workspaceRepository, {
+    projectService,
+    profileProvider,
+    defaultTimeoutMsProvider: (): number => parseIntegerSetting(settingsRepository.get(USER_SETTING_KEYS.processTimeoutMs), DEFAULT_PROCESS_TIMEOUT_MS, 1_000, 4 * 60 * 60_000),
+    unrestricted: effectiveUnrestricted,
+  });
+  const checkpointService = new CheckpointService(workspaceRepository, checkpointRepository, {
+    profile: activeProfile,
+  });
+  const pathGuard = new WorkspacePathGuard(new SecretPolicy(), { unrestricted: effectiveUnrestricted, trustedWorkspaceAccess: !strictRoots });
+  const fileService = new FileService(workspaceRepository, pathGuard, undefined, {
+    checkpointService,
+    profileProvider,
+    unrestricted: effectiveUnrestricted,
+    trustedWorkspaceAccess: !strictRoots,
+    allowDeleteWithoutConfirmation: allowAiDeleteProvider,
+    protectCriticalFiles: (): boolean => destructivePolicyProvider().protectCriticalFiles,
+    recoverableDelete: (): boolean => destructivePolicyProvider().recoverableDelete,
+    recoveryTrashRoot: path.join(dataPath, 'recovery-trash'),
+  });
+  const gitService = new GitService(workspaceRepository);
+  const workspaceQuery = new WorkspaceQueryService(workspaceRepository, pathGuard);
+  const extensions = createLocalExtensionsService({
+    settingsJson: settingsRepository.get(EXTENSIONS_SETTINGS_KEY),
+    workspaceRootProvider: async (): Promise<string> => workspace.realRootPath,
+    callTimeoutMs: parseIntegerSetting(settingsRepository.get(USER_SETTING_KEYS.mcpCallTimeoutMs), DEFAULT_MCP_CALL_TIMEOUT_MS, 1_000, 60 * 60_000),
+    idleTimeoutMs: parseIntegerSetting(settingsRepository.get(USER_SETTING_KEYS.mcpIdleTimeoutMs), DEFAULT_MCP_IDLE_TIMEOUT_MS, 30_000, 24 * 60 * 60_000),
+  });
+  const codexService = new CodexService(workspaceRepository, {
+    auditService,
+    profileProvider,
+  });
+  const capabilityService = createStdioCapabilityService(dataPath, workspace.realRootPath, async () => {
+    const listed = await workspaceRepository.list();
+    const roots = listed.map((entry) => entry.realRootPath);
+    if (roots.length === 0) return [workspace.realRootPath];
+    return roots;
+  }, effectiveUnrestricted, options.strictAllowedRoots, () => parsePathList(settingsRepository.get(USER_SETTING_KEYS.capabilityRoots)),
+  () => parseIntegerSetting(settingsRepository.get(USER_SETTING_KEYS.shellSynchronousWaitSeconds), DEFAULT_SHELL_SYNCHRONOUS_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS));
+  const actor: FileActor = { clientId: 'cli-mcp-stdio', clientName: 'baitonghub-linux-mcp cli MCP' };
+  const sharedActivityLease = createSharedActivityLease(process.env.TUNNEL_CLIENT_PROFILE_DIR);
+  const activityReady = sharedActivityLease.then(async (lease) => lease?.initialize());
+  const sharedActivitySink: ActivitySink = {
+    async record(event: ActivitySinkEvent): Promise<void> {
+      await (await sharedActivityLease)?.record(event);
+    },
+  };
+  const durableActivitySink = composeActivitySinks([
+    createFileActivitySink(mcpActivityLogPath(dataPath)),
+    {
+      async record(event: ActivitySinkEvent): Promise<void> {
+        await auditService.recordMcpTool({
+          actorId: actor.clientId,
+          actorName: actor.clientName,
+          ...(event.workspaceId === undefined ? {} : { workspaceId: event.workspaceId }),
+          ...(event.sessionId === undefined ? {} : { sessionId: event.sessionId }),
+          toolName: event.toolName,
+          callId: event.callId,
+          phase: event.phase,
+          ...(event.targetSummary === undefined ? {} : { targetSummary: event.targetSummary }),
+          resultCode: event.resultCode,
+          ...(event.resultMessage === undefined ? {} : { resultMessage: event.resultMessage }),
+          ...(event.traceId === undefined ? {} : { traceId: event.traceId }),
+          ...(event.traceParent === undefined ? {} : { traceParent: event.traceParent }),
+          durationMs: event.durationMs,
+          timestamp: event.timestamp,
+        });
+      },
+    },
+  ]);
+  const activityTracker = new ActivityTracker({
+    async record(event: ActivitySinkEvent): Promise<void> {
+      // Publish starts before slower durable evidence so updater quiet-time
+      // cannot overlap a newly accepted remote call. Publish completion last.
+      await composeActivitySinks(event.phase === 'started'
+        ? [sharedActivitySink, durableActivitySink]
+        : [durableActivitySink, sharedActivitySink]).record(event);
+    },
+  });
+  const services: McpApplicationServices = {
+    runtimeStatePath: path.join(dataPath, 'upgrade-runtime.json'),
+    runtimeTiming: () => ({
+      mcpPollWaitSeconds: parseIntegerSetting(settingsRepository.get(USER_SETTING_KEYS.mcpPollWaitSeconds), DEFAULT_MCP_POLL_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS),
+    }),
+    localProviders: () => ({
+      ...(settingsRepository.get(USER_SETTING_KEYS.pdfProviderPath)?.trim() ? { pdfProvider: settingsRepository.get(USER_SETTING_KEYS.pdfProviderPath)!.trim() } : {}),
+      lspCommands: parseStringRecordSetting(settingsRepository.get(USER_SETTING_KEYS.lspCommands)),
+    }),
+    capabilities: capabilityService,
+    extensions,
+    workspaceInfo: new WorkspaceInfoService(workspaceRepository, workspaceService, effectiveUnrestricted),
+    workspaceQuery,
+    projectSnapshot: new ProjectSnapshotService(workspaceRepository, {
+      projectService,
+      gitService,
+      workspaceQuery,
+      processService,
+    }),
+    project: projectService,
+    file: fileService,
+    search: new SearchService(workspaceRepository),
+    workspaceIndex,
+    git: gitService,
+    process: processService,
+    codex: codexService,
+  };
+
+  return {
+    services,
+    actor,
+    extensions,
+    activityTracker,
+    activityReady,
+    profileProvider,
+    allowAiDeleteProvider,
+    destructivePolicyProvider,
+    codexToolsEnabled: parseBooleanSetting(settingsRepository.get(USER_SETTING_KEYS.codexToolsEnabled), DEFAULT_CODEX_TOOLS_ENABLED),
+    close: async (): Promise<void> => {
+      await (await sharedActivityLease)?.close();
+      await extensions.close().catch(() => undefined);
+      await workspaceIndex.close().catch(() => undefined);
+      database.close();
+    },
+  };
+}
+
+function customPermissionProfile(settingsRepository: SqliteSettingsRepository): PermissionProfile {
+  const custom = parseCustomPermissionSettings(settingsRepository.get(USER_SETTING_KEYS.customPermissionProfile));
+  return {
+    name: 'custom',
+    defaults: { READ: custom.read, WRITE: custom.write, EXECUTE: custom.execute, DANGEROUS: custom.dangerous },
+    allowedProjectExecutables: [...new Set([...permissionProfiles.custom.allowedProjectExecutables, ...custom.allowedExecutables])],
+  };
+}
+
+async function createSharedActivityLease(profileDirectory: string | undefined): Promise<SharedActivitySnapshotLease | null> {
+  if (profileDirectory === undefined || profileDirectory.trim().length === 0) return null;
+  return new SharedActivitySnapshotLease({ profileDirectory: path.resolve(profileDirectory), owner: await currentSharedActivityOwner() });
+}
+
+function createStdioCapabilityService(
+  dataPath: string,
+  restrictedRoot: string,
+  workspaceRootsProvider: () => Promise<readonly string[]>,
+  _unrestricted: boolean,
+  strictAllowedRoots?: readonly string[],
+  configuredRootsProvider: () => readonly string[] = () => [],
+  synchronousWaitSecondsProvider: () => number = () => DEFAULT_SHELL_SYNCHRONOUS_WAIT_SECONDS,
+): LocalCapabilityService {
+  const capabilityRootsProvider = async (): Promise<readonly string[]> => {
+    const workspaceRoots = await workspaceRootsProvider();
+    if (strictAllowedRoots !== undefined) return workspaceRoots.length > 0 ? workspaceRoots : strictAllowedRoots;
+    const configuredRoots = [...readCapabilityRoots(process.env.BAITONGHUB_LINUX_MCP_CAPABILITY_ROOTS), ...configuredRootsProvider()];
+    const roots = [...workspaceRoots, ...configuredRoots];
+    return roots.length === 0 ? [restrictedRoot] : roots;
+  };
+  const initialCapabilityRoots = strictAllowedRoots ?? [
+    dataPath,
+    restrictedRoot,
+  ];
+  return createPlatformCapabilityRuntime({
+    dataPath,
+    initialAllowedRoots: initialCapabilityRoots,
+    allowedRootsProvider: capabilityRootsProvider,
+    unrestricted: false,
+    maxSynchronousWaitSecondsProvider: synchronousWaitSecondsProvider,
+    platform: process.platform,
+  }).service;
+}
+
+function readCapabilityRoots(value: string | undefined): readonly string[] {
+  if (value === undefined || value.trim().length === 0) return [];
+  return value.split(';').map((root) => root.trim()).filter((root) => root.length > 0).map((root) => path.resolve(root));
+}

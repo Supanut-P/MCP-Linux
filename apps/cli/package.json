@@ -1,0 +1,27 @@
+{
+  "name": "@baitonghub-linux-mcp/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@baitonghub-linux-mcp/application": "workspace:*",
+    "@baitonghub-linux-mcp/audit": "workspace:*",
+    "@baitonghub-linux-mcp/capabilities": "workspace:*",
+    "@baitonghub-linux-mcp/codex": "workspace:*",
+    "@baitonghub-linux-mcp/domain": "workspace:*",
+    "@baitonghub-linux-mcp/extensions": "workspace:*",
+    "@baitonghub-linux-mcp/mcp-server": "workspace:*",
+    "@baitonghub-linux-mcp/permissions": "workspace:*",
+    "@baitonghub-linux-mcp/shared": "workspace:*",
+    "@baitonghub-linux-mcp/storage": "workspace:*",
+    "@baitonghub-linux-mcp/workspace": "workspace:*"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --outDir dist",
+    "build:headless": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/cli... build && node ../../scripts/build-headless.mjs",
+    "package:headless": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/cli... build && node ../../scripts/package-linux-headless.mjs"
+  },
+  "license": "MIT"
+}

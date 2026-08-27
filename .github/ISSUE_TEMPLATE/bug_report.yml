@@ -1,0 +1,81 @@
+name: Bug report
+description: Report a reproducible Baitonghub-Linux-mcp problem
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a problem. Do not post credentials, private logs, tunnel IDs, or vulnerability details here. Follow SECURITY.md for security-sensitive reports.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: v0.1.0
+    validations:
+      required: true
+  - type: input
+    id: ubuntu
+    attributes:
+      label: Ubuntu and architecture
+      placeholder: Ubuntu 24.04 LTS, x86_64
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: Installation
+      options:
+        - DEB package
+        - Linux x64 tarball
+        - Source checkout
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - STDIO MCP
+        - Streamable HTTP MCP
+        - OpenAI Secure MCP Tunnel
+        - Files or workspace boundary
+        - Git
+        - Processes or shell
+        - Audit, checkpoint, or backup
+        - Package or systemd service
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the actual and expected behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Configure a disposable workspace...
+        2. Run...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Redacted logs
+      description: Remove tokens, keys, tunnel IDs, private paths, and unrelated machine data.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues for duplicates.
+          required: true
+        - label: This report contains no credentials or private vulnerability details.
+          required: true

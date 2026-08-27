@@ -1,0 +1,22 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./apps/cli" },
+    { "path": "./packages/domain" },
+    { "path": "./packages/capabilities" },
+    { "path": "./packages/extensions" },
+    { "path": "./packages/shared" },
+    { "path": "./packages/workspace" },
+    { "path": "./packages/permissions" },
+    { "path": "./packages/audit" },
+    { "path": "./packages/storage" },
+    { "path": "./packages/filesystem" },
+    { "path": "./packages/git" },
+    { "path": "./packages/project" },
+    { "path": "./packages/process" },
+    { "path": "./packages/codex" },
+    { "path": "./packages/application" },
+    { "path": "./packages/mcp-server" },
+    { "path": "./packages/search" }
+  ]
+}

@@ -1,0 +1,84 @@
+﻿# Dependencies & Package Managers
+node_modules/
+.pnpm-store/
+
+# Build & Compilation
+dist/
+build/
+apps/cli/build-headless/
+native/windows-ocr/
+*.tsbuildinfo
+*.tsbuildinfo.*
+*.last-run.json
+
+# Test & Coverage
+coverage/
+test-results/
+
+# Environment Variables & Secrets
+.env
+.env.*
+.env.local
+!.env.example
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+.ssh/
+.aws/
+credentials.json
+
+# Local Databases & Storage
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+
+# Logs & Diagnostics
+*.log
+baitonghub-linux-mcp-*-logs.txt
+logs/
+diagnostics/
+
+# Scratch & Codebase Dumps
+repomix-output.xml
+scripts/analyze_*.py
+scripts/audit_*.py
+docs/
+!docs/
+docs/*
+!docs/CHATGPT_LONG_SESSION.md
+!docs/mcp/
+docs/mcp/*
+!docs/mcp/MCP_TASKS.md
+!docs/linux/
+docs/linux/*
+!docs/linux/ARCHITECTURE.md
+!docs/linux/UBUNTU_ACCEPTANCE.md
+!docs/linux/UPSTREAM_SYNC.md
+!docs/architecture/
+docs/architecture/*
+!docs/architecture/UPGRADE_ARCHITECTURE.md
+!docs/architecture/TOOL_CONTRACT.md
+!docs/architecture/ROADMAP_PHASE_STATUS.md
+!docs/architecture/MULTI_WORKSPACE_CONCURRENCY.md
+!docs/benchmarks/
+docs/benchmarks/*
+!docs/benchmarks/BASELINE.md
+!docs/benchmarks/PHASE-01.md
+!docs/benchmarks/PHASE-02.md
+!docs/benchmarks/PHASE-03.md
+!docs/benchmarks/PHASE-05.md
+
+# IDE & Editor Settings
+.cursor/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+baitonghub-linux-mcp-incident.json
+.codegraph

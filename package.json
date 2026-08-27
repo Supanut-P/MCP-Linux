@@ -1,0 +1,43 @@
+{
+  "name": "baitonghub-linux-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.15.0",
+  "engines": {
+    "node": ">=24.0.0 <25"
+  },
+  "type": "module",
+  "scripts": {
+    "set-version": "node scripts/set-version.mjs",
+    "rebrand:check": "node scripts/check-branding.mjs",
+    "lint": "eslint .",
+    "typecheck": "tsc --build",
+    "test": "corepack pnpm@10.15.0 -r --if-present test",
+    "test:integration": "vitest run tests/integration/mcp-development-flow.test.ts tests/integration/codex-review-flow.test.ts",
+    "test:packaging": "vitest run tests/packaging/headless-linux-tunnel.test.ts tests/release/public-repo-hygiene.test.ts",
+    "test:release-gate": "vitest run tests/release/release-gate.test.ts",
+    "benchmark:baseline": "node scripts/benchmark-mcp.mjs",
+    "build:headless": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/cli build:headless",
+    "package:linux:headless": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/cli package:headless",
+    "docs:tools": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/mcp-server build && node scripts/generate-tool-catalog.mjs",
+    "docs:tools:check": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/mcp-server build && node scripts/generate-tool-catalog.mjs --check"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.33.0",
+    "@baitonghub-linux-mcp/application": "workspace:*",
+    "@baitonghub-linux-mcp/audit": "workspace:*",
+    "@baitonghub-linux-mcp/codex": "workspace:*",
+    "@baitonghub-linux-mcp/domain": "workspace:*",
+    "@baitonghub-linux-mcp/mcp-server": "workspace:*",
+    "@baitonghub-linux-mcp/process": "workspace:*",
+    "@baitonghub-linux-mcp/storage": "workspace:*",
+    "@baitonghub-linux-mcp/workspace": "workspace:*",
+    "@types/node": "^24.0.0",
+    "eslint": "9.33.0",
+    "esbuild": "0.25.12",
+    "typescript": "6.0.2",
+    "typescript-eslint": "8.67.0",
+    "vitest": "3.2.4"
+  },
+  "license": "MIT"
+}

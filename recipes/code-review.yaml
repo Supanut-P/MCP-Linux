@@ -1,0 +1,9 @@
+name: code-review
+description: Review changes, symbols, dependencies, and affected tests.
+parallel:
+  - review_context
+  - changed_symbols
+  - discover_tests
+permissions:
+  - filesystem.read
+  - git.read

@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "references": [
+    { "path": "../domain" },
+    { "path": "../audit" },
+    { "path": "../codex" },
+    { "path": "../filesystem" },
+    { "path": "../git" },
+    { "path": "../permissions" },
+    { "path": "../process" },
+    { "path": "../project" },
+    { "path": "../search" },
+    { "path": "../workspace" }
+  ],
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"]
+}

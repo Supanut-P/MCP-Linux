@@ -1,0 +1,324 @@
+import { z } from 'zod';
+import { MAX_SEARCH_RESULTS, MAX_TREE_DEPTH, MAX_TREE_ENTRIES, MAX_MULTI_FILE_BYTES } from '@baitonghub-linux-mcp/domain';
+
+const MAX_PATH_LENGTH = 4096;
+const MAX_WORKSPACE_ID_LENGTH = 128;
+const MAX_INSTRUCTION_BYTES = 256 * 1024;
+
+export const workspaceIdSchema = z.string().trim().min(1).max(MAX_WORKSPACE_ID_LENGTH);
+export const optionalWorkspaceIdSchema = workspaceIdSchema.optional();
+export const pathSchema = z.string().min(1).max(MAX_PATH_LENGTH).refine((value) => !value.includes('\0'), 'Path is invalid');
+export const lineRangeSchema = z.object({
+  startLine: z.number().int().min(1).max(1_000_000).optional(),
+  endLine: z.number().int().min(1).max(1_000_000).optional(),
+}).refine((value) => value.startLine === undefined || value.endLine === undefined || value.startLine <= value.endLine, 'Line range is invalid');
+
+export const workspaceInfoSchema = z.object({ workspaceId: workspaceIdSchema }).strict();
+export const workspaceTreeSchema = z.object({ workspaceId: optionalWorkspaceIdSchema, path: pathSchema.optional(), maxDepth: z.number().int().min(1).max(MAX_TREE_DEPTH).optional(), maxEntries: z.number().int().min(1).max(MAX_TREE_ENTRIES).optional() }).strict();
+export const projectSnapshotSchema = z.object({ workspaceId: workspaceIdSchema }).strict();
+export const readFileSchema = z.object({ workspaceId: optionalWorkspaceIdSchema, path: pathSchema, ...lineRangeSchema.shape }).strict().refine((value) => value.startLine === undefined || value.endLine === undefined || value.startLine <= value.endLine, 'Line range is invalid');
+export const readFilePageSchema = z.object({
+  workspaceId: optionalWorkspaceIdSchema,
+  path: pathSchema,
+  startLine: z.number().int().min(1).optional(),
+  pageSize: z.number().int().min(1).max(5_000).optional(),
+  responseTargetBytes: z.number().int().min(1).max(8 * 1024 * 1024).optional(),
+}).strict();
+export const readFilePageContinueSchema = z.object({
+  continuationToken: z.string().trim().min(1).max(128),
+  pageSize: z.number().int().min(1).max(5_000).optional(),
+}).strict();
+export const readFilesSchema = z.object({ workspaceId: optionalWorkspaceIdSchema, files: z.array(readFileSchema.omit({ workspaceId: true })).min(1).max(20) }).strict();
+export const searchFilesSchema = z.object({ workspaceId: optionalWorkspaceIdSchema, path: pathSchema.optional(), glob: z.string().max(1024).optional(), maxResults: z.number().int().min(1).max(MAX_SEARCH_RESULTS).optional(), includeIgnored: z.boolean().default(false) }).strict();
+export const searchTextSchema = searchFilesSchema.extend({ query: z.string().min(1).max(32_768) }).strict();
+export const gitStatusSchema = workspaceInfoSchema;
+export const gitDiffSchema = z.object({ workspaceId: workspaceIdSchema, path: pathSchema.optional(), staged: z.boolean().optional(), maxBytes: z.number().int().min(1).max(4 * 1024 * 1024).optional() }).strict();
+export const gitLogSchema = z.object({ workspaceId: workspaceIdSchema, maxCommits: z.number().int().min(1).max(100).optional(), maxBytes: z.number().int().min(1).max(4 * 1024 * 1024).optional() }).strict();
+export const gitRunSchema = z.object({
+  workspaceId: optionalWorkspaceIdSchema,
+  cwd: pathSchema.optional(),
+  args: z.array(z.string().min(1).max(32_768)).min(1).max(128),
+  timeoutSeconds: z.number().min(0.1).max(300).optional(),
+  userConfirmed: z.boolean().optional(),
+}).strict();
+export const writeFileSchema = z.object({ workspaceId: optionalWorkspaceIdSchema, path: pathSchema, content: z.string().refine((value) => Buffer.byteLength(value, 'utf8') <= MAX_MULTI_FILE_BYTES, 'File is too large'), userConfirmed: z.boolean().optional() }).strict();
+export const applyPatchSchema = z.object({ workspaceId: optionalWorkspaceIdSchema, files: z.array(z.object({ path: pathSchema, content: z.string().refine((value) => Buffer.byteLength(value, 'utf8') <= MAX_MULTI_FILE_BYTES, 'File is too large') }).strict()).min(1).max(20), userConfirmed: z.boolean().optional() }).strict();
+export const moveFileSchema = z.object({ workspaceId: optionalWorkspaceIdSchema, sourcePath: pathSchema, destinationPath: pathSchema }).strict();
+export const copyFileSchema = moveFileSchema;
+export const deleteFileSchema = z.object({
+  workspaceId: optionalWorkspaceIdSchema,
+  path: pathSchema,
+  /** True after human confirmation. May be omitted only when a scoped destructive policy explicitly allows it. */
+  userConfirmed: z.boolean().optional(),
+}).strict();
+export const restoreDeletedFileSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  recoveryId: z.string().uuid(),
+}).strict();
+
+export const workspaceListSchema = z.object({}).strict();
+export const workspaceRegisterSchema = z.object({
+  parentWorkspaceId: workspaceIdSchema,
+  path: pathSchema,
+  displayName: z.string().trim().min(1).max(256).optional(),
+}).strict();
+export const processStartSchema = z.object({ workspaceId: workspaceIdSchema, executable: z.string().trim().min(1).max(1024), args: z.array(z.string().max(32_768)).max(128), cwd: pathSchema.optional(), timeoutMs: z.number().int().min(1).max(4 * 60 * 60 * 1000).optional(), userConfirmed: z.boolean().optional() }).strict();
+export const processHandleSchema = z.object({ workspaceId: workspaceIdSchema, processId: z.string().trim().min(1).max(128) }).strict();
+export const processLogsSchema = processHandleSchema.extend({ tailLines: z.number().int().min(1).max(10_000).optional(), sinceSequence: z.number().int().min(0).optional() }).strict();
+export const codexStatusSchema = z.object({}).strict();
+export const codexRunSchema = z.object({ workspaceId: workspaceIdSchema, instruction: z.string().min(1).refine((value) => Buffer.byteLength(value, 'utf8') <= MAX_INSTRUCTION_BYTES, 'Instruction is too large'), userConfirmed: z.boolean().optional() }).strict();
+export const codexTaskHandleSchema = z.object({ workspaceId: workspaceIdSchema, codexTaskId: z.string().trim().min(1).max(128) }).strict();
+export const codexTaskLogsSchema = codexTaskHandleSchema.extend({ tailLines: z.number().int().min(1).max(10_000).optional(), sinceSequence: z.number().int().min(0).optional() }).strict();
+
+const batchCallSchema = z.object({
+  id: z.string().trim().min(1).max(128).optional(),
+  tool: z.string().trim().min(1).max(128),
+  arguments: z.record(z.string(), z.unknown()).default({}),
+  dependsOn: z.array(z.string().trim().min(1).max(128)).max(50).default([]),
+  timeoutMs: z.number().int().min(1).max(4 * 60 * 60 * 1000).optional(),
+}).strict();
+
+const batchGroupSchema = z.object({
+  id: z.string().trim().min(1).max(128).optional(),
+  parallel: z.boolean().default(true),
+  calls: z.array(batchCallSchema).min(1).max(50),
+}).strict();
+
+export const toolBatchSchema = z.object({
+  parallel: z.boolean().default(true),
+  calls: z.array(batchCallSchema).max(50).optional(),
+  groups: z.array(batchGroupSchema).max(20).optional(),
+}).strict()
+  .refine((value) => (value.calls?.length ?? 0) > 0 || (value.groups?.length ?? 0) > 0, 'At least one batch call is required')
+  .refine((value) => {
+    const grouped = value.groups?.reduce((total, group) => total + group.calls.length, 0) ?? 0;
+    return (value.calls?.length ?? 0) + grouped <= 50;
+  }, 'A batch cannot contain more than 50 calls');
+
+export const workspaceContextSchema = z.object({
+  query: z.string().trim().min(1).max(32_768),
+  workspaceId: optionalWorkspaceIdSchema,
+  path: pathSchema.optional(),
+  intent: z.enum(['auto', 'debug', 'implement', 'review', 'trace', 'explore']).default('auto'),
+  mode: z.enum(['optimized', 'full', 'exhaustive']).default('optimized'),
+  includeIgnored: z.boolean().default(false),
+  responseTargetBytes: z.number().int().min(1024).max(8 * 1024 * 1024).optional(),
+  pageSize: z.number().int().min(1).max(500).optional(),
+}).strict();
+export const workspaceContextContinueSchema = z.object({
+  continuationToken: z.string().trim().min(1).max(128),
+  pageSize: z.number().int().min(1).max(500).optional(),
+}).strict();
+export const workspaceFullScanSchema = z.object({
+  workspaceId: optionalWorkspaceIdSchema,
+  path: pathSchema.optional(),
+  glob: z.string().max(1024).optional(),
+  includeIgnored: z.boolean().default(true),
+  pageSize: z.number().int().min(1).max(500).optional(),
+}).strict();
+export const workspaceFullScanContinueSchema = workspaceContextContinueSchema;
+export const workspaceSnapshotSchema = workspaceInfoSchema;
+export const searchAllSchema = z.object({
+  query: z.string().trim().min(1).max(32_768),
+  workspaceId: optionalWorkspaceIdSchema,
+  path: pathSchema.optional(),
+  glob: z.string().max(1024).optional(),
+  maxResults: z.number().int().min(1).max(500).optional(),
+  includeIgnored: z.boolean().default(false),
+}).strict();
+export const readManyFilesSchema = z.object({
+  workspaceId: optionalWorkspaceIdSchema,
+  files: z.array(readFileSchema.omit({ workspaceId: true })).min(1).max(500),
+}).strict();
+export const workspaceIndexSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  rebuild: z.boolean().default(false),
+  includeIgnored: z.boolean().default(false),
+}).strict();
+export const workspaceIndexStatusSchema = workspaceInfoSchema;
+export const workspaceIndexWatchSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  debounceMs: z.number().int().min(0).max(60_000).optional(),
+  concurrency: z.number().int().min(1).max(32).optional(),
+}).strict();
+export const workspaceIndexStopSchema = workspaceInfoSchema;
+
+const capabilityMetadataSchema = z.record(z.string(), z.unknown());
+const capabilityParametersSchema = z.record(z.string(), z.unknown());
+const capabilityApprovalSchema = z.enum(['use_policy', 'always_ask', 'skip']).default('use_policy');
+const capabilityRequestSchema = {
+  request_id: z.string().trim().min(1).max(128).optional(),
+  metadata: capabilityMetadataSchema.optional(),
+  dry_run: z.boolean().default(false),
+  userConfirmed: z.boolean().optional(),
+};
+
+export const shellCapabilitySchema = z.object({
+  workspaceId: optionalWorkspaceIdSchema,
+  operation: z.enum(['run', 'list', 'status', 'wait', 'logs', 'result', 'cancel', 'resume', 'approve', 'deny']).default('run'),
+  executable: z.string().trim().min(1).max(1024).optional(),
+  arguments: z.array(z.string().max(32_768)).max(128).optional(),
+  privilege: z.enum(['user', 'admin']).default('user'),
+  cwd: pathSchema.optional(),
+  execution: z.enum(['foreground', 'background', 'auto']).default('background'),
+  task_id: z.string().trim().min(1).max(128).optional(),
+  timeout_seconds: z.number().min(0.1).max(604_800).optional(),
+  max_output_bytes: z.number().int().min(1).max(8 * 1024 * 1024).optional(),
+  tail_lines: z.number().int().min(0).max(10_000).optional(),
+  include_stdout: z.boolean().default(true),
+  include_stderr: z.boolean().default(true),
+  approval: capabilityApprovalSchema,
+  ...capabilityRequestSchema,
+}).strict();
+
+const domStepSchema = z.object({
+  action: z.string().trim().min(1).max(128),
+  parameters: capabilityParametersSchema.optional(),
+}).strict();
+
+export const domCdpCapabilitySchema = z.object({
+  action: z.enum(['launch', 'status', 'list_tabs', 'new_tab', 'close_tab', 'navigate', 'evaluate', 'query', 'click', 'type', 'wait', 'screenshot']).optional(),
+  parameters: capabilityParametersSchema.optional(),
+  steps: z.array(domStepSchema).min(1).max(100).optional(),
+  tab_id: z.string().trim().min(1).max(256).optional(),
+  display_id: z.string().trim().min(1).max(128).optional(),
+  timeout_seconds: z.number().min(0.1).max(3600).optional(),
+  approval: capabilityApprovalSchema,
+  ...capabilityRequestSchema,
+}).strict();
+
+export const accessibilityCapabilitySchema = z.object({
+  action: z.enum(['status', 'launch_app', 'activate_app', 'list_windows', 'observe', 'observe_summary', 'observe_changes', 'inspect_elements', 'find_element', 'click', 'focus', 'read_value', 'set_value', 'select_item', 'menu_select', 'close_window', 'minimize_window', 'maximize_window', 'restore_window', 'set_window_frame']),
+  parameters: capabilityParametersSchema.optional(),
+  display_id: z.string().trim().min(1).max(128).optional(),
+  timeout_seconds: z.number().min(0.1).max(14_400).optional(),
+  approval: capabilityApprovalSchema,
+  ...capabilityRequestSchema,
+}).strict();
+
+export const inputEventCapabilitySchema = z.object({
+  operation: z.enum(['type_text', 'paste_text', 'press_key', 'hotkey', 'key_down', 'key_up', 'mouse_move', 'click', 'double_click', 'right_click', 'drag', 'scroll', 'button_down', 'button_up', 'release_all', 'sequence']),
+  parameters: capabilityParametersSchema.optional(),
+  display_id: z.string().trim().min(1).max(128).optional(),
+  timeout_seconds: z.number().min(0.1).max(14_400).optional(),
+  approval: capabilityApprovalSchema,
+  ...capabilityRequestSchema,
+}).strict();
+
+export const visionCapabilitySchema = z.object({
+  action: z.enum(['capture_display', 'capture_region', 'capture_window', 'annotate', 'ocr']),
+  region: capabilityParametersSchema.optional(),
+  app: capabilityParametersSchema.optional(),
+  window_index: z.number().int().min(0).optional(),
+  image_base64: z.string().min(1).max(16 * 1024 * 1024).optional(),
+  marks: z.array(z.object({
+    mark_id: z.string().trim().min(1).max(32),
+    label: z.string().max(256).optional(),
+    bounds: z.object({ x: z.number(), y: z.number(), width: z.number().positive(), height: z.number().positive() }).strict(),
+  }).strict()).max(500).optional(),
+  text: z.string().max(32_768).optional(),
+  exact: z.boolean().default(false),
+  min_confidence: z.number().min(0).max(1).optional(),
+  display_id: z.string().trim().min(1).max(128).optional(),
+  timeout_seconds: z.number().min(0.1).max(14_400).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const visionAnnotatedCaptureSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  capture: z.enum(['display', 'region', 'window']).default('display'),
+  region: capabilityParametersSchema.optional(),
+  app: capabilityParametersSchema.optional(),
+  window_index: z.number().int().min(0).optional(),
+  display_id: z.string().trim().min(1).max(128).optional(),
+  max_depth: z.number().int().min(0).max(12).optional(),
+  max_marks: z.number().int().min(1).max(500).optional(),
+  ttl_seconds: z.number().min(1).max(300).optional(),
+  timeout_seconds: z.number().min(0.1).max(14_400).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const uiTargetActionSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  observationId: z.string().trim().min(1).max(128),
+  markId: z.string().trim().min(1).max(32),
+  observationHash: z.string().trim().regex(/^[a-f0-9]{64}$/).optional(),
+  action: z.enum(['click', 'focus', 'read_value', 'set_value', 'select_item', 'menu_select']).default('click'),
+  value: z.string().max(1_000_000).optional(),
+  timeout_seconds: z.number().min(0.1).max(14_400).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const windowCapabilitySchema = z.object({
+  operation: z.enum(['list', 'get_active', 'get_bounds', 'get_display', 'activate', 'close', 'minimize', 'maximize', 'restore', 'move', 'resize', 'set_window_frame']),
+  parameters: capabilityParametersSchema.optional(),
+  timeout_seconds: z.number().min(0.1).max(14_400).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const healthCapabilitySchema = z.object({
+  operation: z.enum(['check_all', 'check_tool']).default('check_all'),
+  tool: z.enum(['shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window', 'health', 'system_info', 'notification', 'file_dialog', 'clipboard', 'web_fetch']).optional(),
+  request_id: z.string().trim().min(1).max(128).optional(),
+}).strict();
+
+export const systemInfoCapabilitySchema = z.object({
+  operation: z.enum(['all', 'cpu', 'memory', 'disks', 'battery', 'uptime', 'os', 'processes']).default('all'),
+  top_count: z.number().int().min(1).max(50).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const notificationCapabilitySchema = z.object({
+  action: z.enum(['show']).default('show'),
+  title: z.string().trim().min(1).max(120),
+  message: z.string().min(1).max(2_000),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const fileDialogCapabilitySchema = z.object({
+  action: z.enum(['open', 'save']),
+  initial_directory: z.string().max(MAX_PATH_LENGTH).optional(),
+  filter: z.string().max(512).optional(),
+  multi_select: z.boolean().optional(),
+  file_name: z.string().max(MAX_PATH_LENGTH).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const clipboardCapabilitySchema = z.object({
+  action: z.enum(['get_text', 'set_text', 'get_image']),
+  text: z.string().max(1_000_000).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const webFetchCapabilitySchema = z.object({
+  url: z.string().trim().min(1).max(8_192),
+  method: z.enum(['GET', 'POST', 'PUT', 'DELETE', 'HEAD']).default('GET'),
+  headers: z.array(z.object({ name: z.string().min(1).max(256), value: z.string().max(4_096) }).strict()).max(64).optional(),
+  body: z.string().max(1_000_000).optional(),
+  max_bytes: z.number().int().min(1).max(10 * 1024 * 1024).optional(),
+  timeout_seconds: z.number().min(1).max(600).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const skillsListSchema = z.object({
+  query: z.string().max(1024).optional(),
+  source: z.string().trim().min(1).max(256).optional(),
+}).strict();
+
+export const skillsReadSchema = z.object({
+  skillId: z.string().trim().min(1).max(512),
+  relativePath: z.string().min(1).max(MAX_PATH_LENGTH).optional(),
+}).strict();
+
+export const mcpListSchema = z.object({}).strict();
+
+export const mcpDescribeSchema = z.object({
+  server: z.string().trim().min(1).max(256),
+}).strict();
+
+export const mcpCallSchema = z.object({
+  server: z.string().trim().min(1).max(256),
+  tool: z.string().trim().min(1).max(256),
+  arguments: z.record(z.string(), z.unknown()).optional(),
+  userConfirmed: z.boolean().optional(),
+}).strict();

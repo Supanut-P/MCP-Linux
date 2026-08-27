@@ -1,0 +1,35 @@
+{
+  "name": "@baitonghub-linux-mcp/mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": {
+        "development": "./src/index.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "dependencies": {
+    "@baitonghub-linux-mcp/application": "workspace:*",
+    "@baitonghub-linux-mcp/capabilities": "workspace:*",
+    "@baitonghub-linux-mcp/domain": "workspace:*",
+    "@baitonghub-linux-mcp/extensions": "workspace:*",
+    "@baitonghub-linux-mcp/permissions": "workspace:*",
+    "@baitonghub-linux-mcp/search": "workspace:*",
+    "@baitonghub-linux-mcp/shared": "workspace:*",
+    "@modelcontextprotocol/server": "2.0.0",
+    "zod": "4.2.0"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.0.0"
+  },
+  "scripts": {
+    "test": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/domain build && corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/capabilities build && corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/extensions build && corepack pnpm@10.15.0 build && vitest run",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --outDir dist"
+  },
+  "license": "MIT"
+}

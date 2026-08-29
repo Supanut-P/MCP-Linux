@@ -37,4 +37,15 @@ describe('BackupBackend', () => {
       await expect(backend.execute({ operation: 'plan', workspaceId: 'w', source: '../outside' })).resolves.toMatchObject({ ok: false, error: { code: 'PATH_OUTSIDE_WORKSPACE' } });
     } finally { await rm(root, { recursive: true, force: true }); await rm(outside, { recursive: true, force: true }); }
   });
+
+  it('returns a structured unavailable result when registered roots cannot be read', async (): Promise<void> => {
+    const backend = new BackupBackend({
+      allowedRootsProvider: (): readonly string[] => { throw new Error('root provider unavailable'); },
+      workspaceRootProvider: (): string => '/tmp/workspace',
+    });
+    await expect(backend.execute({ operation: 'plan', workspaceId: 'w', source: 'project' })).resolves.toMatchObject({
+      ok: false,
+      error: { code: 'CAPABILITY_UNAVAILABLE' },
+    });
+  });
 });

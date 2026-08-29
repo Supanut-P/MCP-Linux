@@ -168,7 +168,8 @@ export class BackupBackend implements NativeCapabilityBackend {
     let configured: string | null;
     try { configured = await this.workspaceRoot(workspaceIdValue); } catch { return unavailable('Workspace root is unavailable'); }
     if (configured === null) return invalid('Workspace is not registered');
-    const roots = await this.roots();
+    let roots: readonly string[];
+    try { roots = await this.roots(); } catch { return unavailable('Registered roots are unavailable'); }
     let root: string; try { root = await realpath(configured); } catch { return unavailable('Registered workspace root could not be resolved'); }
     const allowed = await Promise.all(roots.map(async (entry) => { try { return await realpath(entry); } catch { return null; } }));
     if (!allowed.some((entry) => entry !== null && isWithin(entry, root))) return err(appError('PATH_OUTSIDE_WORKSPACE', 'Workspace is outside registered roots'));
@@ -182,7 +183,8 @@ export class BackupBackend implements NativeCapabilityBackend {
 
   private async resolveArchive(value: unknown): Promise<Result<string>> {
     if (typeof value !== 'string' || value.trim().length === 0 || value.includes('\0')) return invalid('Backup archive path is required');
-    const roots = await this.roots();
+    let roots: readonly string[];
+    try { roots = await this.roots(); } catch { return unavailable('Registered roots are unavailable'); }
     const candidate = path.resolve(value);
     const parent = await realpath(path.dirname(candidate)).catch(() => null);
     if (parent === null) return err(appError('PATH_OUTSIDE_WORKSPACE', 'Backup archive parent does not exist'));

@@ -80,4 +80,6 @@ scripts/verify-upgrade-rollback.sh dist
 Publishing is allowed only after these gates pass and the release artifacts are
 built from the commit referenced by the release tag. This checklist does not
 claim that a seven-day soak has completed; use `scripts/soak-linux-headless.sh`
-to record a bounded operator-run stability window when needed.
+to record a bounded operator-run stability window and
+`scripts/verify-soak-linux-headless.sh` to validate retained evidence. A short
+smoke run is not production evidence.

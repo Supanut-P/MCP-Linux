@@ -66,4 +66,15 @@ describe('Baitonghub Linux release verification gate', () => {
     expect(rootPackage.scripts?.['package:windows']).toBeUndefined();
     expect(rootPackage.scripts?.desktop).toBeUndefined();
   });
+
+  it('ships a fail-closed soak recorder and evidence verifier', async () => {
+    const recorder = await readFile(path.join(repositoryRoot, 'scripts', 'soak-linux-headless.sh'), 'utf8');
+    const verifier = await readFile(path.join(repositoryRoot, 'scripts', 'verify-soak-linux-headless.sh'), 'utf8');
+    expect(recorder).toContain('owner_uid');
+    expect(recorder).toContain('BAITONGHUB_LINUX_MCP_PID must be a positive process id greater than 1');
+    expect(verifier).toContain('SOAK_MIN_DURATION_SECONDS');
+    expect(verifier).toContain('soak evidence needs at least two samples');
+    expect(verifier).toContain('RSS growth exceeds limit');
+    expect(verifier).toContain('pid or owner changed');
+  });
 });

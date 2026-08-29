@@ -63,6 +63,10 @@ docs/linux/*
 !docs/linux/UBUNTU_ACCEPTANCE.md
 !docs/linux/UPSTREAM_SYNC.md
 !docs/linux/REMOTE_FLEET.md
+!docs/linux/evidence/
+docs/linux/evidence/*
+!docs/linux/evidence/v1.5.0/
+!docs/linux/evidence/v1.5.0/README.md
 !docs/architecture/
 docs/architecture/*
 !docs/architecture/UPGRADE_ARCHITECTURE.md

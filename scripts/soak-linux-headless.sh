@@ -15,21 +15,29 @@ case "$interval:$duration" in *[!0-9:]*|:*) echo 'SOAK_INTERVAL_SECONDS and SOAK
 if [ "$interval" -lt 1 ] || [ "$duration" -lt 1 ]; then echo 'Soak interval and duration must be positive.' >&2; exit 2; fi
 if [ -z "$pid" ]; then pid=$$
 fi
+case "$pid" in *[!0-9]*|0|1) echo 'BAITONGHUB_LINUX_MCP_PID must be a positive process id greater than 1.' >&2; exit 2 ;; esac
+if [ ! -r "/proc/$pid/status" ]; then echo "Process $pid is not running." >&2; exit 1; fi
+owner_uid=$(stat -c '%u' "/proc/$pid" 2>/dev/null || printf '')
+case "$owner_uid" in ''|*[!0-9]*) echo "Unable to determine owner for process $pid." >&2; exit 1 ;; esac
 mkdir -p "$(dirname "$output")"
-printf 'timestamp\trss_kb\tfd_count\twal_bytes\ttask_count\ttunnel_reconnects\tservice_restarts\n' > "$output"
+printf 'timestamp\trss_kb\tfd_count\twal_bytes\ttask_count\ttunnel_reconnects\tservice_restarts\tpid\towner_uid\n' > "$output"
 started=$(date +%s)
 while :; do
   now=$(date +%s)
   elapsed=$((now - started))
   if [ "$elapsed" -gt "$duration" ]; then break; fi
   if [ ! -r "/proc/$pid/status" ]; then echo "Process $pid is no longer running." >&2; exit 1; fi
+  current_owner=$(stat -c '%u' "/proc/$pid" 2>/dev/null || printf '')
+  if [ "$current_owner" != "$owner_uid" ]; then echo "Process $pid owner changed during soak." >&2; exit 1; fi
   rss=$(awk '/^VmRSS:/ {print $2}' "/proc/$pid/status" 2>/dev/null || printf '0')
+  case "$rss" in ''|*[!0-9]*) echo "Invalid RSS value for process $pid." >&2; exit 1 ;; esac
   fds=$(find "/proc/$pid/fd" -mindepth 1 -maxdepth 1 -type l 2>/dev/null | wc -l | tr -d ' ')
+  case "$fds" in ''|*[!0-9]*) echo "Invalid file-descriptor value for process $pid." >&2; exit 1 ;; esac
   wal=$(find "$data_directory" -type f -name '*.sqlite-wal' -printf '%s\n' 2>/dev/null | awk '{s+=$1} END {print s+0}')
   tasks=$(find "$data_directory" -type f -path '*/background-tasks/*' 2>/dev/null | wc -l | tr -d ' ')
   reconnects=$(grep -Eic 'reconnect|reconnected' "$tunnel_log" 2>/dev/null || printf '0')
   restarts=$(systemctl show "baitonghub-linux-mcp-tunnel@${USER}.service" --property=NRestarts --value 2>/dev/null || printf '0')
-  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$rss" "$fds" "$wal" "$tasks" "$reconnects" "$restarts" >> "$output"
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$rss" "$fds" "$wal" "$tasks" "$reconnects" "$restarts" "$pid" "$owner_uid" >> "$output"
   if [ "$elapsed" -ge "$duration" ]; then break; fi
   sleep "$interval"
 done

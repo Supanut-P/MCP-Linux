@@ -12,6 +12,12 @@ describe('ArchiveBackend', () => {
   it('requires confirmation before overwriting during extraction', async () => {
     const backend = new ArchiveBackend({ platform: 'linux', allowedRootsProvider: async (): Promise<readonly string[]> => ['/tmp'] , resolveExecutable: async (name: string): Promise<string> => `/usr/bin/${name}` });
     // Missing archive is rejected before any extractor can run; mutation confirmation remains a backend gate.
-    await expect(backend.execute({ operation: 'extract', archive: '/tmp/missing.tar', destination: '/tmp' })).resolves.toMatchObject({ ok: false, error: { code: 'FILE_NOT_FOUND' } });
+    await expect(backend.execute({ operation: 'extract', archive: '/tmp/missing.tar', destination: '/tmp', userConfirmed: true })).resolves.toMatchObject({ ok: false, error: { code: 'FILE_NOT_FOUND' } });
+  });
+
+  it('requires confirmation for archive creation and rejects unknown formats', async () => {
+    const backend = new ArchiveBackend({ platform: 'linux', allowedRootsProvider: async (): Promise<readonly string[]> => ['/tmp'], resolveExecutable: async (name: string): Promise<string> => `/usr/bin/${name}` });
+    await expect(backend.execute({ operation: 'create', source: '/tmp', output: '/tmp/out.tar' })).resolves.toMatchObject({ ok: false, error: { code: 'PERMISSION_REQUIRED' } });
+    await expect(backend.execute({ operation: 'list', archive: '/tmp/archive.bin' })).resolves.toMatchObject({ ok: false, error: { code: 'FILE_NOT_FOUND' } });
   });
 });

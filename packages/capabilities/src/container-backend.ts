@@ -50,28 +50,13 @@ export class ContainerBackend implements NativeCapabilityBackend {
     if (input.dry_run === true) return ok({ dry_run: true, operation, capability: 'container' });
     if (MUTATIONS.has(operation) && input.userConfirmed !== true) return err(appError('PERMISSION_REQUIRED', 'Container mutations require explicit user confirmation', true));
     if (signal?.aborted === true) return cancelled();
-    if (!operation.startsWith('compose-')) {
-      const scope = await this.requireProjectScope(input);
-      if (!scope.ok) return scope;
-    }
     const provider = await this.provider();
     if (provider === null) return unavailable();
-
-    if (operation.startsWith('compose-')) {
-      const compose = await this.composeArgs(input, operation);
-      if (!compose.ok) return compose;
-      return this.run(provider, compose.value, operation, signal);
-    }
-    const args = containerArgs(operation, input);
-    if (!args.ok) return args;
-    return this.run(provider, args.value, operation, signal);
-  }
-
-  private async requireProjectScope(input: Record<string, unknown>): Promise<Result<string>> {
-    if (typeof input.workspaceId !== 'string' || input.workspaceId.trim().length === 0) return invalid('A registered workspaceId is required for container operations');
-    const projectRoot = input.project_root ?? input.projectRoot ?? input.cwd;
-    if (typeof projectRoot !== 'string' || projectRoot.trim().length === 0) return invalid('A registered project_root is required for container operations');
-    return this.resolveRegisteredPath(projectRoot);
+    // Every operation is scoped to a registered Compose file. Direct Docker
+    // commands would otherwise expose or mutate unrelated host containers.
+    const compose = await this.composeArgs(input, operation);
+    if (!compose.ok) return compose;
+    return this.run(provider, compose.value, operation, signal);
   }
 
   private async provider(): Promise<{ readonly name: ContainerProvider; readonly executable: string } | null> {
@@ -92,9 +77,26 @@ export class ContainerBackend implements NativeCapabilityBackend {
     const composeFileCheck = await this.validateComposeFileVolumes(composePath.value, path.dirname(composePath.value));
     if (!composeFileCheck.ok) return composeFileCheck;
     const args: string[] = ['compose', '-f', composePath.value];
+    const container = input.container ?? input.name;
     if (operation === 'compose-config') args.push('config');
     else if (operation === 'compose-up') args.push('up', '-d');
     else if (operation === 'compose-down') args.push('down');
+    else if (operation === 'status' || operation === 'list' || operation === 'inspect') {
+      args.push('ps');
+      if (input.all === true && operation === 'list') args.push('--all');
+      if (operation === 'inspect' && typeof container === 'string' && CONTAINER_NAME.test(container)) args.push(container);
+    } else if (operation === 'logs') {
+      const tail = input.tail ?? input.tail_lines ?? 100;
+      if (typeof tail !== 'number' || !Number.isInteger(tail) || tail < 1 || tail > MAX_TAIL) return invalid('Container log tail is invalid');
+      args.push('logs', '--tail', String(tail));
+      if (typeof container === 'string' && CONTAINER_NAME.test(container)) args.push(container);
+    } else if (operation === 'stats') {
+      args.push('stats');
+      if (typeof container === 'string' && CONTAINER_NAME.test(container)) args.push(container);
+    } else if (operation === 'restart' || operation === 'stop' || operation === 'remove') {
+      if (typeof container !== 'string' || !CONTAINER_NAME.test(container)) return invalid('Container name is invalid');
+      args.push(operation === 'remove' ? 'rm' : operation, container);
+    }
     return ok(args);
   }
 
@@ -106,6 +108,13 @@ export class ContainerBackend implements NativeCapabilityBackend {
       return err(appError('FILE_NOT_FOUND', 'Compose file was not found'));
     }
     if (Buffer.byteLength(source, 'utf8') > 2 * 1024 * 1024) return invalid('Compose file is too large');
+    // Reject features that grant host-level authority or include a second
+    // unvalidated file. This conservative gate is intentional without a YAML
+    // parser in the minimal headless runtime.
+    if (/^\s*(include|extends|devices|volumes_from|cap_add|security_opt)\s*:/im.test(source)
+      || /^\s*(device|privileged|pid|ipc|network_mode|userns_mode)\s*:/im.test(source)) {
+      return err(appError('INVALID_INPUT', 'Compose file uses unsupported host-authority features'));
+    }
     for (const line of source.split(/\r?\n/)) {
       const trimmed = line.trim().replace(/^[- ]+/, '').replace(/^['"]|['"]$/g, '');
       const sourceField = /^source:\s*["']?([^"'#]+)["']?\s*$/.exec(trimmed);
@@ -167,29 +176,15 @@ export class ContainerBackend implements NativeCapabilityBackend {
       const result = await this.runner.run(provider.executable, args, signal);
       if (signal?.aborted === true) return cancelled();
       if (result.exitCode !== 0) return err(appError('CAPABILITY_UNAVAILABLE', 'Container provider operation failed', true));
-      return ok({ operation, provider: provider.name, output: result.stdout.split(/\r?\n/).filter(Boolean).slice(0, 2_000), truncated: result.truncated });
+      return ok({ operation, provider: provider.name, output: result.stdout.split(/\r?\n/).filter(Boolean).map(redactSensitive).slice(0, 2_000), truncated: result.truncated });
     } catch { return unavailable(); }
   }
 }
 
 export const LinuxContainerBackend = ContainerBackend;
 
-function containerArgs(operation: ContainerOperation, input: Record<string, unknown>): Result<readonly string[]> {
-  const container = input.container ?? input.name;
-  if (operation === 'status') return ok(['info']);
-  if (operation === 'list') return ok(['ps', ...(input.all === true ? ['--all'] : [])]);
-  if (typeof container !== 'string' || !CONTAINER_NAME.test(container)) return invalid('Container name is invalid');
-  if (operation === 'inspect') return ok(['inspect', container]);
-  if (operation === 'logs') {
-    const tail = input.tail ?? input.tail_lines ?? 100;
-    if (typeof tail !== 'number' || !Number.isInteger(tail) || tail < 1 || tail > MAX_TAIL) return invalid('Container log tail is invalid');
-    return ok(['logs', '--tail', String(tail), container]);
-  }
-  if (operation === 'stats') return ok(['stats', '--no-stream', container]);
-  if (operation === 'restart') return ok(['restart', container]);
-  if (operation === 'stop') return ok(['stop', container]);
-  if (operation === 'remove') return ok(['rm', container]);
-  return invalid('Container operation is invalid');
+function redactSensitive(value: string): string {
+  return value.replace(/((?:password|passwd|token|secret|api[_-]?key|authorization)\s*[:=]\s*)([^\s,;]+)/gi, '$1[REDACTED]');
 }
 
 async function existingPath(value: string): Promise<string | null> {
@@ -197,7 +192,7 @@ async function existingPath(value: string): Promise<string | null> {
 }
 function isWithin(root: string, candidate: string): boolean { const relative = path.relative(path.resolve(root), path.resolve(candidate)); return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative)); }
 function volumeSeparator(value: string): number { const match = /:(?=\/|\.\.?\/|~\/|\$\{|[A-Za-z]:[\\/])/.exec(value); return match?.index ?? -1; }
-function looksLikeHostPath(value: string): boolean { return value.startsWith('/') || value.startsWith('./') || value.startsWith('../') || value.startsWith('~/') || value.includes('$') || /^[A-Za-z]:[\\/]/.test(value); }
+function looksLikeHostPath(value: string): boolean { return value === '.' || value === '..' || value.startsWith('/') || value.startsWith('./') || value.startsWith('../') || value.startsWith('~/') || value.includes('$') || /^[A-Za-z]:[\\/]/.test(value); }
 function readOperation(value: unknown): ContainerOperation | null { return value === undefined ? 'list' : typeof value === 'string' && OPERATIONS.has(value as ContainerOperation) ? value as ContainerOperation : null; }
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null && !Array.isArray(value); }
 function invalid(message: string): Result<never> { return err(appError('INVALID_INPUT', message)); }

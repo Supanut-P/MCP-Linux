@@ -44,6 +44,9 @@ export class ArchiveBackend implements NativeCapabilityBackend {
     const operation = readOperation(input.operation);
     if (operation === null) return invalid('Unknown archive operation');
     if (signal?.aborted === true) return cancelled();
+    if ((operation === 'create' || operation === 'extract') && input.userConfirmed !== true) {
+      return err(appError('PERMISSION_REQUIRED', 'Archive mutations require explicit user confirmation', true));
+    }
     if (operation === 'create') return this.create(input, signal);
     const archive = await this.resolveExisting(input.archive ?? input.path);
     if (!archive.ok) return archive;
@@ -60,7 +63,7 @@ export class ArchiveBackend implements NativeCapabilityBackend {
     if (executable === null) return unavailable();
     const args = members.value.provider === 'zip'
       ? ['-q', archive.value, '-d', destination.value]
-      : ['--extract', '--file', archive.value, '--directory', destination.value, '--no-same-owner', '--no-same-permissions', '--no-overwrite-dir'];
+      : ['--extract', '--file', archive.value, '--directory', destination.value, '--no-same-owner', '--no-same-permissions', '--no-overwrite-dir', '--keep-old-files'];
     return this.run(executable, args, operation, members.value.provider, signal);
   }
 
@@ -68,7 +71,9 @@ export class ArchiveBackend implements NativeCapabilityBackend {
     let archiveStats;
     try { archiveStats = await stat(archive); } catch { return err(appError('FILE_NOT_FOUND', 'Archive was not found')); }
     if (archiveStats.size > MAX_ARCHIVE_BYTES) return invalid('Archive exceeds the 2 GiB size limit');
-    const provider = archive.toLowerCase().endsWith('.zip') ? 'zip' : 'tar';
+    const lowerArchive = archive.toLowerCase();
+    const provider = lowerArchive.endsWith('.zip') ? 'zip' : lowerArchive.endsWith('.tar') || lowerArchive.endsWith('.tar.gz') || lowerArchive.endsWith('.tgz') ? 'tar' : null;
+    if (provider === null) return invalid('Archive format must be .tar, .tar.gz, .tgz, or .zip');
     const executable = await this.resolveExecutable(provider === 'zip' ? 'unzip' : 'tar');
     if (executable === null) return unavailable();
     const args = provider === 'zip' ? ['-Z', '-v', archive] : ['--list', '--verbose', '--file', archive];
@@ -81,6 +86,7 @@ export class ArchiveBackend implements NativeCapabilityBackend {
       const validation = validateArchiveMembers(listing);
       if (!validation.ok) return validation;
       const members = provider === 'tar' ? listing.map(parseTarMemberName) : parseZipMemberNames(listing);
+      if (provider === 'zip' && members.length === 0) return err(appError('CAPABILITY_UNAVAILABLE', 'ZIP member metadata could not be inspected', true));
       if (members.length > MAX_MEMBERS) return invalid('Archive exceeds the 100,000-member limit');
       const memberValidation = validateArchiveMembers(members);
       if (!memberValidation.ok) return memberValidation;
@@ -158,7 +164,8 @@ export class ArchiveBackend implements NativeCapabilityBackend {
 function parseTarMemberName(line: string): string {
   // GNU tar verbose output ends with the member name after mode, owner, size, date, and time.
   const match = /^(?:[-dlcbps][rwx-]{9})\s+\S+\s+\S+\s+(?:\d+)\s+\S+\s+\S+\s+(.+)$/.exec(line);
-  return match?.[1] ?? line;
+  const name = match?.[1] ?? line;
+  return name.split(' -> ')[0] ?? name;
 }
 
 function parseTarMemberSize(line: string): number {
@@ -172,7 +179,7 @@ function parseZipMemberNames(lines: readonly string[]): readonly string[] {
     const match = /^file name:\s*(.+)$/i.exec(line);
     return match === null ? [] : [match[1]!.trim()];
   });
-  return names.length > 0 ? names : lines.filter((line) => !/^archive:|^zip file size:|^central directory entry|^[-=]+$/i.test(line));
+  return names;
 }
 
 function parseZipMemberSize(line: string): number {

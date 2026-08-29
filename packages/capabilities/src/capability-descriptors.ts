@@ -55,7 +55,7 @@ export const capabilityDescriptors: readonly CapabilityDescriptor[] = Object.fre
   descriptor('web_fetch', 'optional', 'READ', 'network', ['network policy']),
   descriptor('container', 'optional', 'DANGEROUS', 'container', ['docker or podman'], true, true),
   descriptor('archive', 'always', 'DANGEROUS', 'filesystem', ['tar/unzip/zip'], true, true),
-  descriptor('dependency_audit', 'optional', 'READ', 'workspace', ['pnpm/npm/pip/cargo'], true),
+  descriptor('dependency_audit', 'optional', 'READ', 'workspace', ['pnpm/npm/pip/cargo'], true, true),
 ]);
 
 export function capabilityToolNamesForPlatform(platform: NodeJS.Platform): readonly CapabilityToolName[] {

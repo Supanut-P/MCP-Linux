@@ -38,8 +38,8 @@ describe.runIf(process.platform === 'linux')('MCP development flow', () => {
     const container = new ContainerBackend({ platform: 'linux', allowedRootsProvider: async (): Promise<readonly string[]> => [root], resolveExecutable: async (): Promise<string> => '/usr/bin/docker', runner: containerRunner });
     await expect(container.execute({ operation: 'compose-config', compose_file: composeFile })).resolves.toMatchObject({ ok: true });
     for (const operation of ['compose-up', 'compose-down'] as const) await expect(container.execute({ operation, compose_file: composeFile, userConfirmed: true })).resolves.toMatchObject({ ok: true });
-    for (const operation of ['logs', 'stats', 'restart'] as const) await expect(container.execute({ operation, container: 'api', workspaceId: 'workspace-1', project_root: root, userConfirmed: true })).resolves.toMatchObject({ ok: true });
-    expect(calls).toEqual(['compose -f ' + composeFile + ' config', 'compose -f ' + composeFile + ' up -d', 'compose -f ' + composeFile + ' down', 'logs --tail 100 api', 'stats --no-stream api', 'restart api']);
+    for (const operation of ['logs', 'stats', 'restart'] as const) await expect(container.execute({ operation, container: 'api', compose_file: composeFile, userConfirmed: true })).resolves.toMatchObject({ ok: true });
+    expect(calls).toEqual(['compose -f ' + composeFile + ' config', 'compose -f ' + composeFile + ' up -d', 'compose -f ' + composeFile + ' down', 'compose -f ' + composeFile + ' logs --tail 100 api', 'compose -f ' + composeFile + ' stats api', 'compose -f ' + composeFile + ' restart api']);
     expect(validateArchiveMembers(['../../escape'])).toMatchObject({ ok: false });
     await writeFile(path.join(root, 'pnpm-lock.yaml'), 'lockfileVersion: 9\n', 'utf8');
     const auditRunner = new LinuxCommandRunner({ allowedExecutables: ['pnpm'], spawn: async (): Promise<{ readonly exitCode: number; readonly stdout: string; readonly stderr: string }> => ({ exitCode: 0, stdout: JSON.stringify({ vulnerabilities: {} }), stderr: '' }) });

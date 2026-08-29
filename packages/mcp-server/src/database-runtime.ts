@@ -141,7 +141,7 @@ export class DatabaseRuntimeService {
       const boundedStatement = /^(select|with)\b/i.test(statement)
         ? `SELECT * FROM (${statement}) AS baitonghub_bounded LIMIT ${maxRows + 1}`
         : statement;
-      const rows = database.value.prepare(boundedStatement).all(...bindParameters(input)) as Record<string, unknown>[];
+      const rows = database.value.prepare(boundedStatement).iterate(...bindParameters(input)) as Iterable<Record<string, unknown>>;
       const bounded = boundLocalRows(rows, maxRows);
       if (!bounded.ok) return bounded;
       return ok({
@@ -323,11 +323,12 @@ function boundServerRows(output: string, requested: unknown, inspection = false)
   return ok({ rows, truncated: lines.length > rows.length });
 }
 
-function boundLocalRows(rows: readonly Record<string, unknown>[], maxRows: number): Result<{ readonly rows: readonly Record<string, unknown>[]; readonly truncated: boolean }> {
+function boundLocalRows(rows: Iterable<Record<string, unknown>>, maxRows: number): Result<{ readonly rows: readonly Record<string, unknown>[]; readonly truncated: boolean }> {
   const bounded: Record<string, unknown>[] = [];
   let bytes = 0;
+  let truncated = false;
   for (const row of rows) {
-    if (bounded.length >= maxRows) break;
+    if (bounded.length >= maxRows) { truncated = true; break; }
     const serialized = JSON.stringify(row);
     if (serialized === undefined) return err(appError('CAPABILITY_UNAVAILABLE', 'Database response could not be serialized', true));
     const safe = JSON.parse(redactSensitive(serialized)) as Record<string, unknown>;
@@ -335,7 +336,7 @@ function boundLocalRows(rows: readonly Record<string, unknown>[], maxRows: numbe
     if (bytes + size > MAX_SERVER_QUERY_BYTES) return err(appError('CAPABILITY_UNAVAILABLE', 'Database response exceeded the 2 MiB limit', true));
     bounded.push(safe); bytes += size;
   }
-  return ok({ rows: bounded, truncated: rows.length > bounded.length });
+  return ok({ rows: bounded, truncated });
 }
 
 function parseDelimitedLine(line: string): string[] {

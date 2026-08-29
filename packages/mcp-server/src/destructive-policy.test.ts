@@ -49,4 +49,13 @@ describe('central destructive policy', () => {
     expect(inspectDestructiveOperation('plugin_remove', { name: 'x' }).destructive).toBe(true);
     expect(inspectDestructiveOperation('hook_remove', { name: 'x' }).destructive).toBe(true);
   });
+
+  it('classifies server administration mutations but leaves inspection and plans read-only', () => {
+    expect(inspectDestructiveOperation('service', { operation: 'status', unit: 'demo.service' }).destructive).toBe(false);
+    expect(inspectDestructiveOperation('service', { operation: 'restart', unit: 'demo.service' }).destructive).toBe(true);
+    expect(inspectDestructiveOperation('package', { operation: 'show', packages: ['jq'] }).destructive).toBe(false);
+    expect(inspectDestructiveOperation('package', { operation: 'install', packages: ['jq'] }).destructive).toBe(true);
+    expect(inspectDestructiveOperation('schedule', { operation: 'plan', unit: 'demo' }).destructive).toBe(false);
+    expect(inspectDestructiveOperation('schedule', { operation: 'remove', unit: 'demo' }).destructive).toBe(true);
+  });
 });

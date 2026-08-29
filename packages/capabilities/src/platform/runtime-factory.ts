@@ -9,6 +9,10 @@ import { capabilityToolNamesForPlatform } from '../capability-descriptors.js';
 import type { CapabilityToolName } from '../capability-tool-names.js';
 import { HealthCapabilityBackend } from '../health-backend.js';
 import { LinuxObservabilityBackend } from '../linux-observability-backend.js';
+import { SystemdBackend } from '../systemd-backend.js';
+import { AptBackend } from '../apt-backend.js';
+import { ScheduleBackend } from '../schedule-backend.js';
+import { LinuxCommandRunner } from '../linux-command-runner.js';
 import { LinuxNativeCapabilityBackend, type LinuxAtSpiProvider, type LinuxPortalProvider } from '../linux-native-backend.js';
 import { LocalCapabilityService, type CapabilityBackend } from '../local-capability-service.js';
 import { ShellCapabilityBackend } from '../shell-backend.js';
@@ -32,6 +36,9 @@ export interface PlatformCapabilityRuntimeOptions {
   readonly atSpi?: LinuxAtSpiProvider;
   readonly browserProtocol?: BrowserCdpProtocol;
   readonly browserLauncher?: (url: string | undefined, signal?: AbortSignal) => Promise<Result<unknown>>;
+  /** Optional fixed command runner seam for deterministic host-level administration tests. */
+  readonly adminRunner?: LinuxCommandRunner;
+  readonly adminResolveExecutable?: (name: string) => Promise<string | null>;
 }
 
 /** Linux-headless composition root shared by STDIO and HTTP transports. */
@@ -91,6 +98,18 @@ function linuxRuntime(
   const systemInfoObservability = new LinuxObservabilityBackend('system_info', nativeOptions);
   const journal = new LinuxObservabilityBackend('journal', nativeOptions);
   const network = new LinuxObservabilityBackend('network', nativeOptions);
+  const adminOptions = {
+    ...nativeOptions,
+    ...(options.adminRunner === undefined ? {} : { runner: options.adminRunner }),
+    ...(options.adminResolveExecutable === undefined ? {} : { resolveExecutable: options.adminResolveExecutable }),
+  };
+  const systemdAdmin = new SystemdBackend(adminOptions);
+  const packageManager = new AptBackend(adminOptions);
+  const schedule = new ScheduleBackend({
+    ...adminOptions,
+    allowedRootsProvider: options.allowedRootsProvider,
+    packagedCliPath: path.join('/opt', 'baitonghub-linux-mcp', 'baitonghub-linux-mcp'),
+  });
   const notification = new LinuxNativeCapabilityBackend('notification', nativeOptions);
   const fileDialog = new LinuxNativeCapabilityBackend('file_dialog', nativeOptions);
   const clipboard = new LinuxNativeCapabilityBackend('clipboard', nativeOptions);
@@ -103,6 +122,9 @@ function linuxRuntime(
     system_info: systemInfoObservability,
     journal,
     network,
+    service: systemdAdmin,
+    package: packageManager,
+    schedule,
     notification,
     file_dialog: fileDialog,
     clipboard,
@@ -119,6 +141,9 @@ function linuxRuntime(
     systemInfo: systemInfoObservability,
     journal,
     network,
+    service: systemdAdmin,
+    package: packageManager,
+    schedule,
     notification,
     fileDialog,
     clipboard,

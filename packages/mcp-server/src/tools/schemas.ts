@@ -258,7 +258,7 @@ export const windowCapabilitySchema = z.object({
 
 export const healthCapabilitySchema = z.object({
   operation: z.enum(['check_all', 'check_tool']).default('check_all'),
-  tool: z.enum(['shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window', 'health', 'system_info', 'journal', 'network', 'notification', 'file_dialog', 'clipboard', 'web_fetch']).optional(),
+  tool: z.enum(['shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window', 'health', 'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch']).optional(),
   request_id: z.string().trim().min(1).max(128).optional(),
 }).strict();
 
@@ -283,6 +283,38 @@ export const networkCapabilitySchema = z.object({
   operation: z.enum(['interfaces', 'routes', 'dns', 'listeners', 'connectivity']).default('interfaces'),
   host: z.string().trim().min(1).max(253).optional(),
   limit: z.number().int().min(1).max(500).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const serviceCapabilitySchema = z.object({
+  operation: z.enum(['list', 'status', 'is-enabled', 'start', 'stop', 'restart', 'reload', 'enable', 'disable']).default('status'),
+  unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+const debianPackageSchema = z.string().regex(/^[a-z0-9][a-z0-9+.-]{0,127}(?::(amd64|all))?$/);
+export const packageCapabilitySchema = z.object({
+  operation: z.enum(['search', 'show', 'installed', 'updates', 'install', 'remove', 'upgrade']).default('search'),
+  query: z.string().trim().min(1).max(128).optional(),
+  packages: z.array(debianPackageSchema).max(50).optional(),
+  plan_hash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  planHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const scheduleCapabilitySchema = z.object({
+  operation: z.enum(['list', 'plan', 'create', 'enable', 'disable', 'remove']).default('list'),
+  unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,200}(?:\.(?:timer|service))?$/).optional(),
+  name: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,200}$/).optional(),
+  executable: z.string().trim().min(1).max(4096).optional(),
+  command: z.string().trim().min(1).max(4096).optional(),
+  arguments: z.array(z.string().max(4096)).max(64).optional(),
+  args: z.array(z.string().max(4096)).max(64).optional(),
+  onCalendar: z.string().trim().min(1).max(256).optional(),
+  calendar: z.string().trim().min(1).max(256).optional(),
+  persistent: z.boolean().optional(),
+  plan_hash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  planHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   ...capabilityRequestSchema,
 }).strict();
 

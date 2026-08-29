@@ -23,7 +23,7 @@ describe('MCP tool registry', () => {
       'apply_patch', 'move_file', 'copy_file', 'delete_file', 'restore_deleted_file', 'process_start', 'process_list', 'process_status',
       'process_logs', 'process_stop', 'project_dev', 'project_test', 'project_lint',
       'project_typecheck', 'project_build', 'shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'vision_annotated_capture', 'ui_target_action', 'window', 'health',
-      'system_info', 'journal', 'network', 'notification', 'file_dialog', 'clipboard', 'web_fetch',
+      'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch',
       'skills_list', 'skills_read', 'mcp_list', 'mcp_describe', 'mcp_call',
       'workspace_context', 'workspace_context_continue', 'workspace_full_scan', 'workspace_full_scan_continue',
       'workspace_snapshot', 'search_all', 'read_many_files',
@@ -66,6 +66,11 @@ describe('MCP tool registry', () => {
     expect(byName.get('journal')?.parse({ unit: 'caddy.service', lines: 100 })).toMatchObject({ ok: true });
     expect(byName.get('journal')?.parse({ unit: '../../etc/passwd.service' })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
     expect(byName.get('network')?.parse({ operation: 'listeners', limit: 50 })).toMatchObject({ ok: true });
+    expect(byName.get('service')?.parse({ operation: 'status', unit: 'caddy.service' })).toMatchObject({ ok: true });
+    expect(byName.get('service')?.parse({ operation: 'restart', unit: '../../etc/passwd.service' })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    expect(byName.get('package')?.parse({ operation: 'install', packages: ['jq'], dry_run: true })).toMatchObject({ ok: true });
+    expect(byName.get('package')?.parse({ operation: 'install', packages: ['../../etc/passwd'] })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    expect(byName.get('schedule')?.parse({ operation: 'list' })).toMatchObject({ ok: true });
   });
 
   it('allows workspace discovery under the balanced tunnel profile', async () => {
@@ -165,6 +170,20 @@ describe('MCP tool registry', () => {
       structuredContent: { error: { code: 'PERMISSION_DENIED' } },
     });
     expect(executed).toBe(false);
+  });
+
+  it('blocks confirmed-required administration mutations before capability dispatch', async () => {
+    let calls = 0;
+    const registry = new ToolRegistry({
+      capabilities: {
+        listTools: (): readonly string[] => ['service', 'package', 'schedule'],
+        async execute(): Promise<ReturnType<typeof ok>> { calls += 1; return ok({ executed: true }); },
+      },
+    }, actor);
+    await expect(registry.invoke('service', { operation: 'restart', unit: 'demo.service' })).resolves.toMatchObject({ isError: true, structuredContent: { error: { code: 'PERMISSION_REQUIRED' } } });
+    await expect(registry.invoke('package', { operation: 'install', packages: ['jq'] })).resolves.toMatchObject({ isError: true, structuredContent: { error: { code: 'PERMISSION_REQUIRED' } } });
+    await expect(registry.invoke('schedule', { operation: 'remove', unit: 'demo' })).resolves.toMatchObject({ isError: true, structuredContent: { error: { code: 'PERMISSION_REQUIRED' } } });
+    expect(calls).toBe(0);
   });
 
   it('rejects invalid workspace IDs, line ranges, oversized results, and process log queries at the schema boundary', async () => {

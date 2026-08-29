@@ -42,6 +42,18 @@ export function inspectDestructiveOperation(toolName: string, input: unknown): D
       return String(value.method ?? 'GET').toUpperCase() === 'DELETE'
         ? destructive('HTTP DELETE can remove remote data')
         : { destructive: false };
+    case 'service':
+      return ['start', 'stop', 'restart', 'reload', 'enable', 'disable'].includes(String(value.operation ?? ''))
+        ? destructive('systemd service mutation requires explicit confirmation')
+        : { destructive: false };
+    case 'package':
+      return ['install', 'remove', 'upgrade'].includes(String(value.operation ?? ''))
+        ? destructive('package manager mutation requires explicit confirmation')
+        : { destructive: false };
+    case 'schedule':
+      return ['create', 'enable', 'disable', 'remove'].includes(String(value.operation ?? ''))
+        ? destructive('user schedule mutation requires explicit confirmation')
+        : { destructive: false };
     case 'mcp_call':
       return destructive('child MCP side effects cannot be proven non-destructive at the gateway boundary');
     case 'window':

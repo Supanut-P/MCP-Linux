@@ -87,7 +87,7 @@ describe('public repository hygiene', () => {
 
     expect(readme).toContain(`releases/download/v${rootPackage.version as string}`);
     expect(readme).toContain(`Baitonghub-Linux-mcp-${rootPackage.version as string}-amd64.deb`);
-    expect(readme).toContain('The v0.2 release is **headless**');
+    expect(readme).toContain(`The v${rootPackage.version as string} release is **headless**`);
     expect(readme).not.toContain('current source/release candidate is');
     expect(readme).not.toContain('pending publication');
     expect(readme).not.toContain('Windows installer');

@@ -11,6 +11,7 @@ import { DocumentRuntimeService } from './document-runtime.js';
 import { LspRuntimeService } from './lsp-runtime.js';
 import { UPGRADE_TOOL_CATALOG, type UpgradeToolCatalogEntry } from './upgrade-catalog.js';
 import { UpgradeRuntimeStateStore, type UpgradeRuntimeSessionState, type UpgradeRuntimeSharedState } from './upgrade-runtime-state-store.js';
+import { RemoteFleetRuntime } from './remote-fleet-runtime.js';
 
 interface RuntimeTask {
   readonly id: string;
@@ -111,6 +112,7 @@ export class UpgradeRuntimeService {
   private readonly database: DatabaseRuntimeService;
   private readonly lsp: LspRuntimeService;
   private readonly documents: DocumentRuntimeService;
+  private readonly remoteFleet: RemoteFleetRuntime;
   private readonly stateStore: UpgradeRuntimeStateStore | undefined;
   private loaded = false;
 
@@ -128,6 +130,7 @@ export class UpgradeRuntimeService {
     this.database = new DatabaseRuntimeService(services, actor);
     this.lsp = new LspRuntimeService(services, actor);
     this.documents = new DocumentRuntimeService(services, actor);
+    this.remoteFleet = new RemoteFleetRuntime(services.capabilities);
   }
 
   public async execute(name: string, input: Record<string, unknown>, signal?: AbortSignal): Promise<Result<unknown>> {
@@ -274,6 +277,8 @@ export class UpgradeRuntimeService {
         return this.database.inspect(input);
       case 'db_query':
         return this.database.query(input);
+      case 'remote_fleet':
+        return this.remoteFleet.execute(input, signal);
       case 'lsp_diagnostics':
         return this.lsp.diagnostics(input);
       case 'lsp_rename':

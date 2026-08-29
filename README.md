@@ -24,7 +24,7 @@ Baitonghub-Linux-mcp lets an MCP client work with a Linux machine through a
 controlled local runtime. It is intended for repository maintenance, coding,
 testing, Git workflows, command execution, and long-running development tasks.
 
-The v1.0.0 release is **headless**. It does not require Electron, a desktop
+The v1.4.0 release is **headless**. It does not require Electron, a desktop
 session, Chrome, Wayland, X11, or a system-installed Node.js runtime.
 
 ### What it can do
@@ -32,7 +32,11 @@ session, Chrome, Wayland, X11, or a system-installed Node.js runtime.
 - Register trusted workspace roots.
 - Inspect, search, create, and update files inside those roots.
 - Read Git status, diffs, history, branches, and repository metadata.
-- Run foreground and owned background processes.
+- Run foreground and owned background processes. Over MCP, `shell` `run` is
+  always non-blocking and returns a durable `task_id`; follow up with `status`,
+  `logs`, `result`, or `wait`. After a transport reconnect, the one-time
+  `resume_token` can rebind the same authenticated client and workspace; see
+  [`docs/mcp/DURABLE_TASK_RESUME.md`](docs/mcp/DURABLE_TASK_RESUME.md).
 - Stream logs, wait for jobs, cancel owned process groups, and collect exit
   results.
 - Expose MCP over STDIO or authenticated Streamable HTTP.
@@ -54,6 +58,12 @@ session, Chrome, Wayland, X11, or a system-installed Node.js runtime.
   and bounded read-only `db_query` calls.
 - Inspect explicitly registered Linux SSH hosts through `remote_host`; remote
   mutations require a preview hash, audit workspace ID, and confirmation.
+- Verify file artifacts, probe HTTP endpoints, and inspect registered storage
+  usage with bounded read-only operator tools.
+- Inventory up to 20 explicitly registered remote hosts with `remote_fleet`,
+  using bounded concurrency and per-host sanitized results.
+- Create, verify, list, and confirmation-gated restore of registered-root
+  backup bundles with SHA-256 manifest verification.
 
 ### Security model
 
@@ -74,9 +84,11 @@ They are redacted from stdout, application logs, audit records, and diagnostics.
 
 ## v1 stable contract
 
-The v1.0.0 MCP names, schemas, permission annotations, and compatibility rules
+The v1.4.0 MCP names, schemas, permission annotations, and compatibility rules
 are frozen in [`docs/mcp/STABLE_TOOL_CONTRACT_V1.md`](docs/mcp/STABLE_TOOL_CONTRACT_V1.md)
-and checked against the canonical fixture in CI. Run
+and checked against the canonical fixture in CI. The live `tools/list` response
+is provider-filtered for the headless Linux environment, so its observed count
+is the compatibility evidence rather than the full schema count. Run
 `corepack pnpm@10.15.0 contract:v1` after a deliberate contract change. The
 Linux soak recorder is available at `scripts/soak-linux-headless.sh`; its
 output is evidence for an operator-run stability window and does not claim a
@@ -84,17 +96,17 @@ seven-day run unless one was actually completed.
 
 ## Supported platform
 
-| Item | v1.0 support |
+| Item | v1.4 support |
 | --- | --- |
 | Operating system | Ubuntu 24.04 LTS |
 | Architecture | x86_64 / amd64 |
 | User interface | Headless |
 | MCP transports | STDIO, Streamable HTTP |
 | ChatGPT connection | OpenAI Secure MCP Tunnel |
-| Packages | DEB, Linux x64 tarball |
+| Packages | DEB, Linux x64 tarball (no AppImage) |
 
 ARM64, RPM, GUI automation, Windows migration, and unrestricted root access are
-outside the v1 release contract.
+outside the v1.4 release contract.
 
 ## Install
 
@@ -118,17 +130,17 @@ bounded soak run; it does not claim that a seven-day run has completed.
 ### Ubuntu DEB
 
 ```sh
- curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.0.0/Baitonghub-Linux-mcp-1.0.0-amd64.deb
- curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.0.0/Baitonghub-Linux-mcp-1.0.0-SHA256SUMS
- sha256sum --check --ignore-missing Baitonghub-Linux-mcp-1.0.0-SHA256SUMS
- sudo apt install ./Baitonghub-Linux-mcp-1.0.0-amd64.deb
+ curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.4.0/Baitonghub-Linux-mcp-1.4.0-amd64.deb
+ curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.4.0/Baitonghub-Linux-mcp-1.4.0-SHA256SUMS
+ sha256sum --check --ignore-missing Baitonghub-Linux-mcp-1.4.0-SHA256SUMS
+ sudo apt install ./Baitonghub-Linux-mcp-1.4.0-amd64.deb
 ```
 
 ### Linux x64 tarball
 
 ```sh
- curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.0.0/Baitonghub-Linux-mcp-1.0.0-linux-x64.tar.gz
- tar -xzf Baitonghub-Linux-mcp-1.0.0-linux-x64.tar.gz
+ curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.4.0/Baitonghub-Linux-mcp-1.4.0-linux-x64.tar.gz
+ tar -xzf Baitonghub-Linux-mcp-1.4.0-linux-x64.tar.gz
 ```
 
 ## Quick start: local STDIO
@@ -240,11 +252,16 @@ corepack pnpm@10.15.0 test:integration
 corepack pnpm@10.15.0 test:packaging
 corepack pnpm@10.15.0 test:release-gate
 corepack pnpm@10.15.0 docs:tools:check
+scripts/verify-linux-package.sh dist
 git diff --check
 ```
 
 Ubuntu release evidence and the VM acceptance checklist are recorded in
 [docs/linux/UBUNTU_ACCEPTANCE.md](docs/linux/UBUNTU_ACCEPTANCE.md).
+The package verifier also runs `scripts/smoke-packaged-mcp.mjs` against both
+extracted launchers and records the provider-filtered `tools/list` count. No
+seven-day soak completion is implied; use `scripts/soak-linux-headless.sh` for
+an explicit bounded stability run.
 
 ## Repository layout
 

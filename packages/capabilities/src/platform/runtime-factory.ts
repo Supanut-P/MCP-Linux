@@ -21,6 +21,8 @@ import { ContainerBackend } from '../container-backend.js';
 import { ArchiveBackend } from '../archive-backend.js';
 import { DependencyAuditBackend } from '../dependency-audit-backend.js';
 import { RemoteHostBackend, type RemoteHostRegistry } from '../remote-host-backend.js';
+import { OperatorProbeBackend } from '../operator-probe-backend.js';
+import { BackupBackend } from '../backup-backend.js';
 import type { SecretStore } from '@baitonghub-linux-mcp/shared';
 import type { PlatformRuntimeFactory } from './types.js';
 
@@ -46,6 +48,8 @@ export interface PlatformCapabilityRuntimeOptions {
   readonly adminResolveExecutable?: (name: string) => Promise<string | null>;
   readonly remoteHostRegistry?: RemoteHostRegistry;
   readonly secretStore?: SecretStore;
+  /** Maps a registered workspace id to its canonical root for read-only probes. */
+  readonly workspaceRootProvider?: (workspaceId: string) => Promise<string | null> | string | null;
 }
 
 /** Linux-headless composition root shared by STDIO and HTTP transports. */
@@ -125,6 +129,14 @@ function linuxRuntime(
     ...(options.remoteHostRegistry === undefined ? {} : { registry: options.remoteHostRegistry }),
     ...(options.secretStore === undefined ? {} : { secrets: options.secretStore }),
   });
+  const operatorProbeOptions = {
+    allowedRootsProvider: options.allowedRootsProvider,
+    ...(options.workspaceRootProvider === undefined ? {} : { workspaceRootProvider: options.workspaceRootProvider }),
+  };
+  const artifactVerify = new OperatorProbeBackend('artifact_verify', operatorProbeOptions);
+  const httpProbe = new OperatorProbeBackend('http_probe');
+  const storageUsage = new OperatorProbeBackend('storage_usage', operatorProbeOptions);
+  const backup = new BackupBackend(operatorProbeOptions);
   const notification = new LinuxNativeCapabilityBackend('notification', nativeOptions);
   const fileDialog = new LinuxNativeCapabilityBackend('file_dialog', nativeOptions);
   const clipboard = new LinuxNativeCapabilityBackend('clipboard', nativeOptions);
@@ -147,6 +159,10 @@ function linuxRuntime(
     archive,
     dependency_audit: dependencyAudit,
     remote_host: remoteHost,
+    artifact_verify: artifactVerify,
+    http_probe: httpProbe,
+    storage_usage: storageUsage,
+    backup,
   };
   const health = new HealthCapabilityBackend({ platform: 'linux', environment, backends });
   const service = new LocalCapabilityService({
@@ -171,6 +187,10 @@ function linuxRuntime(
     archive,
     dependencyAudit,
     remoteHost,
-  }, capabilityToolNamesForPlatform('linux'));
+    artifactVerify,
+    httpProbe,
+    storageUsage,
+    backup,
+  }, capabilityToolNamesForPlatform('linux').filter((name) => options.workspaceRootProvider !== undefined || (name !== 'artifact_verify' && name !== 'storage_usage')));
   return { service, health };
 }

@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
 import { PathExecutableResolver, createProcessTreeTerminator, type ExecutableResolver, type ProcessTreeTerminator } from '@baitonghub-linux-mcp/process';
 import type { CapabilityBackend } from './local-capability-service.js';
-import { DurableShellTaskStore } from './durable-shell-task-store.js';
+import { DurableShellTaskStore, isValidDurableResumeToken } from './durable-shell-task-store.js';
 import { capabilityTaskOwnerMatches, legacyCapabilityTaskOwner, readCapabilityTaskOwner, type CapabilityTaskOwner } from './task-ownership.js';
 
 type ShellOperation = 'run' | 'list' | 'status' | 'wait' | 'logs' | 'result' | 'cancel' | 'resume' | 'approve' | 'deny';
@@ -21,6 +21,7 @@ interface ShellRequest {
   readonly cwd?: string;
   readonly execution: ShellExecution;
   readonly taskId?: string;
+  readonly resumeToken?: string;
   readonly timeoutSeconds: number;
   readonly maxOutputBytes: number;
   readonly tailLines?: number;
@@ -128,7 +129,7 @@ export class ShellCapabilityBackend implements CapabilityBackend {
       case 'logs': return this.taskSnapshot(parsed.value.taskId, parsed.value.tailLines, parsed.value.owner);
       case 'result': return this.taskSnapshot(parsed.value.taskId, undefined, parsed.value.owner);
       case 'cancel': return this.cancel(parsed.value.taskId, false, parsed.value.owner);
-      case 'resume':
+      case 'resume': return this.resume(parsed.value.taskId, parsed.value.resumeToken, parsed.value.owner);
       case 'approve':
       case 'deny':
         return err(appError('INVALID_INPUT', `${parsed.value.operation} is not required by the local task runner`));
@@ -298,6 +299,14 @@ export class ShellCapabilityBackend implements CapabilityBackend {
     return ok(this.snapshot(record));
   }
 
+  private async resume(taskId: string | undefined, resumeToken: string | undefined, owner: CapabilityTaskOwner): Promise<Result<unknown>> {
+    if (taskId === undefined || resumeToken === undefined || owner.workspaceId === undefined) {
+      return err(appError('INVALID_INPUT', 'Resume requires task_id, workspaceId, and resume_token'));
+    }
+    if (this.durableStore === undefined) return err(appError('PROCESS_NOT_FOUND', 'Durable task store is unavailable'));
+    return this.durableStore.resume(taskId, resumeToken, owner);
+  }
+
   private async tryTerminate(record: ShellTaskRecord, targetState: 'timed_out' | 'cancelled'): Promise<boolean> {
     if (isVerifiedTerminal(record.state)) return true;
     if (record.terminationAttempt !== undefined) return record.terminationAttempt;
@@ -371,7 +380,11 @@ export class ShellCapabilityBackend implements CapabilityBackend {
       owner: request.owner,
     });
     if (!launched.ok || request.execution === 'background') return launched;
-    return this.durableStore.wait(taskId, Math.min(this.autoWaitSeconds, this.currentMaxSynchronousWaitSeconds()), undefined, request.owner);
+    const waited = await this.durableStore.wait(taskId, Math.min(this.autoWaitSeconds, this.currentMaxSynchronousWaitSeconds()), undefined, request.owner);
+    if (!waited.ok) return waited;
+    const resumeToken = launched.value.resume_token;
+    const waitedValue = isRecord(waited.value) ? waited.value : {};
+    return ok({ ...waitedValue, ...(typeof resumeToken === 'string' ? { resume_token: resumeToken } : {}) });
   }
 
   private async listTasks(owner: CapabilityTaskOwner): Promise<Result<unknown>> {
@@ -504,6 +517,8 @@ function parseShellRequest(value: unknown, defaultTimeoutSeconds: number, defaul
   if (cwd !== undefined && (typeof cwd !== 'string' || cwd.includes('\0'))) return err(appError('INVALID_INPUT', 'Working directory is invalid'));
   const taskId = value.task_id === undefined ? undefined : value.task_id;
   if (taskId !== undefined && (typeof taskId !== 'string' || taskId.trim().length === 0)) return err(appError('INVALID_INPUT', 'Task ID is invalid'));
+  const resumeToken = value.resume_token === undefined ? undefined : value.resume_token;
+  if (resumeToken !== undefined && !isValidDurableResumeToken(resumeToken)) return err(appError('INVALID_INPUT', 'Resume token is invalid'));
   const timeoutSeconds = value.timeout_seconds === undefined
     ? (execution === 'background' || execution === 'auto' ? defaultBackgroundTimeoutSeconds : defaultTimeoutSeconds)
     : value.timeout_seconds;
@@ -517,8 +532,12 @@ function parseShellRequest(value: unknown, defaultTimeoutSeconds: number, defaul
   const dryRun = value.dry_run === undefined ? false : value.dry_run;
   const userConfirmed = value.userConfirmed === true;
   const owner = readCapabilityTaskOwner(value);
+  if (operation === 'resume' && (taskId === undefined || resumeToken === undefined || owner.workspaceId === undefined)) {
+    return err(appError('INVALID_INPUT', 'Resume requires task_id, workspaceId, and resume_token'));
+  }
+  if (resumeToken !== undefined && operation !== 'resume') return err(appError('INVALID_INPUT', 'resume_token is only valid for resume'));
   if (typeof includeStdout !== 'boolean' || typeof includeStderr !== 'boolean' || typeof dryRun !== 'boolean') return err(appError('INVALID_INPUT', 'Shell flags are invalid'));
-  return ok({ operation, ...(executable === undefined ? {} : { executable: executable.trim() }), arguments: rawArguments, privilege, ...(cwd === undefined ? {} : { cwd }), execution, ...(taskId === undefined ? {} : { taskId }), timeoutSeconds, maxOutputBytes: requestedMaxBytes, ...(tailLines === undefined ? {} : { tailLines }), includeStdout, includeStderr, dryRun, userConfirmed, owner });
+  return ok({ operation, ...(executable === undefined ? {} : { executable: executable.trim() }), arguments: rawArguments, privilege, ...(cwd === undefined ? {} : { cwd }), execution, ...(taskId === undefined ? {} : { taskId }), ...(resumeToken === undefined ? {} : { resumeToken }), timeoutSeconds, maxOutputBytes: requestedMaxBytes, ...(tailLines === undefined ? {} : { tailLines }), includeStdout, includeStderr, dryRun, userConfirmed, owner });
 }
 
 function isShellOperation(value: unknown): value is ShellOperation {

@@ -3,7 +3,7 @@ set -eu
 
 repository_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 installer_dir=${1:-"$repository_root/dist"}
-version=$(node -p "require('$repository_root/package.json').version")
+version=$(sed -n 's/^[[:space:]]*"version":[[:space:]]*"\([^"]*\)".*/\1/p' "$repository_root/package.json" | head -n 1)
 deb="$installer_dir/Baitonghub-Linux-mcp-${version}-amd64.deb"
 tarball="$installer_dir/Baitonghub-Linux-mcp-${version}-linux-x64.tar.gz"
 checksums="$installer_dir/Baitonghub-Linux-mcp-${version}-SHA256SUMS"
@@ -66,4 +66,22 @@ fi
 
 printf 'Bundled runtime: %s\n' "$node_version"
 file "$bundled_node"
+run_packaged_smoke() {
+  smoke_label=$1
+  smoke_launcher=$2
+  smoke_data="$inspection_root/smoke-$smoke_label"
+  mkdir -p "$smoke_data/data" "$smoke_data/config" "$smoke_data/state"
+  checkpoint_key=$($bundled_node -e "process.stdout.write(require('node:crypto').randomBytes(32).toString('base64'))")
+  XDG_DATA_HOME="$smoke_data/data" \
+  XDG_CONFIG_HOME="$smoke_data/config" \
+  XDG_STATE_HOME="$smoke_data/state" \
+  BAITONGHUB_LINUX_MCP_CHECKPOINT_KEY_BASE64="$checkpoint_key" \
+    "$bundled_node" "$repository_root/scripts/smoke-packaged-mcp.mjs" \
+      --launcher "$smoke_launcher" \
+      --workspace "$repository_root" \
+      --expected-tools-min 190
+  unset checkpoint_key
+}
+run_packaged_smoke deb "$launcher"
+run_packaged_smoke tar "$tar_launcher"
 printf 'Linux package inspection passed.\n'

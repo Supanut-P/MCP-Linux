@@ -7,7 +7,7 @@ import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
 import type { SecretStore } from '@baitonghub-linux-mcp/shared';
 import type { NativeCapabilityBackend, NativeCapabilityHealth } from './platform/types.js';
 
-export type RemoteHostOperation = 'health' | 'system_info' | 'journal' | 'network' | 'file_read' | 'git_status' | 'service-restart' | 'file-write' | 'project-command';
+export type RemoteHostOperation = 'health' | 'system_info' | 'journal' | 'network' | 'file_read' | 'git_status' | 'inventory' | 'disk_usage' | 'checksum' | 'service-status' | 'service-restart' | 'file-write' | 'project-command';
 
 export interface RegisteredRemoteHost {
   readonly id: string;
@@ -35,7 +35,9 @@ export interface RemoteHostBackendOptions {
 
 const MAX_OUTPUT_BYTES = 2 * 1024 * 1024;
 const UNIT = /^[A-Za-z0-9_.@:-]{1,256}\.service$/;
+const READ_UNIT = /^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/;
 const SAFE_ARG = /^[A-Za-z0-9_./:@%+=,-]{1,4096}$/;
+const MAX_INVENTORY_ENTRIES = 500;
 
 /** SSH operations are intentionally host-registration based; no arbitrary host or shell input is accepted. */
 export class RemoteHostBackend implements NativeCapabilityBackend {
@@ -76,7 +78,9 @@ export class RemoteHostBackend implements NativeCapabilityBackend {
     }
     const command = await this.readCommand(host, operation, input);
     if (!command.ok) return command;
-    return this.run(host, command.value, signal);
+    const result = await this.run(host, command.value, signal);
+    if (!result.ok || operation !== 'inventory') return result;
+    return ok(boundInventory(result.value.output));
   }
 
   private async readCommand(host: RegisteredRemoteHost, operation: RemoteHostOperation, input: Record<string, unknown>): Promise<Result<readonly string[]>> {
@@ -90,6 +94,41 @@ export class RemoteHostBackend implements NativeCapabilityBackend {
       return ok(args);
     }
     if (operation === 'network') return ok(['ip', '-j', 'addr']);
+    if (operation === 'inventory') {
+      const target = typeof input.path === 'string' ? input.path : host.roots[0]!;
+      const checked = await this.registeredPath(host, target, []);
+      if (!checked.ok) return checked;
+      const canonical = checked.value[0];
+      if (canonical === undefined) return err(appError('PATH_OUTSIDE_WORKSPACE', 'Remote inventory path could not be resolved', true));
+      const stat = await this.run(host, ['stat', '--printf=%F', '--', canonical]);
+      if (!stat.ok) return stat;
+      if (stat.value.output.trim() !== 'directory') return err(appError('PERMISSION_DENIED', 'Remote inventory target is not a directory', true));
+      return ok(['find', '-P', canonical, '-maxdepth', '1', '-mindepth', '1', '-print']);
+    }
+    if (operation === 'disk_usage') {
+      const target = typeof input.path === 'string' ? input.path : host.roots[0]!;
+      const checked = await this.registeredPath(host, target, []);
+      return checked.ok && checked.value[0] !== undefined
+        ? ok(['du', '-sx', '--bytes', '--', checked.value[0]])
+        : checked.ok ? err(appError('PATH_OUTSIDE_WORKSPACE', 'Remote disk usage path could not be resolved', true)) : checked;
+    }
+    if (operation === 'checksum') {
+      const target = typeof input.path === 'string' ? input.path : '';
+      if (isSecretPath(target)) return err(appError('PERMISSION_DENIED', 'Remote secret-file checksums are not permitted', true));
+      const checked = await this.registeredPath(host, target, []);
+      if (!checked.ok) return checked;
+      const canonical = checked.value[0];
+      if (canonical === undefined) return err(appError('PATH_OUTSIDE_WORKSPACE', 'Remote checksum path could not be resolved', true));
+      const stat = await this.run(host, ['stat', '--printf=%F', '--', canonical]);
+      if (!stat.ok) return stat;
+      if (stat.value.output.trim() !== 'regular file') return err(appError('PERMISSION_DENIED', 'Remote checksum target is not a regular file', true));
+      return ok(['sha256sum', '--', canonical]);
+    }
+    if (operation === 'service-status') {
+      const unit = typeof input.unit === 'string' ? input.unit : '';
+      if (!READ_UNIT.test(unit) || /^(shutdown|reboot|emergency|rescue)\.service$/.test(unit)) return invalid('Remote service unit is invalid or blocked');
+      return ok(['systemctl', 'show', '--no-pager', '--property=Id,LoadState,ActiveState,SubState,UnitFileState,MainPID', unit]);
+    }
     if (operation === 'file_read') {
       const target = typeof input.path === 'string' ? input.path : '';
       if (isSecretPath(target)) return err(appError('PERMISSION_DENIED', 'Remote secret-file reads are not permitted', true));
@@ -241,7 +280,7 @@ function signalChild(child: ReturnType<typeof spawn>, signal: 'SIGTERM' | 'SIGKI
   }
 }
 
-function readOperation(value: unknown): RemoteHostOperation | null { return typeof value === 'string' && new Set<RemoteHostOperation>(['health', 'system_info', 'journal', 'network', 'file_read', 'git_status', 'service-restart', 'file-write', 'project-command']).has(value as RemoteHostOperation) ? value as RemoteHostOperation : null; }
+function readOperation(value: unknown): RemoteHostOperation | null { return typeof value === 'string' && new Set<RemoteHostOperation>(['health', 'system_info', 'journal', 'network', 'file_read', 'git_status', 'inventory', 'disk_usage', 'checksum', 'service-status', 'service-restart', 'file-write', 'project-command']).has(value as RemoteHostOperation) ? value as RemoteHostOperation : null; }
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null && !Array.isArray(value); }
 function isMutation(operation: RemoteHostOperation): boolean { return operation === 'service-restart' || operation === 'file-write' || operation === 'project-command'; }
 function isWithin(root: string, candidate: string): boolean { const relative = path.posix.relative(path.posix.normalize(root), path.posix.normalize(candidate)); return relative === '' || (relative !== '..' && !relative.startsWith('../') && !path.posix.isAbsolute(relative)); }
@@ -249,6 +288,11 @@ function redact(value: string): string { return value.replace(/\b(token|secret|p
 function isSecretPath(value: string): boolean {
   const basename = path.posix.basename(value).toLowerCase();
   return basename === '.env' || basename.startsWith('.env.') || basename === 'id_rsa' || basename === 'id_ed25519' || basename === 'credentials' || basename.startsWith('secret') || basename.includes('password');
+}
+function boundInventory(output: string): { readonly output: string; readonly entries: readonly string[]; readonly truncated: boolean } {
+  const entries = output.split(/\r?\n/).filter((entry) => entry.length > 0);
+  const bounded = entries.slice(0, MAX_INVENTORY_ENTRIES);
+  return { output: bounded.join('\n') + (bounded.length > 0 ? '\n' : ''), entries: bounded, truncated: entries.length > bounded.length };
 }
 function invalid(message: string): Result<never> { return err(appError('INVALID_INPUT', message)); }
 function cancelled(): Result<never> { return err(appError('PROCESS_TIMEOUT', 'Remote operation was cancelled', true)); }

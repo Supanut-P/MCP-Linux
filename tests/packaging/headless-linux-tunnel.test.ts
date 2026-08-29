@@ -47,6 +47,19 @@ describe('headless Linux Secure MCP Tunnel packaging', () => {
     expect(packager).toContain('copyTextFileWithLf');
   });
 
+  it('runs the extracted DEB and tar launchers through the same MCP smoke workflow', async () => {
+    const verifier = await readFile(path.join(root, 'scripts', 'verify-linux-package.sh'), 'utf8');
+    const smoke = await readFile(path.join(root, 'scripts', 'smoke-packaged-mcp.mjs'), 'utf8');
+    expect(verifier).toContain('smoke-packaged-mcp.mjs');
+    expect(verifier).toContain('run_packaged_smoke deb');
+    expect(verifier).toContain('run_packaged_smoke tar');
+    expect(smoke).toContain("['mcp', '--stdio', '--workspace', workspace]");
+    expect(smoke).toContain("'workspace_list'");
+    expect(smoke).toContain("'workspace_register'");
+    expect(smoke).toContain("'apply_patch'");
+    expect(smoke).toContain("'/usr/bin/printf'");
+  });
+
   it('publishes the tagged release from Ubuntu with headless artifacts only', async () => {
     const workflow = await readFile(path.join(root, '.github', 'workflows', 'release.yml'), 'utf8');
     expect(workflow).toContain('runs-on: ubuntu-24.04');

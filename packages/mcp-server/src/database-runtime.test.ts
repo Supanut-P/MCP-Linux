@@ -1,4 +1,4 @@
-import { mkdtemp, symlink, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
@@ -91,14 +91,19 @@ describe('DatabaseRuntimeService', () => {
 
   it.runIf(process.platform !== 'win32')('rejects a SQLite symlink that escapes the registered workspace', async () => {
     const root = await mkdtemp(path.join(tmpdir(), 'baitonghub-linux-mcp-db-link-test-'));
-    const outside = path.join(root, '..', 'outside-link-target.db');
-    await writeFile(outside, 'not opened', 'utf8');
-    await symlink(outside, path.join(root, 'escape.db'));
-    const runtime = new DatabaseRuntimeService(servicesWithRoot(root), actor);
+    const outside = path.join(root, '..', `${path.basename(root)}-outside.db`);
+    try {
+      await writeFile(outside, 'not opened', 'utf8');
+      await symlink(outside, path.join(root, 'escape.db'));
+      const runtime = new DatabaseRuntimeService(servicesWithRoot(root), actor);
 
-    await expect(runtime.inspect({ workspaceId: 'ws-1', target: 'escape.db' })).resolves.toMatchObject({
-      ok: false,
-      error: { code: 'PATH_OUTSIDE_WORKSPACE' },
-    });
+      await expect(runtime.inspect({ workspaceId: 'ws-1', target: 'escape.db' })).resolves.toMatchObject({
+        ok: false,
+        error: { code: 'PATH_OUTSIDE_WORKSPACE' },
+      });
+    } finally {
+      await rm(outside, { force: true });
+      await rm(root, { recursive: true, force: true });
+    }
   });
 });

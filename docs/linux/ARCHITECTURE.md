@@ -2,7 +2,7 @@
 
 ## Runtime shape
 
-The v0.2 product is a headless Node.js runtime packaged with its own Node 24 x64
+The v1.0 product is a headless Node.js runtime packaged with its own Node 24 x64
 binary. MCP clients connect through STDIO, authenticated Streamable HTTP, or the
 official outbound-only OpenAI Secure MCP Tunnel.
 
@@ -10,6 +10,13 @@ The composition root is
 `packages/capabilities/src/platform/runtime-factory.ts`. It selects Linux
 providers, storage locations, permission profiles, and the advertised tool
 surface. Unsupported platform capabilities are not advertised.
+
+The MCP registry is provider-filtered at runtime. `tools/list` reports only
+capabilities that are reachable in the current headless environment; the
+observed count is release evidence and must not be replaced with the larger
+canonical schema count. The `shell` MCP operation is always non-blocking: a
+`run` returns a durable task ID and callers use `status`, `logs`, `result`, or
+`wait` to collect the result on the same connection.
 
 Read-only observability is composed by `LinuxObservabilityBackend`. It exposes
 `system_info` through Node/procfs and `df`, `journal` through `journalctl`, and
@@ -64,4 +71,21 @@ service control group used for shutdown and restart.
 - a SHA-256 manifest.
 
 The release package excludes Electron, Windows executables, PowerShell bridges,
-and Windows-native helper binaries.
+Windows-native helper binaries, and AppImage. `scripts/verify-linux-package.sh`
+extracts both artifacts and runs the packaged MCP smoke workflow before the
+package gate can pass.
+
+## Operator probes, fleet, and recovery
+
+`artifact_verify`, `http_probe`, and `storage_usage` are bounded read-only
+probes. They use the registered-root filesystem boundary and an SSRF-safe
+HTTP/DNS policy; they never compose a shell command from MCP input.
+
+`remote_fleet` fans out only to registered SSH host IDs and fixed operations
+(`health`, `inventory`, and `service-status`) with a maximum of four concurrent
+sessions. Remote paths are canonicalized on the host immediately before use.
+
+`backup` stores a versioned, self-verifying JSON manifest under a registered
+root. Creation and restore require confirmation; restore materializes into a
+staging directory, verifies every file hash, then renames atomically. Symlinks,
+special files, traversal members, and workspace-root replacement are blocked.

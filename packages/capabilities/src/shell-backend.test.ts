@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -478,4 +478,43 @@ describe.runIf(process.platform === 'linux')('ShellCapabilityBackend unrestricte
     await expect(backendB.execute({ operation: 'status', task_id: taskId, ...owner('session-a') })).resolves.toMatchObject({ ok: true });
     await expect(backendB.execute({ operation: 'cancel', task_id: taskId, ...owner('session-a') })).resolves.toMatchObject({ ok: true });
   });
+
+  it('resumes a durable task across sessions with a one-time rotating token', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'baitonghub-linux-mcp-shell-resume-'));
+    temporaryRoots.push(root);
+    const taskStateDirectory = path.join(root, '.tasks');
+    const owner = (sessionId: string, clientId = 'client-1', workspaceId = 'workspace-1'): { metadata: Record<string, unknown> } => ({
+      metadata: { [CAPABILITY_TASK_OWNER_METADATA_KEY]: { clientId, sessionId, workspaceId } },
+    });
+    const backendA = new ShellCapabilityBackend({ allowedRoots: [root], taskStateDirectory });
+    const started = await backendA.execute({
+      operation: 'run', executable: process.execPath, arguments: ['-e', 'setTimeout(() => {}, 5000)'],
+      cwd: root, execution: 'background', timeout_seconds: 10, ...owner('session-a'),
+    });
+    expect(started).toMatchObject({ ok: true, value: { task_id: expect.any(String), resume_token: expect.stringMatching(/^[A-Za-z0-9_-]{43}$/) } });
+    if (!started.ok) return;
+    const taskId = String(started.value.task_id);
+    const firstToken = String(started.value.resume_token);
+    const metadata = JSON.parse(await readFile(path.join(taskStateDirectory, taskId, 'task.json'), 'utf8')) as Record<string, unknown>;
+    expect(metadata.resume_token).toBeUndefined();
+    expect(metadata.resume_token_hash).toMatch(/^[a-f0-9]{64}$/);
+
+    const backendB = new ShellCapabilityBackend({ allowedRoots: [root], taskStateDirectory });
+    await expect(backendB.execute({ operation: 'resume', task_id: taskId, resume_token: 'A'.repeat(43), ...owner('session-b') }))
+      .resolves.toMatchObject({ ok: false, error: { code: 'PERMISSION_DENIED' } });
+    await expect(backendB.execute({ operation: 'resume', task_id: taskId, resume_token: firstToken, ...owner('session-b', 'other-client') }))
+      .resolves.toMatchObject({ ok: false, error: { code: 'PERMISSION_DENIED' } });
+    await expect(backendB.execute({ operation: 'resume', task_id: taskId, resume_token: firstToken, ...owner('session-b', 'client-1', 'other-workspace') }))
+      .resolves.toMatchObject({ ok: false, error: { code: 'PERMISSION_DENIED' } });
+
+    const resumed = await backendB.execute({ operation: 'resume', task_id: taskId, resume_token: firstToken, ...owner('session-b') });
+    expect(resumed).toMatchObject({ ok: true, value: { task_id: taskId, state: 'running', resume_token: expect.stringMatching(/^[A-Za-z0-9_-]{43}$/) } });
+    if (!resumed.ok) return;
+    const rotatedToken = String(resumed.value.resume_token);
+    expect(rotatedToken).not.toBe(firstToken);
+    await expect(backendB.execute({ operation: 'resume', task_id: taskId, resume_token: firstToken, ...owner('session-c') }))
+      .resolves.toMatchObject({ ok: false, error: { code: 'PERMISSION_DENIED' } });
+    await expect(backendB.execute({ operation: 'status', task_id: taskId, ...owner('session-b') })).resolves.toMatchObject({ ok: true });
+    await expect(backendB.execute({ operation: 'cancel', task_id: taskId, ...owner('session-b') })).resolves.toMatchObject({ ok: true });
+  }, 15_000);
 });

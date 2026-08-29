@@ -1,4 +1,4 @@
-import { mkdtemp, realpath, writeFile } from 'node:fs/promises';
+import { mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -68,15 +68,20 @@ describe('DocumentRuntimeService', () => {
 
   it('rejects paths that escape the registered workspace before invoking a provider', async () => {
     await withWorkspace(async (root, _file, provider) => {
-      const outside = path.join(root, '..', 'outside.pdf');
-      await writeFile(outside, '%PDF-1.4\n%%EOF\n', 'utf8');
-      let calls = 0;
-      const runtime = new DocumentRuntimeService(servicesWithWorkspace(root), actor, {
-        pdfProvider: provider,
-        pdfRunner: async (): Promise<ReturnType<typeof ok>> => { calls += 1; return ok('should not run'); },
-      });
-      await expect(runtime.extractTables({ workspaceId: 'ws-1', file_path: path.join('..', 'outside.pdf') })).resolves.toMatchObject({ ok: false, error: { code: 'PATH_OUTSIDE_WORKSPACE' } });
-      expect(calls).toBe(0);
+      const outsideName = `${path.basename(root)}-outside.pdf`;
+      const outside = path.join(root, '..', outsideName);
+      try {
+        await writeFile(outside, '%PDF-1.4\n%%EOF\n', 'utf8');
+        let calls = 0;
+        const runtime = new DocumentRuntimeService(servicesWithWorkspace(root), actor, {
+          pdfProvider: provider,
+          pdfRunner: async (): Promise<ReturnType<typeof ok>> => { calls += 1; return ok('should not run'); },
+        });
+        await expect(runtime.extractTables({ workspaceId: 'ws-1', file_path: path.join('..', outsideName) })).resolves.toMatchObject({ ok: false, error: { code: 'PATH_OUTSIDE_WORKSPACE' } });
+        expect(calls).toBe(0);
+      } finally {
+        await rm(outside, { force: true });
+      }
     });
   });
 });

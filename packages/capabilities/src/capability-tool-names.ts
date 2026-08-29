@@ -22,6 +22,10 @@ export const capabilityToolNames = Object.freeze([
   'archive',
   'dependency_audit',
   'remote_host',
+  'artifact_verify',
+  'http_probe',
+  'storage_usage',
+  'backup',
 ] as const);
 
 export type CapabilityToolName = (typeof capabilityToolNames)[number];

@@ -1,4 +1,4 @@
-import { mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -29,17 +29,23 @@ describe('LspRuntimeService', () => {
 
   it('rejects lexical workspace escapes before spawning a language server', async () => {
     const root = await mkdtemp(path.join(tmpdir(), 'baitonghub-linux-mcp-lsp-test-'));
-    const outside = path.join(root, '..', 'outside.ts');
-    await writeFile(outside, 'export const outside = true;\n', 'utf8');
-    let spawns = 0;
-    const runtime = new LspRuntimeService(servicesWithRoot(root), actor, {
-      environment: { BAITONGHUB_LINUX_MCP_LSP_TYPESCRIPT_COMMAND: JSON.stringify([process.execPath, 'unused-server.mjs']) },
-      spawner: (): ReturnType<typeof ok> => { spawns += 1; return ok({ kill: () => undefined } as never); },
-    });
-    await expect(runtime.diagnostics({ workspaceId: 'ws-1', files: [path.join('..', 'outside.ts')] })).resolves.toMatchObject({
-      ok: false, error: { code: 'PATH_OUTSIDE_WORKSPACE' },
-    });
-    expect(spawns).toBe(0);
+    const outsideName = `${path.basename(root)}-outside.ts`;
+    const outside = path.join(root, '..', outsideName);
+    try {
+      await writeFile(outside, 'export const outside = true;\n', 'utf8');
+      let spawns = 0;
+      const runtime = new LspRuntimeService(servicesWithRoot(root), actor, {
+        environment: { BAITONGHUB_LINUX_MCP_LSP_TYPESCRIPT_COMMAND: JSON.stringify([process.execPath, 'unused-server.mjs']) },
+        spawner: (): ReturnType<typeof ok> => { spawns += 1; return ok({ kill: () => undefined } as never); },
+      });
+      await expect(runtime.diagnostics({ workspaceId: 'ws-1', files: [path.join('..', outsideName)] })).resolves.toMatchObject({
+        ok: false, error: { code: 'PATH_OUTSIDE_WORKSPACE' },
+      });
+      expect(spawns).toBe(0);
+    } finally {
+      await rm(outside, { force: true });
+      await rm(root, { recursive: true, force: true });
+    }
   });
 
   it('collects published diagnostics from a configured language server', async () => {

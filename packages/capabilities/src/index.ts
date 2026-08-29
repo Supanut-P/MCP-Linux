@@ -11,6 +11,7 @@ export { BrowserCdpBackend, type BrowserCdpProtocol, type BrowserCdpTab } from '
 export { NodeBrowserCdpProtocol } from './browser-cdp-protocol.js';
 export { HealthCapabilityBackend } from './health-backend.js';
 export { WebFetchCapabilityBackend } from './web-fetch-backend.js';
+export { OperatorProbeBackend, type OperatorProbeOperation, type OperatorProbeOptions } from './operator-probe-backend.js';
 export { ContainerBackend, LinuxContainerBackend, type ContainerBackendOptions, type ContainerOperation, type ContainerProvider } from './container-backend.js';
 export { ArchiveBackend, LinuxArchiveBackend, type ArchiveBackendOptions, type ArchiveOperation, validateArchiveMembers } from './archive-backend.js';
 export { DependencyAuditBackend, LinuxDependencyAuditBackend, type DependencyAuditBackendOptions, type DependencyAuditProvider, type DependencyFinding } from './dependency-audit-backend.js';
@@ -65,3 +66,4 @@ export {
   type CapabilityDescriptor,
   type CapabilityPermission,
 } from './capability-descriptors.js';
+export { BackupBackend, LinuxBackupBackend, type BackupBackendOptions, type BackupOperation } from './backup-backend.js';

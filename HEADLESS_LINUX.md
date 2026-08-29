@@ -43,7 +43,9 @@ Database targets are stored as `readOnly=true` and accept only one bounded
 read query. `remote_host` read operations stay inside registered roots; remote
 mutations additionally require `workspaceId`, a matching dry-run hash, and
 `userConfirmed: true`. The CLI accepts references only; never put a secret
-value or private key on the command line.
+value or private key on the command line. `remote_fleet` can fan out
+read-only `health`, bounded `inventory`, or `service-status` checks to 1–20
+registered hosts, with at most four SSH sessions in flight.
 
 The packaged systemd template reads the per-user environment file from
 `/home/<user>/.config/baitonghub-linux-mcp/server.env`; create it with mode

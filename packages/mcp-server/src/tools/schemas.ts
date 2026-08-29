@@ -162,6 +162,7 @@ export const shellCapabilitySchema = z.object({
   cwd: pathSchema.optional(),
   execution: z.enum(['foreground', 'background', 'auto']).default('background'),
   task_id: z.string().trim().min(1).max(128).optional(),
+  resume_token: z.string().regex(/^[A-Za-z0-9_-]{43}$/).optional(),
   timeout_seconds: z.number().min(0.1).max(604_800).optional(),
   max_output_bytes: z.number().int().min(1).max(8 * 1024 * 1024).optional(),
   tail_lines: z.number().int().min(0).max(10_000).optional(),
@@ -169,7 +170,15 @@ export const shellCapabilitySchema = z.object({
   include_stderr: z.boolean().default(true),
   approval: capabilityApprovalSchema,
   ...capabilityRequestSchema,
-}).strict();
+}).strict().superRefine((value, context) => {
+  if (value.operation === 'resume') {
+    if (value.task_id === undefined || value.workspaceId === undefined || value.resume_token === undefined) {
+      context.addIssue({ code: 'custom', message: 'Resume requires workspaceId, task_id, and resume_token', path: ['resume_token'] });
+    }
+  } else if (value.resume_token !== undefined) {
+    context.addIssue({ code: 'custom', message: 'resume_token is only valid for resume', path: ['resume_token'] });
+  }
+});
 
 const domStepSchema = z.object({
   action: z.string().trim().min(1).max(128),
@@ -258,7 +267,7 @@ export const windowCapabilitySchema = z.object({
 
 export const healthCapabilitySchema = z.object({
   operation: z.enum(['check_all', 'check_tool']).default('check_all'),
-  tool: z.enum(['shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window', 'health', 'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit', 'remote_host']).optional(),
+  tool: z.enum(['shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window', 'health', 'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit', 'remote_host', 'artifact_verify', 'http_probe', 'storage_usage']).optional(),
   request_id: z.string().trim().min(1).max(128).optional(),
 }).strict();
 
@@ -350,6 +359,37 @@ export const webFetchCapabilitySchema = z.object({
   ...capabilityRequestSchema,
 }).strict();
 
+export const artifactVerifyCapabilitySchema = z.object({
+  workspaceId: workspaceIdSchema,
+  path: pathSchema,
+  expected_sha256: z.string().regex(/^[a-f0-9]{64}$/i).optional(),
+}).strict();
+
+export const httpProbeCapabilitySchema = z.object({
+  url: z.string().trim().min(1).max(8_192),
+  method: z.enum(['GET', 'HEAD']).default('GET'),
+  timeout_seconds: z.number().min(0.1).max(30).default(10),
+  max_bytes: z.number().int().min(1).max(64 * 1024).default(64 * 1024),
+}).strict();
+
+export const storageUsageCapabilitySchema = z.object({
+  workspaceId: workspaceIdSchema,
+  path: pathSchema,
+  operation: z.enum(['filesystem', 'directory', 'largest_files']).default('filesystem'),
+}).strict();
+
+export const backupCapabilitySchema = z.object({
+  operation: z.enum(['plan', 'create', 'list', 'verify', 'restore']),
+  workspaceId: optionalWorkspaceIdSchema,
+  source: pathSchema.optional(),
+  path: pathSchema.optional(),
+  archive: pathSchema.optional(),
+  output: pathSchema.optional(),
+  destination: pathSchema.optional(),
+  userConfirmed: z.boolean().optional(),
+  dry_run: z.boolean().optional(),
+}).strict();
+
 export const containerCapabilitySchema = z.object({
   workspaceId: optionalWorkspaceIdSchema,
   project_root: pathSchema.optional(),
@@ -390,8 +430,8 @@ export const dependencyAuditCapabilitySchema = z.object({
 export const remoteHostCapabilitySchema = z.object({
   hostId: z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/),
   workspaceId: optionalWorkspaceIdSchema,
-  operation: z.enum(['health', 'system_info', 'journal', 'network', 'file_read', 'git_status', 'service-restart', 'file-write', 'project-command']),
-  unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,256}\.service$/).optional(),
+  operation: z.enum(['health', 'system_info', 'journal', 'network', 'file_read', 'git_status', 'inventory', 'disk_usage', 'checksum', 'service-status', 'service-restart', 'file-write', 'project-command']),
+  unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/).optional(),
   path: pathSchema.optional(),
   content: z.string().max(1_048_576).optional(),
   executable: pathSchema.optional(),
@@ -399,6 +439,15 @@ export const remoteHostCapabilitySchema = z.object({
   lines: z.number().int().min(1).max(1_000).optional(),
   previewHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   preview_hash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+const remoteHostIdSchema = z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/);
+export const remoteFleetCapabilitySchema = z.object({
+  hostIds: z.array(remoteHostIdSchema).min(1).max(20).refine((ids) => new Set(ids).size === ids.length, 'hostIds must not contain duplicates'),
+  operation: z.enum(['health', 'inventory', 'service-status']),
+  path: pathSchema.optional(),
+  unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/).optional(),
   ...capabilityRequestSchema,
 }).strict();
 

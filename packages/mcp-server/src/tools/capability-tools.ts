@@ -27,7 +27,13 @@ import {
   archiveCapabilitySchema,
   dependencyAuditCapabilitySchema,
   remoteHostCapabilitySchema,
+  artifactVerifyCapabilitySchema,
+  httpProbeCapabilitySchema,
+  storageUsageCapabilitySchema,
+  backupCapabilitySchema,
+  remoteFleetCapabilitySchema,
 } from './schemas.js';
+import { RemoteFleetRuntime } from '../remote-fleet-runtime.js';
 
 function currentMcpPollWaitSeconds(context: McpToolContext): number {
   const configured = context.services.runtimeTiming?.().mcpPollWaitSeconds ?? DEFAULT_MCP_POLL_WAIT_SECONDS;
@@ -59,11 +65,12 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
     return context.services.capabilities.execute(tool, owned, signal);
   };
   const setOfMarks = new SetOfMarksService(context.services.capabilities);
+  const remoteFleet = new RemoteFleetRuntime(context.services.capabilities);
 
   return [
     defineTool({
       name: 'shell',
-      description: 'Non-blocking command runner for system operations and CLI tasks. MCP run calls are ALWAYS forced to execution=background, even if a client requests foreground or auto, so the call returns a task_id immediately instead of waiting for command completion. Follow with status/logs/result; wait uses the user-configurable MCP poll window (5-60 seconds, default 5). After one or two checks still show running, do not keep polling in the same chat turn: preserve task_id and return control so the durable task can continue without risking a ChatGPT turn timeout. Destructive shell commands still require explicit chat confirmation and userConfirmed: true unless that command family is globally auto-approved and this call supplies a registered workspaceId whose project boundary contains every target.',
+      description: 'Non-blocking command runner for system operations and CLI tasks. MCP run calls are ALWAYS forced to execution=background, even if a client requests foreground or auto, so the call returns a task_id immediately instead of waiting for command completion. Follow with status/logs/result; wait uses the user-configurable MCP poll window (5-60 seconds, default 5). After one or two checks still show running, do not keep polling in the same chat turn: preserve task_id and return control so the durable task can continue without risking a ChatGPT turn timeout. A reconnect-safe resume requires the task workspace, authenticated client, and one-time resume_token returned by run; resume rotates the token and changes only the transport session. Destructive shell commands still require explicit chat confirmation and userConfirmed: true unless that command family is globally auto-approved and this call supplies a registered workspaceId whose project boundary contains every target.',
       permission: 'EXECUTE',
       annotations: { readOnlyHint: false, destructiveHint: true },
       inputSchema: shellCapabilitySchema,
@@ -244,6 +251,46 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
       annotations: { readOnlyHint: false, destructiveHint: true },
       inputSchema: remoteHostCapabilitySchema,
       handler: async (input, signal) => execute('remote_host', input, signal),
+    }),
+    defineTool({
+      name: 'remote_fleet',
+      description: 'Read-only inspection of 1-20 explicitly registered SSH hosts. Uses fixed remote operations with at most four sessions in parallel; host addresses, credentials, paths, and commands remain inside each host registration.',
+      permission: 'READ',
+      annotations: { readOnlyHint: true, destructiveHint: false },
+      inputSchema: remoteFleetCapabilitySchema,
+      handler: async (input, signal) => remoteFleet.execute(input, signal),
+    }),
+    defineTool({
+      name: 'artifact_verify',
+      description: 'Verify a registered-workspace artifact with a bounded Node SHA-256 stream. It never invokes a shell command, follows escaping symlinks, or reads special files.',
+      permission: 'READ',
+      annotations: { readOnlyHint: true, destructiveHint: false },
+      inputSchema: artifactVerifyCapabilitySchema,
+      handler: async (input, signal) => execute('artifact_verify', input, signal),
+    }),
+    defineTool({
+      name: 'http_probe',
+      description: 'Diagnose an HTTP(S) endpoint with bounded GET or HEAD, SSRF-safe DNS/redirect policy, a 30-second timeout, capped headers, and a capped response read.',
+      permission: 'READ',
+      annotations: { readOnlyHint: true, destructiveHint: false },
+      inputSchema: httpProbeCapabilitySchema,
+      handler: async (input, signal) => execute('http_probe', input, signal),
+    }),
+    defineTool({
+      name: 'storage_usage',
+      description: 'Inspect filesystem capacity or bounded registered-workspace directory usage with fs.statfs. Device, FIFO, socket, and escaping symlink targets are rejected.',
+      permission: 'READ',
+      annotations: { readOnlyHint: true, destructiveHint: false },
+      inputSchema: storageUsageCapabilitySchema,
+      handler: async (input, signal) => execute('storage_usage', input, signal),
+    }),
+    defineTool({
+      name: 'backup',
+      description: 'Create and verify self-contained manifest backups inside registered Linux roots. Plan/list/verify are read-only; create and restore require explicit user confirmation, and restore stages then atomically renames the destination.',
+      permission: 'DANGEROUS',
+      annotations: { readOnlyHint: false, destructiveHint: true },
+      inputSchema: backupCapabilitySchema,
+      handler: async (input, signal) => execute('backup', input, signal),
     }),
   ];
 }

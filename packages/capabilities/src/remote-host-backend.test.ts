@@ -88,4 +88,59 @@ describe('RemoteHostBackend', () => {
     await expect(escaping.execute({ hostId: 'vm103', workspaceId: 'ws-1', operation: 'project-command', path: '/srv/app', executable: '/srv/app/link', dry_run: true }))
       .resolves.toMatchObject({ ok: false, error: { code: 'PATH_OUTSIDE_WORKSPACE' } });
   });
+
+  it('canonicalizes bounded inventory and disk usage paths immediately before use', async (): Promise<void> => {
+    const calls: string[][] = [];
+    const runner: RemoteCommandRunner = async (_executable, args): Promise<{ readonly exitCode: number; readonly stdout: string }> => {
+      calls.push([...args]);
+      const command = args.slice(args.indexOf(`${host.username}@${host.host}`) + 1);
+      if (command[0] === 'realpath') return { exitCode: 0, stdout: '/srv/app\n' };
+      if (command[0] === 'stat') return { exitCode: 0, stdout: 'directory\n' };
+      if (command[0] === 'find') return { exitCode: 0, stdout: '/srv/app/one\n/srv/app/two\n' };
+      return { exitCode: 0, stdout: '12\t/srv/app\n' };
+    };
+    const instance = new RemoteHostBackend({
+      platform: 'linux', registry: { get: async (id: string): Promise<RegisteredRemoteHost | null> => id === host.id ? host : null },
+      secrets: { get: async (): Promise<string> => '-----BEGIN PRIVATE KEY-----\nmock\n-----END PRIVATE KEY-----', set: async (): Promise<void> => undefined, delete: async (): Promise<void> => undefined },
+      runner,
+      knownHostsPathProvider: async (): Promise<{ readonly path: string }> => ({ path: '/tmp/known_hosts' }),
+    });
+
+    await expect(instance.execute({ hostId: 'vm103', operation: 'inventory', path: '/srv/app/link' }))
+      .resolves.toMatchObject({ ok: true, value: { entries: ['/srv/app/one', '/srv/app/two'], truncated: false } });
+    await expect(instance.execute({ hostId: 'vm103', operation: 'disk_usage', path: '/srv/app' }))
+      .resolves.toMatchObject({ ok: true, value: { output: '12\t/srv/app\n' } });
+    const find = calls.find((command) => command.includes('find'));
+    expect(find).toEqual(expect.arrayContaining(['find', '-P', '/srv/app', '-maxdepth', '1', '-mindepth', '1', '-print']));
+    const du = calls.find((command) => command.includes('du'));
+    expect(du).toEqual(expect.arrayContaining(['du', '-sx', '--bytes', '--', '/srv/app']));
+  });
+
+  it('returns checksums only for registered regular files and validates service units', async (): Promise<void> => {
+    const calls: string[][] = [];
+    const runner: RemoteCommandRunner = async (_executable, args): Promise<{ readonly exitCode: number; readonly stdout: string }> => {
+      calls.push([...args]);
+      const command = args.slice(args.indexOf(`${host.username}@${host.host}`) + 1);
+      if (command[0] === 'realpath') return { exitCode: 0, stdout: '/srv/app/file.txt\n' };
+      if (command[0] === 'stat') return { exitCode: 0, stdout: 'regular file\n' };
+      return { exitCode: 0, stdout: 'abc  /srv/app/file.txt\n' };
+    };
+    const instance = new RemoteHostBackend({
+      platform: 'linux', registry: { get: async (id: string): Promise<RegisteredRemoteHost | null> => id === host.id ? host : null },
+      secrets: { get: async (): Promise<string> => '-----BEGIN PRIVATE KEY-----\nmock\n-----END PRIVATE KEY-----', set: async (): Promise<void> => undefined, delete: async (): Promise<void> => undefined },
+      runner,
+      knownHostsPathProvider: async (): Promise<{ readonly path: string }> => ({ path: '/tmp/known_hosts' }),
+    });
+
+    await expect(instance.execute({ hostId: 'vm103', operation: 'checksum', path: '/srv/app/file.txt' }))
+      .resolves.toMatchObject({ ok: true, value: { output: 'abc  /srv/app/file.txt\n' } });
+    await expect(instance.execute({ hostId: 'vm103', operation: 'checksum', path: '/srv/app/.env' }))
+      .resolves.toMatchObject({ ok: false, error: { code: 'PERMISSION_DENIED' } });
+    await expect(instance.execute({ hostId: 'vm103', operation: 'service-status', unit: 'baitonghub.service' }))
+      .resolves.toMatchObject({ ok: true, value: { output: 'abc  /srv/app/file.txt\n' } });
+    await expect(instance.execute({ hostId: 'vm103', operation: 'service-status', unit: 'reboot.service' }))
+      .resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    expect(calls.some((command) => command.includes('sha256sum'))).toBe(true);
+    expect(calls.some((command) => command.includes('systemctl'))).toBe(true);
+  });
 });

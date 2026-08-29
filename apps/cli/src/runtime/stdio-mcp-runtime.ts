@@ -137,7 +137,8 @@ export function createStdioMcpRuntime(
     if (roots.length === 0) return [workspace.realRootPath];
     return roots;
   }, effectiveUnrestricted, options.strictAllowedRoots, () => parsePathList(settingsRepository.get(USER_SETTING_KEYS.capabilityRoots)),
-  () => parseIntegerSetting(settingsRepository.get(USER_SETTING_KEYS.shellSynchronousWaitSeconds), DEFAULT_SHELL_SYNCHRONOUS_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS), remoteHosts, secretStore);
+  () => parseIntegerSetting(settingsRepository.get(USER_SETTING_KEYS.shellSynchronousWaitSeconds), DEFAULT_SHELL_SYNCHRONOUS_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS), remoteHosts, secretStore,
+  async (workspaceId: string): Promise<string | null> => (await workspaceRepository.get(workspaceId))?.realRootPath ?? null);
   const databaseRuntime = new DatabaseRuntimeService({ workspaceInfo: workspaceInfoService }, actor, { targetRegistry: databaseTargets, secrets: secretStore });
   const sharedActivityLease = createSharedActivityLease(process.env.TUNNEL_CLIENT_PROFILE_DIR);
   const activityReady = sharedActivityLease.then(async (lease) => lease?.initialize());
@@ -250,6 +251,7 @@ function createStdioCapabilityService(
   synchronousWaitSecondsProvider: () => number = () => DEFAULT_SHELL_SYNCHRONOUS_WAIT_SECONDS,
   remoteHostRegistry?: import('@baitonghub-linux-mcp/capabilities').RemoteHostRegistry,
   secretStore?: import('@baitonghub-linux-mcp/shared').SecretStore,
+  workspaceRootProvider?: (workspaceId: string) => Promise<string | null>,
 ): LocalCapabilityService {
   const capabilityRootsProvider = async (): Promise<readonly string[]> => {
     const workspaceRoots = await workspaceRootsProvider();
@@ -271,6 +273,7 @@ function createStdioCapabilityService(
     platform: process.platform,
     ...(remoteHostRegistry === undefined ? {} : { remoteHostRegistry }),
     ...(secretStore === undefined ? {} : { secretStore }),
+    ...(workspaceRootProvider === undefined ? {} : { workspaceRootProvider }),
   }).service;
 }
 

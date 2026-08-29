@@ -56,11 +56,13 @@ docs/superpowers/plans/*
 !docs/mcp/
 docs/mcp/*
 !docs/mcp/MCP_TASKS.md
+!docs/mcp/DURABLE_TASK_RESUME.md
 !docs/linux/
 docs/linux/*
 !docs/linux/ARCHITECTURE.md
 !docs/linux/UBUNTU_ACCEPTANCE.md
 !docs/linux/UPSTREAM_SYNC.md
+!docs/linux/REMOTE_FLEET.md
 !docs/architecture/
 docs/architecture/*
 !docs/architecture/UPGRADE_ARCHITECTURE.md

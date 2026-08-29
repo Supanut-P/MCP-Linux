@@ -302,6 +302,7 @@ function advertisedCapabilityTools(context: McpToolContext): readonly McpToolDef
   if (advertised === undefined) return definitions;
   const allowed = new Set<string>(advertised);
   return definitions.filter((tool) => {
+    if (tool.name === 'remote_fleet') return allowed.has('remote_host');
     if (tool.name === 'vision_annotated_capture') return allowed.has('vision');
     if (tool.name === 'ui_target_action') return allowed.has('input_event') && allowed.has('accessibility');
     return allowed.has(tool.name);

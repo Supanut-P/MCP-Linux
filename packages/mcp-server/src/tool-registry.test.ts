@@ -23,14 +23,14 @@ describe('MCP tool registry', () => {
       'apply_patch', 'move_file', 'copy_file', 'delete_file', 'restore_deleted_file', 'process_start', 'process_list', 'process_status',
       'process_logs', 'process_stop', 'project_dev', 'project_test', 'project_lint',
       'project_typecheck', 'project_build', 'shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'vision_annotated_capture', 'ui_target_action', 'window', 'health',
-      'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit', 'remote_host', 'db_inspect', 'db_query',
+      'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit', 'remote_host', 'remote_fleet', 'artifact_verify', 'http_probe', 'storage_usage', 'backup', 'db_inspect', 'db_query',
       'skills_list', 'skills_read', 'mcp_list', 'mcp_describe', 'mcp_call',
       'workspace_context', 'workspace_context_continue', 'workspace_full_scan', 'workspace_full_scan_continue',
       'workspace_snapshot', 'search_all', 'read_many_files',
       'read_file_page', 'read_file_page_continue',
       'workspace_index', 'workspace_index_status', 'workspace_index_watch', 'workspace_index_stop',
       'session_handoff', 'verify_incremental',
-      ...UPGRADE_TOOL_CATALOG.filter((entry) => !['db_inspect', 'db_query'].includes(entry.name)).map((entry) => entry.name),
+      ...UPGRADE_TOOL_CATALOG.filter((entry) => !['db_inspect', 'db_query', 'remote_fleet'].includes(entry.name)).map((entry) => entry.name),
       'tool_batch',
     ]);
   });
@@ -72,6 +72,11 @@ describe('MCP tool registry', () => {
     expect(byName.get('package')?.parse({ operation: 'install', packages: ['../../etc/passwd'] })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
     expect(byName.get('schedule')?.parse({ operation: 'list' })).toMatchObject({ ok: true });
     expect(byName.get('remote_host')?.parse({ hostId: 'vm103', operation: 'system_info' })).toMatchObject({ ok: true });
+    expect(byName.get('remote_fleet')?.parse({ hostIds: ['vm103'], operation: 'health' })).toMatchObject({ ok: true });
+    expect(byName.get('artifact_verify')?.parse({ workspaceId: 'workspace-1', path: 'dist/app.js' })).toMatchObject({ ok: true });
+    expect(byName.get('http_probe')?.parse({ url: 'https://example.com', method: 'HEAD' })).toMatchObject({ ok: true });
+    expect(byName.get('storage_usage')?.parse({ workspaceId: 'workspace-1', path: '.', operation: 'largest_files' })).toMatchObject({ ok: true });
+    expect(byName.get('backup')?.parse({ operation: 'plan', workspaceId: 'workspace-1', source: '.' })).toMatchObject({ ok: true });
     expect(byName.get('db_inspect')?.parse({ targetId: 'pg-main' })).toMatchObject({ ok: true });
     expect(byName.get('db_query')?.parse({ targetId: 'pg-main', sql: 'SELECT 1' })).toMatchObject({ ok: true });
   });
@@ -123,7 +128,10 @@ describe('MCP tool registry', () => {
     const byName = new Map(registry.list().map((tool) => [tool.name, tool]));
 
     expect(byName.get('shell')?.description).toContain('ALWAYS forced to execution=background');
+    expect(byName.get('shell')?.description).toContain('reconnect-safe resume');
     expect(byName.get('shell')?.parse({ operation: 'run', executable: 'node', arguments: [] })).toMatchObject({ ok: true, value: { execution: 'background' } });
+    expect(byName.get('shell')?.parse({ operation: 'resume', workspaceId: 'workspace-1', task_id: 'task-1', resume_token: 'A'.repeat(43) })).toMatchObject({ ok: true });
+    expect(byName.get('shell')?.parse({ operation: 'resume', task_id: 'task-1', resume_token: 'A'.repeat(43) })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
     await registry.invoke('shell', { operation: 'run', executable: 'node', arguments: ['--version'], execution: 'foreground' });
     await registry.invoke('shell', { operation: 'wait', task_id: 'task-1', timeout_seconds: 60 });
 

@@ -26,7 +26,7 @@ describe('capability descriptors', () => {
 
     expect(linux).toEqual([
       'shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window',
-      'health', 'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch',
+      'health', 'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit',
     ]);
   });
 });

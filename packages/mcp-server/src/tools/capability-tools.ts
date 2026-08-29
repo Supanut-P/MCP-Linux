@@ -23,6 +23,9 @@ import {
   uiTargetActionSchema,
   webFetchCapabilitySchema,
   windowCapabilitySchema,
+  containerCapabilitySchema,
+  archiveCapabilitySchema,
+  dependencyAuditCapabilitySchema,
 } from './schemas.js';
 
 function currentMcpPollWaitSeconds(context: McpToolContext): number {
@@ -208,6 +211,30 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
       annotations: { readOnlyHint: true, destructiveHint: false },
       inputSchema: webFetchCapabilitySchema,
       handler: async (input, signal) => execute('web_fetch', input, signal),
+    }),
+    defineTool({
+      name: 'container',
+      description: 'Operate a registered project container stack through Docker or Podman using fixed argv. Compose files and bind-mount host paths must remain inside registered roots; mutations require explicit confirmation.',
+      permission: 'DANGEROUS',
+      annotations: { readOnlyHint: false, destructiveHint: true },
+      inputSchema: containerCapabilitySchema,
+      handler: async (input, signal) => execute('container', input, signal),
+    }),
+    defineTool({
+      name: 'archive',
+      description: 'List, plan, extract, or create bounded tar/tar.gz/zip archives inside registered roots. Unsafe archive members are rejected and extraction overwrites require confirmation.',
+      permission: 'DANGEROUS',
+      annotations: { readOnlyHint: false, destructiveHint: true },
+      inputSchema: archiveCapabilitySchema,
+      handler: async (input, signal) => execute('archive', input, signal),
+    }),
+    defineTool({
+      name: 'dependency_audit',
+      description: 'Run a read-only lockfile-selected dependency audit with fixed pnpm, npm, pip, or cargo commands and normalized findings. It never upgrades dependencies.',
+      permission: 'READ',
+      annotations: { readOnlyHint: true, destructiveHint: false },
+      inputSchema: dependencyAuditCapabilitySchema,
+      handler: async (input, signal) => execute('dependency_audit', input, signal),
     }),
   ];
 }

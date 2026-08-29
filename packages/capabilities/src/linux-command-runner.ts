@@ -9,6 +9,7 @@ export interface LinuxCommandResult {
 
 export interface LinuxSpawnOptions {
   readonly shell: false;
+  readonly cwd?: string;
   readonly signal?: AbortSignal;
   readonly input?: string;
   readonly maxBytes: number;
@@ -36,11 +37,12 @@ export class LinuxCommandRunner {
     this.spawn = options.spawn ?? spawnProcess;
   }
 
-  public async run(executable: string, args: readonly string[], signal?: AbortSignal): Promise<LinuxCommandResult> {
+  public async run(executable: string, args: readonly string[], signal?: AbortSignal, cwd?: string): Promise<LinuxCommandResult> {
     if (!this.isAllowed(executable)) throw new Error('Executable is not allowlisted');
     if (signal !== undefined && signal.aborted) return { exitCode: null, stdout: '', stderr: '', truncated: false };
     const result = await this.spawn(executable, [...args], {
       shell: false,
+      ...(cwd === undefined ? {} : { cwd }),
       maxBytes: this.maxBytes,
       ...(signal === undefined ? {} : { signal }),
     });
@@ -69,6 +71,7 @@ async function spawnProcess(
       shell: false,
       stdio: ['pipe', 'pipe', 'pipe'],
       ...(options.signal === undefined ? {} : { signal: options.signal }),
+      ...(options.cwd === undefined ? {} : { cwd: options.cwd }),
     });
     let stdout = '';
     let stderr = '';

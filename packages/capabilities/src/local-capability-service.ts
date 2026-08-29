@@ -23,6 +23,9 @@ export interface LocalCapabilityBackends {
   readonly fileDialog?: CapabilityBackend;
   readonly clipboard?: CapabilityBackend;
   readonly webFetch?: CapabilityBackend;
+  readonly container?: CapabilityBackend;
+  readonly archive?: CapabilityBackend;
+  readonly dependencyAudit?: CapabilityBackend;
 }
 
 export class LocalCapabilityService implements CapabilityService {
@@ -64,6 +67,9 @@ export class LocalCapabilityService implements CapabilityService {
       case 'file_dialog': return this.backends.fileDialog;
       case 'clipboard': return this.backends.clipboard;
       case 'web_fetch': return this.backends.webFetch;
+      case 'container': return this.backends.container;
+      case 'archive': return this.backends.archive;
+      case 'dependency_audit': return this.backends.dependencyAudit;
     }
   }
 }

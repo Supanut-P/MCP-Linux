@@ -54,6 +54,14 @@ export function inspectDestructiveOperation(toolName: string, input: unknown): D
       return ['create', 'enable', 'disable', 'remove'].includes(String(value.operation ?? ''))
         ? destructive('user schedule mutation requires explicit confirmation')
         : { destructive: false };
+    case 'container':
+      return ['compose-up', 'compose-down', 'restart', 'stop', 'remove'].includes(String(value.operation ?? ''))
+        ? destructive('container mutation requires explicit confirmation')
+        : { destructive: false };
+    case 'archive':
+      return value.operation === 'create' || value.operation === 'extract'
+        ? destructive('archive write or extraction requires explicit confirmation')
+        : { destructive: false };
     case 'mcp_call':
       return destructive('child MCP side effects cannot be proven non-destructive at the gateway boundary');
     case 'window':

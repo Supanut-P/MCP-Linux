@@ -18,6 +18,9 @@ export const capabilityToolNames = Object.freeze([
   'file_dialog',
   'clipboard',
   'web_fetch',
+  'container',
+  'archive',
+  'dependency_audit',
 ] as const);
 
 export type CapabilityToolName = (typeof capabilityToolNames)[number];

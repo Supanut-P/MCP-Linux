@@ -17,6 +17,9 @@ import { LinuxNativeCapabilityBackend, type LinuxAtSpiProvider, type LinuxPortal
 import { LocalCapabilityService, type CapabilityBackend } from '../local-capability-service.js';
 import { ShellCapabilityBackend } from '../shell-backend.js';
 import { WebFetchCapabilityBackend } from '../web-fetch-backend.js';
+import { ContainerBackend } from '../container-backend.js';
+import { ArchiveBackend } from '../archive-backend.js';
+import { DependencyAuditBackend } from '../dependency-audit-backend.js';
 import type { PlatformRuntimeFactory } from './types.js';
 
 export interface PlatformCapabilityRuntime {
@@ -110,6 +113,9 @@ function linuxRuntime(
     allowedRootsProvider: options.allowedRootsProvider,
     packagedCliPath: path.join('/opt', 'baitonghub-linux-mcp', 'baitonghub-linux-mcp'),
   });
+  const container = new ContainerBackend({ ...adminOptions, allowedRootsProvider: options.allowedRootsProvider });
+  const archive = new ArchiveBackend({ ...adminOptions, allowedRootsProvider: options.allowedRootsProvider });
+  const dependencyAudit = new DependencyAuditBackend({ ...adminOptions, allowedRootsProvider: options.allowedRootsProvider });
   const notification = new LinuxNativeCapabilityBackend('notification', nativeOptions);
   const fileDialog = new LinuxNativeCapabilityBackend('file_dialog', nativeOptions);
   const clipboard = new LinuxNativeCapabilityBackend('clipboard', nativeOptions);
@@ -128,6 +134,9 @@ function linuxRuntime(
     notification,
     file_dialog: fileDialog,
     clipboard,
+    container,
+    archive,
+    dependency_audit: dependencyAudit,
   };
   const health = new HealthCapabilityBackend({ platform: 'linux', environment, backends });
   const service = new LocalCapabilityService({
@@ -148,6 +157,9 @@ function linuxRuntime(
     fileDialog,
     clipboard,
     webFetch,
+    container,
+    archive,
+    dependencyAudit,
   }, capabilityToolNamesForPlatform('linux'));
   return { service, health };
 }

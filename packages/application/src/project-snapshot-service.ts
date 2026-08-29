@@ -1,6 +1,8 @@
+import { access } from 'node:fs/promises';
+import path from 'node:path';
 import { ok, type Result } from '@baitonghub-linux-mcp/domain';
 import type { GitStatusResult } from '@baitonghub-linux-mcp/git';
-import type { ManagedProcess, ProcessLogResult } from '@baitonghub-linux-mcp/process';
+import { PathExecutableResolver, type ManagedProcess, type ProcessLogResult } from '@baitonghub-linux-mcp/process';
 import type { ProjectProfile } from '@baitonghub-linux-mcp/project';
 import type { WorkspaceRepository } from '@baitonghub-linux-mcp/workspace';
 import type { FileActor } from './file-service.js';
@@ -40,6 +42,11 @@ export interface ProjectSnapshot {
   };
   readonly runningProcesses: readonly ProjectSnapshotProcessSummary[];
   readonly recentProcessErrors: readonly ProjectSnapshotProcessError[];
+  readonly runtime: 'docker' | 'podman' | null;
+  readonly composeFiles: readonly string[];
+  readonly lockfiles: readonly string[];
+  readonly auditProviderAvailability: Readonly<Record<'pnpm' | 'npm' | 'python' | 'cargo', boolean>>;
+  readonly projectCommands: readonly string[];
 }
 
 export interface ProjectSnapshotProcessPort {
@@ -52,6 +59,7 @@ export interface ProjectSnapshotServiceDependencies {
   readonly gitService?: Pick<GitService, 'status'>;
   readonly workspaceQuery?: Pick<WorkspaceQueryService, 'tree'>;
   readonly processService?: ProjectSnapshotProcessPort;
+  readonly executableResolver?: Pick<PathExecutableResolver, 'resolve'>;
 }
 
 export class ProjectSnapshotService {
@@ -59,6 +67,7 @@ export class ProjectSnapshotService {
   private readonly gitService: Pick<GitService, 'status'>;
   private readonly workspaceQuery: Pick<WorkspaceQueryService, 'tree'>;
   private readonly processService: ProjectSnapshotProcessPort;
+  private readonly executableResolver: Pick<PathExecutableResolver, 'resolve'>;
 
   public constructor(
     workspaces: WorkspaceRepository,
@@ -68,6 +77,7 @@ export class ProjectSnapshotService {
     this.gitService = dependencies.gitService ?? new GitService(workspaces);
     this.workspaceQuery = dependencies.workspaceQuery ?? new WorkspaceQueryService(workspaces);
     this.processService = dependencies.processService ?? new ProcessService(workspaces);
+    this.executableResolver = dependencies.executableResolver ?? new PathExecutableResolver();
   }
 
   public async snapshot(actor: FileActor, workspaceId: string): Promise<Result<ProjectSnapshot>> {
@@ -83,14 +93,38 @@ export class ProjectSnapshotService {
     if (!processes.ok) return processes;
 
     const processErrors = await collectProcessErrors(this.processService, actor, workspaceId, processes.value);
+    const metadata = await inspectProjectMetadata(project.value.rootPath, project.value.scripts, this.executableResolver);
     return ok({
       project: project.value,
       git: toGitSummary(git),
       tree: tree.value,
       runningProcesses: processes.value.filter(isRunning).map(toProcessSummary),
       recentProcessErrors: processErrors,
+      ...metadata,
     });
   }
+}
+
+const COMPOSE_FILES = ['compose.yml', 'compose.yaml', 'docker-compose.yml', 'docker-compose.yaml'];
+const LOCKFILES = ['pnpm-lock.yaml', 'package-lock.json', 'yarn.lock', 'bun.lock', 'bun.lockb', 'poetry.lock', 'requirements.txt', 'pyproject.toml', 'Cargo.lock'];
+
+async function inspectProjectMetadata(rootPath: string, scripts: Readonly<Record<string, string>>, resolver: Pick<PathExecutableResolver, 'resolve'>): Promise<Pick<ProjectSnapshot, 'runtime' | 'composeFiles' | 'lockfiles' | 'auditProviderAvailability' | 'projectCommands'>> {
+  const [composeFiles, lockfiles, docker, podman, pnpm, npm, python, cargo] = await Promise.all([
+    existingNames(rootPath, COMPOSE_FILES), existingNames(rootPath, LOCKFILES),
+    resolver.resolve('docker'), resolver.resolve('podman'), resolver.resolve('pnpm'), resolver.resolve('npm'), resolver.resolve('python3'), resolver.resolve('cargo'),
+  ]);
+  return {
+    runtime: docker.ok ? 'docker' : podman.ok ? 'podman' : null,
+    composeFiles,
+    lockfiles,
+    auditProviderAvailability: { pnpm: pnpm.ok, npm: npm.ok, python: python.ok, cargo: cargo.ok },
+    projectCommands: ['test', 'lint', 'typecheck', 'build'].filter((command) => scripts[command] !== undefined).map((command) => `project_${command}`),
+  };
+}
+
+async function existingNames(rootPath: string, names: readonly string[]): Promise<readonly string[]> {
+  const values = await Promise.all(names.map(async (name) => { try { await access(path.join(rootPath, name)); return name; } catch { return null; } }));
+  return values.filter((name): name is string => name !== null);
 }
 
 function toGitSummary(result: Result<GitStatusResult>): ProjectSnapshotGitSummary {

@@ -84,11 +84,18 @@ export class HealthCapabilityBackend implements CapabilityBackend {
 
   private async checkDelegated(backend: CapabilityBackend | undefined, input: unknown): Promise<Record<string, unknown>> {
     if (backend === undefined) return { available: false, ready: false, local: true, reason: 'Backend is not configured' };
+    if (hasHealth(backend)) {
+      try { return { ...(await backend.health()), local: true }; } catch { return { available: false, ready: false, local: true, reason: 'Health probe failed' }; }
+    }
     const result = await backend.execute(input);
     if (!result.ok) return { available: false, ready: false, local: true, reason: result.error.message };
     const value = isRecord(result.value) ? result.value : {};
     return { available: value.available !== false, ready: value.ready !== false, local: true, ...value };
   }
+}
+
+function hasHealth(value: CapabilityBackend): value is CapabilityBackend & { health(): Promise<Record<string, unknown>> } {
+  return 'health' in value && typeof value.health === 'function';
 }
 
 function statusInput(tool: CapabilityToolName): Readonly<Record<string, unknown>> {

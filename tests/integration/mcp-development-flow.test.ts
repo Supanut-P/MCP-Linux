@@ -9,6 +9,10 @@ import { ok, type CommandSpec, type Result } from '@baitonghub-linux-mcp/domain'
 import { ToolRegistry, type McpApplicationServices } from '@baitonghub-linux-mcp/mcp-server';
 import { SqliteCheckpointRepository, SqliteDatabase, SqliteWorkspaceRepository } from '@baitonghub-linux-mcp/storage';
 import { WorkspaceService } from '@baitonghub-linux-mcp/workspace';
+import { ArchiveBackend, validateArchiveMembers } from '../../packages/capabilities/src/archive-backend.js';
+import { ContainerBackend } from '../../packages/capabilities/src/container-backend.js';
+import { DependencyAuditBackend } from '../../packages/capabilities/src/dependency-audit-backend.js';
+import { LinuxCommandRunner } from '../../packages/capabilities/src/linux-command-runner.js';
 
 const execFileAsync = promisify(execFile);
 const temporaryRoots: string[] = [];
@@ -24,6 +28,27 @@ afterEach(async () => {
 });
 
 describe.runIf(process.platform === 'linux')('MCP development flow', () => {
+  it('accepts the bounded v0.4 developer operations contract with fake providers', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'baitonghub-linux-mcp-v04-'));
+    temporaryRoots.push(root);
+    const composeFile = path.join(root, 'compose.yaml');
+    await writeFile(composeFile, 'services:\n  api:\n    image: alpine\n', 'utf8');
+    const calls: string[] = [];
+    const containerRunner = new LinuxCommandRunner({ allowedExecutables: ['docker'], spawn: async (_executable, args): Promise<{ readonly exitCode: number; readonly stdout: string; readonly stderr: string }> => { calls.push(args.join(' ')); return { exitCode: 0, stdout: 'ok\n', stderr: '' }; } });
+    const container = new ContainerBackend({ platform: 'linux', allowedRootsProvider: async (): Promise<readonly string[]> => [root], resolveExecutable: async (): Promise<string> => '/usr/bin/docker', runner: containerRunner });
+    await expect(container.execute({ operation: 'compose-config', compose_file: composeFile })).resolves.toMatchObject({ ok: true });
+    for (const operation of ['compose-up', 'compose-down'] as const) await expect(container.execute({ operation, compose_file: composeFile, userConfirmed: true })).resolves.toMatchObject({ ok: true });
+    for (const operation of ['logs', 'stats', 'restart'] as const) await expect(container.execute({ operation, container: 'api', workspaceId: 'workspace-1', project_root: root, userConfirmed: true })).resolves.toMatchObject({ ok: true });
+    expect(calls).toEqual(['compose -f ' + composeFile + ' config', 'compose -f ' + composeFile + ' up -d', 'compose -f ' + composeFile + ' down', 'logs --tail 100 api', 'stats --no-stream api', 'restart api']);
+    expect(validateArchiveMembers(['../../escape'])).toMatchObject({ ok: false });
+    await writeFile(path.join(root, 'pnpm-lock.yaml'), 'lockfileVersion: 9\n', 'utf8');
+    const auditRunner = new LinuxCommandRunner({ allowedExecutables: ['pnpm'], spawn: async (): Promise<{ readonly exitCode: number; readonly stdout: string; readonly stderr: string }> => ({ exitCode: 0, stdout: JSON.stringify({ vulnerabilities: {} }), stderr: '' }) });
+    const audit = new DependencyAuditBackend({ platform: 'linux', allowedRootsProvider: async (): Promise<readonly string[]> => [root], resolveExecutable: async (): Promise<string> => '/usr/bin/pnpm', runner: auditRunner });
+    await expect(audit.execute({ path: root })).resolves.toMatchObject({ ok: true, value: { provider: 'pnpm', packages: [] } });
+    const archive = new ArchiveBackend({ platform: 'linux', allowedRootsProvider: async (): Promise<readonly string[]> => [root], resolveExecutable: async (name: string): Promise<string> => `/usr/bin/${name}` });
+    await expect(archive.execute({ operation: 'list', archive: path.join(root, 'missing.tar') })).resolves.toMatchObject({ ok: false, error: { code: 'FILE_NOT_FOUND' } });
+  });
+
   it('keeps the complete fixture workflow inside application services', async () => {
     const fixtureRoot = await createFixture();
     const rawDatabaseRoot = await mkdtemp(path.join(os.tmpdir(), 'baitonghub-linux-mcp-mcp-db-'));
@@ -129,8 +154,12 @@ describe.runIf(process.platform === 'linux')('MCP development flow', () => {
           tree: { entries: expect.arrayContaining([{ path: 'src', type: 'directory' }]) },
           runningProcesses: [],
           recentProcessErrors: [],
+          composeFiles: [],
+          lockfiles: ['package-lock.json'],
+          projectCommands: ['project_test'],
         },
       });
+      expect(registry.list().map((tool) => tool.name)).toEqual(expect.arrayContaining(['container', 'archive', 'dependency_audit']));
 
       const secret = await registry.invoke('read_file', { workspaceId, path: '.env' });
       expect(secret).toMatchObject({ structuredContent: { error: { code: 'SECRET_ACCESS_DENIED' } } });

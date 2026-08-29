@@ -258,7 +258,7 @@ export const windowCapabilitySchema = z.object({
 
 export const healthCapabilitySchema = z.object({
   operation: z.enum(['check_all', 'check_tool']).default('check_all'),
-  tool: z.enum(['shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window', 'health', 'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch']).optional(),
+  tool: z.enum(['shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window', 'health', 'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit']).optional(),
   request_id: z.string().trim().min(1).max(128).optional(),
 }).strict();
 
@@ -347,6 +347,43 @@ export const webFetchCapabilitySchema = z.object({
   body: z.string().max(1_000_000).optional(),
   max_bytes: z.number().int().min(1).max(10 * 1024 * 1024).optional(),
   timeout_seconds: z.number().min(1).max(600).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const containerCapabilitySchema = z.object({
+  workspaceId: optionalWorkspaceIdSchema,
+  project_root: pathSchema.optional(),
+  projectRoot: pathSchema.optional(),
+  operation: z.enum(['status', 'list', 'inspect', 'logs', 'stats', 'compose-config', 'compose-up', 'compose-down', 'restart', 'stop', 'remove']).default('list'),
+  container: z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$/).optional(),
+  name: z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$/).optional(),
+  all: z.boolean().optional(),
+  tail: z.number().int().min(1).max(10_000).optional(),
+  tail_lines: z.number().int().min(1).max(10_000).optional(),
+  compose_file: pathSchema.optional(),
+  composeFile: pathSchema.optional(),
+  file: pathSchema.optional(),
+  cwd: pathSchema.optional(),
+  volumes: z.array(z.string().max(4_096)).max(100).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const archiveCapabilitySchema = z.object({
+  operation: z.enum(['list', 'extract-plan', 'extract', 'create']).default('list'),
+  archive: pathSchema.optional(),
+  path: pathSchema.optional(),
+  source: pathSchema.optional(),
+  directory: pathSchema.optional(),
+  output: pathSchema.optional(),
+  destination: pathSchema.optional(),
+  destinationPath: pathSchema.optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+export const dependencyAuditCapabilitySchema = z.object({
+  operation: z.literal('audit').default('audit'),
+  path: pathSchema.optional(),
+  cwd: pathSchema.optional(),
   ...capabilityRequestSchema,
 }).strict();
 

@@ -39,7 +39,7 @@ mkdir "$inspection_root/deb" "$inspection_root/tar"
 dpkg-deb -x "$deb" "$inspection_root/deb"
 tar -xzf "$tarball" -C "$inspection_root/tar"
 
-forbidden_file=$(find "$inspection_root" -type f \( -iname '*.exe' -o -iname '*.cmd' -o -iname '*.ps1' -o -ipath '*windows-ocr*' \) -print -quit)
+forbidden_file=$(find "$inspection_root" -type f \( -iname '*.exe' -o -iname '*.cmd' -o -iname '*.bat' -o -iname '*.ps1' -o -iname '*.dll' -o -ipath '*windows-ocr*' -o -ipath '*electron*' -o -ipath '*powershell*' -o -ipath '*wsl*' \) -print -quit)
 if [ -n "$forbidden_file" ]; then
   echo "Forbidden Windows resource in Linux package: $forbidden_file" >&2
   exit 1

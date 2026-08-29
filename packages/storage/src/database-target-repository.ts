@@ -15,7 +15,13 @@ export interface DatabaseTarget {
   readonly createdAt: string;
 }
 
-export type DatabaseTargetRegistration = Omit<DatabaseTarget, 'createdAt' | 'readOnly'> & { readonly readOnly?: boolean; readonly createdAt?: string };
+/**
+ * Database connections are a deliberately read-only feature.  Registration
+ * must carry an explicit readOnly=true posture so callers cannot accidentally
+ * persist an unreviewed writable target that the runtime later has to guess
+ * about.  The repository still validates this at runtime for JS callers.
+ */
+export type DatabaseTargetRegistration = Omit<DatabaseTarget, 'createdAt' | 'readOnly'> & { readonly readOnly: true; readonly createdAt?: string };
 
 export class SqliteDatabaseTargetRepository {
   public constructor(private readonly database: SqliteDatabase) {}
@@ -31,7 +37,7 @@ export class SqliteDatabaseTargetRepository {
   public async insert(target: DatabaseTargetRegistration): Promise<void> {
     validateDatabaseTarget(target);
     this.database.connection.prepare('INSERT INTO database_targets (id, display_name, driver, host, port, database_name, username, read_only, secret_ref, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
-      target.id, target.displayName, target.driver, target.host, target.port, target.databaseName, target.username, target.readOnly !== false ? 1 : 0, target.secretRef, target.createdAt ?? new Date().toISOString(),
+      target.id, target.displayName, target.driver, target.host, target.port, target.databaseName, target.username, 1, target.secretRef, target.createdAt ?? new Date().toISOString(),
     );
   }
 
@@ -53,6 +59,7 @@ export class SqliteDatabaseTargetRepository {
 
 function validateDatabaseTarget(target: DatabaseTargetRegistration): void {
   if (!/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/.test(target.id) || target.displayName.trim().length === 0
+    || target.readOnly !== true
     || !['postgresql', 'mysql'].includes(target.driver) || !/^[A-Za-z0-9_.-]{1,253}$/.test(target.host)
     || !Number.isInteger(target.port) || target.port < 1 || target.port > 65535 || target.databaseName.trim().length === 0
     || target.username.trim().length === 0 || !/^[A-Za-z0-9._-]{1,128}$/.test(target.secretRef)) throw new Error('Database target registration is invalid');

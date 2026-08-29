@@ -1,6 +1,6 @@
 {
   "name": "baitonghub-linux-mcp",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "private": true,
   "packageManager": "pnpm@10.15.0",
   "engines": {
@@ -20,7 +20,10 @@
     "build:headless": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/cli build:headless",
     "package:linux:headless": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/cli package:headless",
     "docs:tools": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/mcp-server build && node scripts/generate-tool-catalog.mjs",
-    "docs:tools:check": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/mcp-server build && node scripts/generate-tool-catalog.mjs --check"
+    "docs:tools:check": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/mcp-server build && node scripts/generate-tool-catalog.mjs --check",
+    "contract:v1": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/mcp-server build && node scripts/generate-tool-contract-v1.mjs --check",
+    "contract:v1:write": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/mcp-server build && node scripts/generate-tool-contract-v1.mjs",
+    "test:v1": "pnpm contract:v1 && pnpm exec vitest run tests/acceptance"
   },
   "devDependencies": {
     "@eslint/js": "9.33.0",

@@ -19,6 +19,15 @@ const SQLITE_EXTENSIONS = new Set(['.db', '.sqlite', '.sqlite3']);
 const MAX_QUERY_ROWS = 1_000;
 const MAX_SERVER_QUERY_ROWS = 1_000;
 const MAX_SERVER_QUERY_BYTES = 2 * 1024 * 1024;
+// Server queries run with a read-only transaction, but PostgreSQL/MySQL still
+// expose functions that can mutate state, acquire locks, execute code, or
+// exfiltrate files.  Keep the function surface deliberately small instead of
+// trying to maintain an ever-growing denylist.
+const PURE_SQL_FUNCTIONS = new Set([
+  'abs', 'avg', 'cast', 'coalesce', 'concat', 'convert', 'count', 'database', 'date', 'datetime',
+  'ifnull', 'json_extract', 'length', 'lower', 'ltrim', 'max', 'min', 'nullif',
+  'round', 'rtrim', 'strftime', 'substr', 'substring', 'sum', 'trim', 'upper',
+]);
 
 export type DatabaseTargetDriver = 'postgresql' | 'mysql';
 
@@ -260,7 +269,27 @@ function validateServerReadQuery(statement: string): Result<string> {
   if (statement.includes(';') || /(--|\/\*)/.test(statement)) return err(appError('INVALID_INPUT', 'Server database queries accept one statement without comments or semicolons'));
   if (!/^(select|show|describe|desc|explain|with)\b/i.test(statement) || /\b(insert|update|delete|drop|alter|create|truncate|grant|revoke|replace|call|load|set|do|execute|merge|for\s+update|lock\s+in\s+share\s+mode|into\s+(out|dump)file)\b/i.test(statement)
     || /\b(pg_(?:terminate_backend|reload_conf|advisory_lock|try_advisory_lock)|(?:get|release)_lock|load_file|benchmark|sleep|sys_exec|xp_cmdshell|dblink|lo_import|lo_export|set_config|current_setting)\s*\(/i.test(statement)) return err(appError('PERMISSION_DENIED', 'Only one side-effect-free read-only database statement is permitted'));
+  if (hasDisallowedSqlFunction(statement)) return err(appError('PERMISSION_DENIED', 'Only allowlisted side-effect-free SQL functions are permitted'));
   return ok(statement);
+}
+
+function hasDisallowedSqlFunction(statement: string): boolean {
+  // Ignore quoted literals so a value containing "foo()" is not mistaken for
+  // an invocation.  Qualified function names are rejected; even a currently
+  // harmless schema can be shadowed by a user-defined function.
+  const sql = stripSqlLiterals(statement);
+  const invocation = /\b([A-Za-z_][A-Za-z0-9_$]*(?:\.[A-Za-z_][A-Za-z0-9_$]*)?)\s*\(/g;
+  for (const match of sql.matchAll(invocation)) {
+    const name = match[1]?.toLowerCase();
+    if (name === undefined || name.includes('.') || !PURE_SQL_FUNCTIONS.has(name)) return true;
+  }
+  return false;
+}
+
+function stripSqlLiterals(statement: string): string {
+  return statement
+    .replace(/'(?:''|[^'])*'/g, "''")
+    .replace(/"(?:""|[^"])*"/g, '""');
 }
 
 function serverTransaction(driver: DatabaseTargetDriver, statement: string): string {

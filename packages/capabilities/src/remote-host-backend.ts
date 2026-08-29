@@ -155,7 +155,9 @@ export class RemoteHostBackend implements NativeCapabilityBackend {
     if (!executableCheck.ok) return executableCheck;
     const canonicalExecutable = executableCheck.value[0];
     if (canonicalExecutable === undefined) return err(appError('PATH_OUTSIDE_WORKSPACE', 'Project executable could not be resolved', true));
-    const canonicalTarget = checked.value[2];
+    // registeredPath returns [canonical] for project commands and
+    // ["git", "-C", canonical] for git_status/file operations.
+    const canonicalTarget = checked.value[0];
     if (canonicalTarget === undefined || !isWithin(canonicalTarget, canonicalExecutable)) return err(appError('PATH_OUTSIDE_WORKSPACE', 'Project executable must stay inside the requested remote workspace', true));
     const args = Array.isArray(input.arguments) ? input.arguments : [];
     if (!args.every((value) => typeof value === 'string' && SAFE_ARG.test(value))) return invalid('Project command arguments are invalid');
@@ -209,16 +211,34 @@ function matchesFingerprint(line: string, expected: string): boolean {
 }
 
 async function runRemoteCommand(executable: string, args: readonly string[], options: { readonly input?: string; readonly signal?: AbortSignal; readonly maxBytes: number; readonly timeoutMs?: number }): Promise<RemoteCommandResult> {
-  const child = spawn(executable, [...args], { shell: false, stdio: ['pipe', 'pipe', 'ignore'], signal: options.signal });
+  const child = spawn(executable, [...args], {
+    shell: false,
+    detached: process.platform !== 'win32',
+    stdio: ['pipe', 'pipe', 'ignore'],
+    signal: options.signal,
+  });
   return new Promise((resolve, reject) => {
     let stdout = ''; let bytes = 0; let truncated = false;
     let timedOut = false;
     let closed = false;
-    const escalation = options.timeoutMs === undefined ? undefined : setTimeout(() => { timedOut = true; child.kill('SIGTERM'); setTimeout(() => { if (!closed) child.kill('SIGKILL'); }, 500); }, options.timeoutMs);
+    const escalation = options.timeoutMs === undefined ? undefined : setTimeout(() => {
+      timedOut = true;
+      signalChild(child, 'SIGTERM');
+      setTimeout(() => { if (!closed) signalChild(child, 'SIGKILL'); }, 500);
+    }, options.timeoutMs);
     child.stdout.on('data', (chunk: Buffer) => { const slice = chunk.subarray(0, Math.max(0, options.maxBytes - bytes)); stdout += slice.toString('utf8'); bytes += slice.byteLength; if (slice.byteLength < chunk.byteLength) truncated = true; });
     child.once('error', (error) => { closed = true; if (escalation !== undefined) clearTimeout(escalation); reject(error); });
     child.once('close', (exitCode) => { closed = true; if (escalation !== undefined) clearTimeout(escalation); resolve({ exitCode: timedOut ? null : exitCode, stdout, truncated }); }); child.stdin.end(options.input ?? '');
   });
+}
+
+function signalChild(child: ReturnType<typeof spawn>, signal: 'SIGTERM' | 'SIGKILL'): void {
+  try {
+    if (process.platform !== 'win32' && typeof child.pid === 'number') process.kill(-child.pid, signal);
+    else child.kill(signal);
+  } catch {
+    // The child may have exited between timeout escalation and signalling.
+  }
 }
 
 function readOperation(value: unknown): RemoteHostOperation | null { return typeof value === 'string' && new Set<RemoteHostOperation>(['health', 'system_info', 'journal', 'network', 'file_read', 'git_status', 'service-restart', 'file-write', 'project-command']).has(value as RemoteHostOperation) ? value as RemoteHostOperation : null; }

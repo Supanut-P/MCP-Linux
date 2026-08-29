@@ -424,6 +424,23 @@ export const databaseQuerySchema = z.object({
   parameters: z.array(z.union([z.string(), z.number(), z.boolean(), z.null()])).max(100).optional(),
 }).strict().refine(hasDatabaseTarget, 'A registered targetId or workspaceId plus local target is required');
 
+/** Registration contract for administrative callers.  Database access is
+ * read-only by design; the posture is explicit and cannot be omitted or set
+ * to false.  Query tools intentionally accept only a targetId after this
+ * record has been persisted and verified by the storage repository.
+ */
+export const databaseTargetRegistrationSchema = z.object({
+  id: z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/),
+  displayName: z.string().trim().min(1).max(256),
+  driver: z.enum(['postgresql', 'mysql']),
+  host: z.string().trim().regex(/^[A-Za-z0-9_.-]{1,253}$/),
+  port: z.number().int().min(1).max(65_535),
+  databaseName: z.string().trim().min(1).max(256),
+  username: z.string().trim().min(1).max(128),
+  readOnly: z.literal(true),
+  secretRef: z.string().trim().regex(/^[A-Za-z0-9._-]{1,128}$/),
+}).strict();
+
 export const skillsListSchema = z.object({
   query: z.string().max(1024).optional(),
   source: z.string().trim().min(1).max(256).optional(),

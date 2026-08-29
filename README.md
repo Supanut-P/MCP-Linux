@@ -24,7 +24,7 @@ Baitonghub-Linux-mcp lets an MCP client work with a Linux machine through a
 controlled local runtime. It is intended for repository maintenance, coding,
 testing, Git workflows, command execution, and long-running development tasks.
 
-The v0.5.0 release is **headless**. It does not require Electron, a desktop
+The v1.0.0 release is **headless**. It does not require Electron, a desktop
 session, Chrome, Wayland, X11, or a system-installed Node.js runtime.
 
 ### What it can do
@@ -72,9 +72,19 @@ The runtime keeps these hard blocks:
 Secrets are loaded through protected environment or systemd credential inputs.
 They are redacted from stdout, application logs, audit records, and diagnostics.
 
+## v1 stable contract
+
+The v1.0.0 MCP names, schemas, permission annotations, and compatibility rules
+are frozen in [`docs/mcp/STABLE_TOOL_CONTRACT_V1.md`](docs/mcp/STABLE_TOOL_CONTRACT_V1.md)
+and checked against the canonical fixture in CI. Run
+`corepack pnpm@10.15.0 contract:v1` after a deliberate contract change. The
+Linux soak recorder is available at `scripts/soak-linux-headless.sh`; its
+output is evidence for an operator-run stability window and does not claim a
+seven-day run unless one was actually completed.
+
 ## Supported platform
 
-| Item | v0.5 support |
+| Item | v1.0 support |
 | --- | --- |
 | Operating system | Ubuntu 24.04 LTS |
 | Architecture | x86_64 / amd64 |
@@ -84,33 +94,41 @@ They are redacted from stdout, application logs, audit records, and diagnostics.
 | Packages | DEB, Linux x64 tarball |
 
 ARM64, RPM, GUI automation, Windows migration, and unrestricted root access are
-outside the v0.5 release contract.
+outside the v1 release contract.
 
 ## Install
 
 Download the latest package from
 [GitHub Releases](https://github.com/Supanut-P/MCP-Linux/releases/latest).
 
-The v0.5 administration tools add bounded, explicitly confirmed mutations. They
+The v1 administration tools add bounded, explicitly confirmed mutations. They
 use `systemctl`, `apt`, `apt-cache`, and `dpkg-query` with fixed argv and never
 compose a shell command. Observability tools remain read-only and use `journalctl`, `ip`, `ss`,
 and `df` when those Ubuntu dependencies are available; a missing binary
 returns structured `CAPABILITY_UNAVAILABLE` instead of a false success.
 
+The v1 stable MCP contract is recorded in
+[`docs/mcp/STABLE_TOOL_CONTRACT_V1.md`](docs/mcp/STABLE_TOOL_CONTRACT_V1.md) and
+checked against the canonical `tools/list` fixture during CI. Descriptions may
+evolve, but tool names, permissions, annotations, and input schemas are treated
+as compatibility-sensitive. For long-running operational evidence,
+[`scripts/soak-linux-headless.sh`](scripts/soak-linux-headless.sh) records a
+bounded soak run; it does not claim that a seven-day run has completed.
+
 ### Ubuntu DEB
 
 ```sh
- curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v0.5.0/Baitonghub-Linux-mcp-0.5.0-amd64.deb
- curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v0.5.0/Baitonghub-Linux-mcp-0.5.0-SHA256SUMS
- sha256sum --check --ignore-missing Baitonghub-Linux-mcp-0.5.0-SHA256SUMS
- sudo apt install ./Baitonghub-Linux-mcp-0.5.0-amd64.deb
+ curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.0.0/Baitonghub-Linux-mcp-1.0.0-amd64.deb
+ curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.0.0/Baitonghub-Linux-mcp-1.0.0-SHA256SUMS
+ sha256sum --check --ignore-missing Baitonghub-Linux-mcp-1.0.0-SHA256SUMS
+ sudo apt install ./Baitonghub-Linux-mcp-1.0.0-amd64.deb
 ```
 
 ### Linux x64 tarball
 
 ```sh
- curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v0.5.0/Baitonghub-Linux-mcp-0.5.0-linux-x64.tar.gz
- tar -xzf Baitonghub-Linux-mcp-0.5.0-linux-x64.tar.gz
+ curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.0.0/Baitonghub-Linux-mcp-1.0.0-linux-x64.tar.gz
+ tar -xzf Baitonghub-Linux-mcp-1.0.0-linux-x64.tar.gz
 ```
 
 ## Quick start: local STDIO

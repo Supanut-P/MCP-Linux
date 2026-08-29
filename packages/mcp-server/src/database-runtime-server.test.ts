@@ -45,6 +45,8 @@ describe('registered server database runtime', () => {
     await runtime.query({ targetId: 'pg-main', sql: 'SELECT id FROM users', max_rows: 5 });
     expect(query).toContain('LIMIT 6');
     await expect(runtime.query({ targetId: 'pg-main', sql: 'SELECT pg_terminate_backend(1)' })).resolves.toMatchObject({ ok: false, error: { code: 'PERMISSION_DENIED' } });
+    await expect(runtime.query({ targetId: 'pg-main', sql: 'SELECT user_defined_function(1)' })).resolves.toMatchObject({ ok: false, error: { code: 'PERMISSION_DENIED' } });
+    await expect(runtime.query({ targetId: 'pg-main', sql: "SELECT 'user_defined_function(1)'" })).resolves.toMatchObject({ ok: true });
   });
 
   it('fails closed for a target not explicitly registered read-only', async () => {

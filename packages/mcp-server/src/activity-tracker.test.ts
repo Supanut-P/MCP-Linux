@@ -45,6 +45,8 @@ describe('ActivityTracker', () => {
   it('summarizes common tool targets', () => {
     expect(summarizeToolTarget('search_text', { query: 'hello' })).toBe('hello');
     expect(summarizeToolTarget('shell', { executable: 'node', arguments: ['-e', '1'] })).toBe('node -e 1');
+    expect(summarizeToolTarget('remote_host', { hostId: 'vm103', workspaceId: 'ws-1', operation: 'file-write', path: '/srv/app/a.txt' }))
+      .toBe('host:vm103 workspace:ws-1 operation:file-write target:/srv/app/a.txt');
   });
 
   it('keeps long shell arguments copyable while redacting credential-like values', () => {

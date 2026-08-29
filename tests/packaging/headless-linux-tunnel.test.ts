@@ -51,8 +51,8 @@ describe('headless Linux Secure MCP Tunnel packaging', () => {
     const workflow = await readFile(path.join(root, '.github', 'workflows', 'release.yml'), 'utf8');
     expect(workflow).toContain('runs-on: ubuntu-24.04');
     expect(workflow).toContain('pnpm package:linux:headless');
-    expect(workflow).toContain('Baitonghub-Linux-mcp-0.2.0-amd64.deb');
-    expect(workflow).toContain('Baitonghub-Linux-mcp-0.2.0-linux-x64.tar.gz');
+    expect(workflow).toContain('Baitonghub-Linux-mcp-*-amd64.deb');
+    expect(workflow).toContain('Baitonghub-Linux-mcp-*-linux-x64.tar.gz');
     expect(workflow).not.toContain('windows-latest');
     expect(workflow).not.toMatch(/\.exe\s*$/m);
   });

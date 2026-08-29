@@ -1,0 +1,5672 @@
+{
+  "contractVersion": "1.0.0",
+  "descriptions": "non-contractual",
+  "tools": [
+    {
+      "name": "accessibility",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "status",
+              "launch_app",
+              "activate_app",
+              "list_windows",
+              "observe",
+              "observe_summary",
+              "observe_changes",
+              "inspect_elements",
+              "find_element",
+              "click",
+              "focus",
+              "read_value",
+              "set_value",
+              "select_item",
+              "menu_select",
+              "close_window",
+              "minimize_window",
+              "maximize_window",
+              "restore_window",
+              "set_window_frame"
+            ],
+            "type": "string"
+          },
+          "approval": {
+            "default": "use_policy",
+            "enum": [
+              "use_policy",
+              "always_ask",
+              "skip"
+            ],
+            "type": "string"
+          },
+          "display_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "parameters": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "timeout_seconds": {
+            "maximum": 14400,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "action",
+          "approval",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "affected_modules",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "agent_swarm_run",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "apply_patch",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "files": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "content": {
+                  "type": "string"
+                },
+                "path": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "content"
+              ],
+              "type": "object"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "files"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "archive",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "archive": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "destination": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "destinationPath": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "directory": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "operation": {
+            "default": "list",
+            "enum": [
+              "list",
+              "extract-plan",
+              "extract",
+              "create"
+            ],
+            "type": "string"
+          },
+          "output": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "source": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "backend_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "benchmark_run",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "browser_debug_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "cache_clear",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "cache_invalidate",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "cache_stats",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "call_hierarchy",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "capabilities",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "capture_screenshot",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "capture_ui_state",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "change_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "changed_symbols",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "clipboard",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "get_text",
+              "set_text",
+              "get_image"
+            ],
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 1000000,
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "action",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "codex_run",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "instruction": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "instruction"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "codex_status",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "codex_stop",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "codexTaskId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "codexTaskId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "codex_task_list",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "codex_task_logs",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "codexTaskId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "sinceSequence": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "tailLines": {
+            "maximum": 10000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "codexTaskId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "codex_task_status",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "codexTaskId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "codexTaskId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "compare_pdf_pages",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "compare_screenshot",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "console_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "container",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "all": {
+            "type": "boolean"
+          },
+          "compose_file": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "composeFile": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "container": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$",
+            "type": "string"
+          },
+          "cwd": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "file": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "name": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$",
+            "type": "string"
+          },
+          "operation": {
+            "default": "list",
+            "enum": [
+              "status",
+              "list",
+              "inspect",
+              "logs",
+              "stats",
+              "compose-config",
+              "compose-up",
+              "compose-down",
+              "restart",
+              "stop",
+              "remove"
+            ],
+            "type": "string"
+          },
+          "project_root": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "projectRoot": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "tail": {
+            "maximum": 10000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "tail_lines": {
+            "maximum": 10000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          },
+          "volumes": {
+            "items": {
+              "maxLength": 4096,
+              "type": "string"
+            },
+            "maxItems": 100,
+            "type": "array"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "context_economy_stats",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "context_expand",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "context_ranking",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "copy_file",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "destinationPath": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "sourcePath": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "sourcePath",
+          "destinationPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "coverage_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "db_inspect",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "target": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "target_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "targetId": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "db_query",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "max_rows": {
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "parameters": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "maxItems": 100,
+            "type": "array"
+          },
+          "sql": {
+            "maxLength": 64000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "target": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "target_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "targetId": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "sql"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "debug_attach",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "debug_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "debug_step",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "debug_ui",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "delegate",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "delegate_cancel",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "delegate_result",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "delegate_status",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_file",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "dependency_audit",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "cwd": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "operation": {
+            "const": "audit",
+            "default": "audit",
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "dependency_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "dependency_graph",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "dev_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "discover_tests",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "dom_cdp",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "launch",
+              "status",
+              "list_tabs",
+              "new_tab",
+              "close_tab",
+              "navigate",
+              "evaluate",
+              "query",
+              "click",
+              "type",
+              "wait",
+              "screenshot"
+            ],
+            "type": "string"
+          },
+          "approval": {
+            "default": "use_policy",
+            "enum": [
+              "use_policy",
+              "always_ask",
+              "skip"
+            ],
+            "type": "string"
+          },
+          "display_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "parameters": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "action": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "parameters": {
+                  "additionalProperties": {},
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              },
+              "required": [
+                "action"
+              ],
+              "type": "object"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array"
+          },
+          "tab_id": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "timeout_seconds": {
+            "maximum": 3600,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "approval",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "dom_snapshot",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "dry_run",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "execution_plan",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "file_dialog",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "open",
+              "save"
+            ],
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "file_name": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "filter": {
+            "maxLength": 512,
+            "type": "string"
+          },
+          "initial_directory": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "multi_select": {
+            "type": "boolean"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "action",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "find_definition",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "find_implementations",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "find_references",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "form_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "frontend_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "git",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "args": {
+            "items": {
+              "maxLength": 32768,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 128,
+            "minItems": 1,
+            "type": "array"
+          },
+          "cwd": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "timeoutSeconds": {
+            "maximum": 300,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "args"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "git_blame_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "git_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "git_diff",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "maxBytes": {
+            "maximum": 4194304,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "staged": {
+            "type": "boolean"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "git_history_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "git_log",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "maxBytes": {
+            "maximum": 4194304,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "maxCommits": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "git_status",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "git_worktree_remove",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "git_worktree_spawn",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "handoff_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "health",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "operation": {
+            "default": "check_all",
+            "enum": [
+              "check_all",
+              "check_tool"
+            ],
+            "type": "string"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "tool": {
+            "enum": [
+              "shell",
+              "dom_cdp",
+              "accessibility",
+              "input_event",
+              "vision",
+              "window",
+              "health",
+              "system_info",
+              "journal",
+              "network",
+              "service",
+              "package",
+              "schedule",
+              "notification",
+              "file_dialog",
+              "clipboard",
+              "web_fetch",
+              "container",
+              "archive",
+              "dependency_audit",
+              "remote_host"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "hook_list",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "hook_register",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "hook_remove",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "import_graph",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "input_event",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "approval": {
+            "default": "use_policy",
+            "enum": [
+              "use_policy",
+              "always_ask",
+              "skip"
+            ],
+            "type": "string"
+          },
+          "display_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "operation": {
+            "enum": [
+              "type_text",
+              "paste_text",
+              "press_key",
+              "hotkey",
+              "key_down",
+              "key_up",
+              "mouse_move",
+              "click",
+              "double_click",
+              "right_click",
+              "drag",
+              "scroll",
+              "button_down",
+              "button_up",
+              "release_all",
+              "sequence"
+            ],
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "timeout_seconds": {
+            "maximum": 14400,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation",
+          "approval",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "inspect_pdf",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "inspect_web_app",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "installed_runtime_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "journal",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "lines": {
+            "default": 100,
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "operation": {
+            "default": "read",
+            "enum": [
+              "read",
+              "tail"
+            ],
+            "type": "string"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "pattern": "^(?:[0-7]|emerg|alert|crit|err|warning|notice|info|debug)$",
+                "type": "string"
+              },
+              {
+                "maximum": 7,
+                "minimum": 0,
+                "type": "integer"
+              }
+            ]
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "since": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "unit": {
+            "pattern": "^[A-Za-z0-9_.@:-]{1,256}\\.(service|socket|timer|path)$",
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation",
+          "lines",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "layout_metadata",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "live_logs_query",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "live_logs_status",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "lsp_diagnostics",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "lsp_rename",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "mcp_call",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "arguments": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "server": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "tool": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "server",
+          "tool"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "mcp_describe",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "server": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "server"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "mcp_discover",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "mcp_health",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "mcp_hub",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "mcp_list",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "mcp_resources",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "module_graph",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "move_file",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "destinationPath": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "sourcePath": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "sourcePath",
+          "destinationPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "network",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "host": {
+            "maxLength": 253,
+            "minLength": 1,
+            "type": "string"
+          },
+          "limit": {
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "operation": {
+            "default": "interfaces",
+            "enum": [
+              "interfaces",
+              "routes",
+              "dns",
+              "listeners",
+              "connectivity"
+            ],
+            "type": "string"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "network_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "notification",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "default": "show",
+            "enum": [
+              "show"
+            ],
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "message": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "action",
+          "title",
+          "message",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "package",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "operation": {
+            "default": "search",
+            "enum": [
+              "search",
+              "show",
+              "installed",
+              "updates",
+              "install",
+              "remove",
+              "upgrade"
+            ],
+            "type": "string"
+          },
+          "packages": {
+            "items": {
+              "pattern": "^[a-z0-9][a-z0-9+.-]{0,127}(?::(amd64|all))?$",
+              "type": "string"
+            },
+            "maxItems": 50,
+            "type": "array"
+          },
+          "plan_hash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "planHash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "query": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "parallel_delegate",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "path_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "pdf_extract_tables",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "permission_check",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "permission_profile",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "plugin_disable",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "plugin_enable",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "plugin_install",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "plugin_list",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "plugin_remove",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "port_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "process_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "process_list",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "process_logs",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "processId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "sinceSequence": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "tailLines": {
+            "maximum": 10000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "processId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "process_start",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "args": {
+            "items": {
+              "maxLength": 32768,
+              "type": "string"
+            },
+            "maxItems": 128,
+            "type": "array"
+          },
+          "cwd": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "executable": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "type": "string"
+          },
+          "timeoutMs": {
+            "maximum": 14400000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "executable",
+          "args"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "process_status",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "processId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "processId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "process_stop",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "processId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "processId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "project_build",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "project_dev",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "project_lint",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "project_profile_get",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "project_profile_set",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "project_snapshot",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "project_test",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "project_typecheck",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "read_file",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "endLine": {
+            "maximum": 1000000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "startLine": {
+            "maximum": 1000000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "read_file_page",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "pageSize": {
+            "maximum": 5000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "responseTargetBytes": {
+            "maximum": 8388608,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "startLine": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "read_file_page_continue",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "continuationToken": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "pageSize": {
+            "maximum": 5000,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "continuationToken"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "read_files",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "files": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "endLine": {
+                  "maximum": 1000000,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "path": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "startLine": {
+                  "maximum": 1000000,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "path"
+              ],
+              "type": "object"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "files"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "read_many_files",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "files": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "endLine": {
+                  "maximum": 1000000,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "path": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "startLine": {
+                  "maximum": 1000000,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "path"
+              ],
+              "type": "object"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "type": "array"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "files"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "recipe_catalog",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "recipe_describe",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "recipe_list",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "recipe_run",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "recovery_status",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "regression_report",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "remote_host",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "arguments": {
+            "items": {
+              "maxLength": 4096,
+              "type": "string"
+            },
+            "maxItems": 64,
+            "type": "array"
+          },
+          "content": {
+            "maxLength": 1048576,
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "executable": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "hostId": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "lines": {
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "operation": {
+            "enum": [
+              "health",
+              "system_info",
+              "journal",
+              "network",
+              "file_read",
+              "git_status",
+              "service-restart",
+              "file-write",
+              "project-command"
+            ],
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "preview_hash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "previewHash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "unit": {
+            "pattern": "^[A-Za-z0-9_.@:-]{1,256}\\.service$",
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "hostId",
+          "operation",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "repo_map",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "response_mode",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "restore_deleted_file",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "recoveryId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "recoveryId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "review_changes",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "review_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "route_intent",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "run_affected_tests",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "schedule",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "args": {
+            "items": {
+              "maxLength": 4096,
+              "type": "string"
+            },
+            "maxItems": 64,
+            "type": "array"
+          },
+          "arguments": {
+            "items": {
+              "maxLength": 4096,
+              "type": "string"
+            },
+            "maxItems": 64,
+            "type": "array"
+          },
+          "calendar": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "command": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "executable": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "name": {
+            "pattern": "^[A-Za-z0-9_.@:-]{1,200}$",
+            "type": "string"
+          },
+          "onCalendar": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "operation": {
+            "default": "list",
+            "enum": [
+              "list",
+              "plan",
+              "create",
+              "enable",
+              "disable",
+              "remove"
+            ],
+            "type": "string"
+          },
+          "persistent": {
+            "type": "boolean"
+          },
+          "plan_hash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "planHash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "unit": {
+            "pattern": "^[A-Za-z0-9_.@:-]{1,200}(?:\\.(?:timer|service))?$",
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_all",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "glob": {
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "includeIgnored": {
+            "default": false,
+            "type": "boolean"
+          },
+          "maxResults": {
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "query": {
+            "maxLength": 32768,
+            "minLength": 1,
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "query",
+          "includeIgnored"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_files",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "glob": {
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "includeIgnored": {
+            "default": false,
+            "type": "boolean"
+          },
+          "maxResults": {
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "includeIgnored"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_text",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "glob": {
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "includeIgnored": {
+            "default": false,
+            "type": "boolean"
+          },
+          "maxResults": {
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "query": {
+            "maxLength": 32768,
+            "minLength": 1,
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "includeIgnored",
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "self_heal_apply",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "self_heal_plan",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "service",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "operation": {
+            "default": "status",
+            "enum": [
+              "list",
+              "status",
+              "is-enabled",
+              "start",
+              "stop",
+              "restart",
+              "reload",
+              "enable",
+              "disable"
+            ],
+            "type": "string"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "unit": {
+            "pattern": "^[A-Za-z0-9_.@:-]{1,256}\\.(service|socket|timer|path)$",
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "service_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "session_checkpoint",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "session_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "session_handoff",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "maxDiffBytes": {
+            "maximum": 100000,
+            "minimum": 1000,
+            "type": "integer"
+          },
+          "trackerPath": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "session_history",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "session_resume",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "shell",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "approval": {
+            "default": "use_policy",
+            "enum": [
+              "use_policy",
+              "always_ask",
+              "skip"
+            ],
+            "type": "string"
+          },
+          "arguments": {
+            "items": {
+              "maxLength": 32768,
+              "type": "string"
+            },
+            "maxItems": 128,
+            "type": "array"
+          },
+          "cwd": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "executable": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "type": "string"
+          },
+          "execution": {
+            "default": "background",
+            "enum": [
+              "foreground",
+              "background",
+              "auto"
+            ],
+            "type": "string"
+          },
+          "include_stderr": {
+            "default": true,
+            "type": "boolean"
+          },
+          "include_stdout": {
+            "default": true,
+            "type": "boolean"
+          },
+          "max_output_bytes": {
+            "maximum": 8388608,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "operation": {
+            "default": "run",
+            "enum": [
+              "run",
+              "list",
+              "status",
+              "wait",
+              "logs",
+              "result",
+              "cancel",
+              "resume",
+              "approve",
+              "deny"
+            ],
+            "type": "string"
+          },
+          "privilege": {
+            "default": "user",
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "type": "string"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "tail_lines": {
+            "maximum": 10000,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "task_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "timeout_seconds": {
+            "maximum": 604800,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "privilege",
+          "execution",
+          "include_stdout",
+          "include_stderr",
+          "approval",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "skill_load",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "skill_match",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "skills_import",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "skills_list",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "source": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "skills_read",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "relativePath": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "skillId": {
+            "maxLength": 512,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "skillId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "startup_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "symbol_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "symbol_search",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "system_info",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "limit": {
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "operation": {
+            "default": "summary",
+            "enum": [
+              "summary",
+              "all",
+              "cpu",
+              "memory",
+              "disk",
+              "disks",
+              "battery",
+              "uptime",
+              "os",
+              "processes",
+              "ports"
+            ],
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "top_count": {
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "task_cancel",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "task_create",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "task_list",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "task_result",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "task_status",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "telemetry_dashboard",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "test_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "test_failures",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "test_history",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_aliases",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_batch",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "calls": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "arguments": {
+                  "additionalProperties": {},
+                  "default": {},
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "dependsOn": {
+                  "default": [],
+                  "items": {
+                    "maxLength": 128,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "maxItems": 50,
+                  "type": "array"
+                },
+                "id": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "timeoutMs": {
+                  "maximum": 14400000,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "tool": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "tool",
+                "arguments",
+                "dependsOn"
+              ],
+              "type": "object"
+            },
+            "maxItems": 50,
+            "type": "array"
+          },
+          "groups": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "calls": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": {},
+                        "default": {},
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "dependsOn": {
+                        "default": [],
+                        "items": {
+                          "maxLength": 128,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "maxItems": 50,
+                        "type": "array"
+                      },
+                      "id": {
+                        "maxLength": 128,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "timeoutMs": {
+                        "maximum": 14400000,
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "tool": {
+                        "maxLength": 128,
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "arguments",
+                      "dependsOn"
+                    ],
+                    "type": "object"
+                  },
+                  "maxItems": 50,
+                  "minItems": 1,
+                  "type": "array"
+                },
+                "id": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "parallel": {
+                  "default": true,
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "parallel",
+                "calls"
+              ],
+              "type": "object"
+            },
+            "maxItems": 20,
+            "type": "array"
+          },
+          "parallel": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "parallel"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_categories",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_describe",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_dynamic_filter",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_function_find",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_schema_list",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_schema_register",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_search",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "trace_symbol",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "type_search",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "ui_target_action",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "default": "click",
+            "enum": [
+              "click",
+              "focus",
+              "read_value",
+              "set_value",
+              "select_item",
+              "menu_select"
+            ],
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "markId": {
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "observationHash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "observationId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "timeout_seconds": {
+            "maximum": 14400,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          },
+          "value": {
+            "maxLength": 1000000,
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "observationId",
+          "markId",
+          "action",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "verify_incremental",
+      "permission": "EXECUTE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "vision",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "capture_display",
+              "capture_region",
+              "capture_window",
+              "annotate",
+              "ocr"
+            ],
+            "type": "string"
+          },
+          "app": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "display_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "exact": {
+            "default": false,
+            "type": "boolean"
+          },
+          "image_base64": {
+            "maxLength": 16777216,
+            "minLength": 1,
+            "type": "string"
+          },
+          "marks": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "bounds": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "height": {
+                      "exclusiveMinimum": 0,
+                      "type": "number"
+                    },
+                    "width": {
+                      "exclusiveMinimum": 0,
+                      "type": "number"
+                    },
+                    "x": {
+                      "type": "number"
+                    },
+                    "y": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "x",
+                    "y",
+                    "width",
+                    "height"
+                  ],
+                  "type": "object"
+                },
+                "label": {
+                  "maxLength": 256,
+                  "type": "string"
+                },
+                "mark_id": {
+                  "maxLength": 32,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "mark_id",
+                "bounds"
+              ],
+              "type": "object"
+            },
+            "maxItems": 500,
+            "type": "array"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "min_confidence": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "region": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 32768,
+            "type": "string"
+          },
+          "timeout_seconds": {
+            "maximum": 14400,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          },
+          "window_index": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "action",
+          "exact",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "vision_annotated_capture",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "app": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "capture": {
+            "default": "display",
+            "enum": [
+              "display",
+              "region",
+              "window"
+            ],
+            "type": "string"
+          },
+          "display_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "max_depth": {
+            "maximum": 12,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "max_marks": {
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "region": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "timeout_seconds": {
+            "maximum": 14400,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "ttl_seconds": {
+            "maximum": 300,
+            "minimum": 1,
+            "type": "number"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          },
+          "window_index": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "capture",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "visual_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "web_fetch",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "maxLength": 1000000,
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "headers": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "value": {
+                  "maxLength": 4096,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "value"
+              ],
+              "type": "object"
+            },
+            "maxItems": 64,
+            "type": "array"
+          },
+          "max_bytes": {
+            "maximum": 10485760,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "method": {
+            "default": "GET",
+            "enum": [
+              "GET",
+              "POST",
+              "PUT",
+              "DELETE",
+              "HEAD"
+            ],
+            "type": "string"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "timeout_seconds": {
+            "maximum": 600,
+            "minimum": 1,
+            "type": "number"
+          },
+          "url": {
+            "maxLength": 8192,
+            "minLength": 1,
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "url",
+          "method",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "window",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "default": false,
+            "type": "boolean"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "operation": {
+            "enum": [
+              "list",
+              "get_active",
+              "get_bounds",
+              "get_display",
+              "activate",
+              "close",
+              "minimize",
+              "maximize",
+              "restore",
+              "move",
+              "resize",
+              "set_window_frame"
+            ],
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "request_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "timeout_seconds": {
+            "maximum": 14400,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation",
+          "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "workspace_context",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "includeIgnored": {
+            "default": false,
+            "type": "boolean"
+          },
+          "intent": {
+            "default": "auto",
+            "enum": [
+              "auto",
+              "debug",
+              "implement",
+              "review",
+              "trace",
+              "explore"
+            ],
+            "type": "string"
+          },
+          "mode": {
+            "default": "optimized",
+            "enum": [
+              "optimized",
+              "full",
+              "exhaustive"
+            ],
+            "type": "string"
+          },
+          "pageSize": {
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "query": {
+            "maxLength": 32768,
+            "minLength": 1,
+            "type": "string"
+          },
+          "responseTargetBytes": {
+            "maximum": 8388608,
+            "minimum": 1024,
+            "type": "integer"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "query",
+          "intent",
+          "mode",
+          "includeIgnored"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "workspace_context_continue",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "continuationToken": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "pageSize": {
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "continuationToken"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "workspace_full_scan",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "glob": {
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "includeIgnored": {
+            "default": true,
+            "type": "boolean"
+          },
+          "pageSize": {
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "includeIgnored"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "workspace_full_scan_continue",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "continuationToken": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "pageSize": {
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "continuationToken"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "workspace_index",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "includeIgnored": {
+            "default": false,
+            "type": "boolean"
+          },
+          "rebuild": {
+            "default": false,
+            "type": "boolean"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "rebuild",
+          "includeIgnored"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "workspace_index_status",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "workspace_index_stop",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "workspace_index_watch",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "concurrency": {
+            "maximum": 32,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "debounceMs": {
+            "maximum": 60000,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "workspace_info",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "workspace_list",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "workspace_register",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "displayName": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "parentWorkspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "parentWorkspaceId",
+          "path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "workspace_snapshot",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "workspace_tree",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "maxDepth": {
+            "maximum": 8,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "maxEntries": {
+            "maximum": 5000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "write_file",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "content": {
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "userConfirmed": {
+            "type": "boolean"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "content"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

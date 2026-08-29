@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { SqliteDatabase } from './database.js';
-import { SqliteDatabaseTargetRepository } from './database-target-repository.js';
+import { SqliteDatabaseTargetRepository, type DatabaseTargetRegistration } from './database-target-repository.js';
 import { SqliteRemoteHostRepository } from './remote-host-repository.js';
 
 describe('v0.5 registered target repositories', () => {
@@ -12,10 +12,11 @@ describe('v0.5 registered target repositories', () => {
     const database = new SqliteDatabase(path.join(dir, 'state.sqlite'));
     try {
       const repository = new SqliteDatabaseTargetRepository(database);
-      await repository.insert({ id: 'pg-main', displayName: 'Main PostgreSQL', driver: 'postgresql', host: 'db.internal', port: 5432, databaseName: 'app', username: 'readonly', secretRef: 'db-pg-main' });
+      await repository.insert({ id: 'pg-main', displayName: 'Main PostgreSQL', driver: 'postgresql', host: 'db.internal', port: 5432, databaseName: 'app', username: 'readonly', secretRef: 'db-pg-main', readOnly: true });
       await expect(repository.get('pg-main')).resolves.toMatchObject({ driver: 'postgresql', secretRef: 'db-pg-main', port: 5432, readOnly: true });
       expect(database.connection.prepare('SELECT secret_ref FROM database_targets').all()).toEqual([{ secret_ref: 'db-pg-main' }]);
-      await expect(repository.insert({ id: 'bad', displayName: 'bad', driver: 'mysql', host: 'db', port: 3306, databaseName: 'app', username: 'u', secretRef: 'not a secret' })).rejects.toThrow();
+      await expect(repository.insert({ id: 'bad', displayName: 'bad', driver: 'mysql', host: 'db', port: 3306, databaseName: 'app', username: 'u', secretRef: 'not a secret', readOnly: true })).rejects.toThrow();
+      await expect(repository.insert({ id: 'writable', displayName: 'writable', driver: 'mysql', host: 'db', port: 3306, databaseName: 'app', username: 'u', secretRef: 'db-writable', readOnly: false } as unknown as DatabaseTargetRegistration)).rejects.toThrow();
     } finally { database.close(); }
   });
 

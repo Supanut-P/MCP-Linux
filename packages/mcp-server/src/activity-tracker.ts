@@ -127,6 +127,20 @@ export class ActivityTracker {
 
 export function summarizeToolTarget(toolName: string, input: unknown): string | undefined {
   if (!isRecord(input)) return undefined;
+  if (toolName === 'remote_host') {
+    const hostId = firstString(input, ['hostId', 'host_id']);
+    const workspaceId = firstString(input, ['workspaceId', 'workspace_id']);
+    const operation = firstString(input, ['operation', 'action', 'mode']);
+    const pathValue = firstString(input, ['path', 'targetPath']);
+    if (hostId !== undefined) {
+      const scope = workspaceId === undefined ? 'workspace:unscoped' : `workspace:${workspaceId}`;
+      const action = operation === undefined ? 'operation:unknown' : `operation:${operation}`;
+      const target = pathValue === undefined ? '' : ` target:${pathValue}`;
+      // hostId is the registered alias; it is safe metadata and avoids
+      // logging credentials or the remote command itself.
+      return summarizeForLog(`host:${hostId} ${scope} ${action}${target}`);
+    }
+  }
   const pathValue = firstString(input, ['path', 'relativePath', 'filePath', 'targetPath', 'sourcePath', 'destinationPath']);
   if (pathValue !== undefined) return summarizeForLog(pathValue);
   const query = firstString(input, ['query', 'pattern']);

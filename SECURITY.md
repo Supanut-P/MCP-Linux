@@ -5,6 +5,11 @@
 Security fixes are prioritized for the latest published Baitonghub-Linux-mcp
 release and the current `main` branch.
 
+The v1.0 stable contract is defined in
+[`docs/mcp/STABLE_TOOL_CONTRACT_V1.md`](docs/mcp/STABLE_TOOL_CONTRACT_V1.md).
+Report compatibility or authority changes against the exact contract fixture
+and release commit.
+
 ## Report a vulnerability privately
 
 Do **not** open a public issue for a suspected credential exposure, workspace
@@ -40,6 +45,12 @@ one of these boundaries:
 - a destructive action bypasses confirmation;
 - a secret appears in logs, audit, diagnostics, command arguments, or Git; or
 - an unauthenticated client reaches a protected HTTP MCP endpoint.
+
+v1 operational evidence should also include the package verifier output,
+contract snapshot result, upgrade/rollback test result, and (when claiming
+runtime stability) the output from `scripts/soak-linux-headless.sh`. The soak
+script records evidence but does not by itself certify a completed seven-day
+run.
 
 Only test machines, accounts, repositories, and data you own or are explicitly
 authorized to assess.

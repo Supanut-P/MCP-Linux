@@ -68,4 +68,24 @@ describe('RemoteHostBackend', () => {
     await expect(instance.execute({ hostId: 'vm103', workspaceId: 'ws-1', operation: 'file-write', path: '/srv/app/file.txt', content: 'safe', previewHash: String(preview.value.previewHash) })).resolves.toMatchObject({ ok: false, error: { code: 'PERMISSION_REQUIRED' } });
     await expect(instance.execute({ hostId: 'vm103', workspaceId: 'ws-1', operation: 'file-write', path: '/srv/app/file.txt', content: 'safe', previewHash: String(preview.value.previewHash), userConfirmed: true })).resolves.toMatchObject({ ok: true });
   });
+
+  it('canonicalizes project commands and rejects executable symlink escapes', async () => {
+    const calls: string[][] = [];
+    const instance = backend(calls);
+    const preview = await instance.execute({ hostId: 'vm103', workspaceId: 'ws-1', operation: 'project-command', path: '/srv/app', executable: '/srv/app/bin/run', arguments: ['--safe'], dry_run: true });
+    expect(preview).toMatchObject({ ok: true, value: { dry_run: true, preview: { command: ['/srv/app/file.txt', '--safe'] } } });
+
+    const escaping = new RemoteHostBackend({
+      platform: 'linux', registry: { get: async (): Promise<RegisteredRemoteHost> => host },
+      secrets: { get: async (): Promise<string> => '-----BEGIN PRIVATE KEY-----\nmock\n-----END PRIVATE KEY-----', set: async (): Promise<void> => undefined, delete: async (): Promise<void> => undefined },
+      knownHostsPathProvider: async (): Promise<{ readonly path: string }> => ({ path: '/tmp/known_hosts' }),
+      runner: async (_executable, args): Promise<{ readonly exitCode: number; readonly stdout: string }> => {
+        calls.push([...args]);
+        const command = args.slice(args.indexOf(`${host.username}@${host.host}`) + 1);
+        return { exitCode: 0, stdout: command[0] === 'realpath' && command[command.length - 1] === '/srv/app/link' ? '/etc/passwd\n' : '/srv/app\n' };
+      },
+    });
+    await expect(escaping.execute({ hostId: 'vm103', workspaceId: 'ws-1', operation: 'project-command', path: '/srv/app', executable: '/srv/app/link', dry_run: true }))
+      .resolves.toMatchObject({ ok: false, error: { code: 'PATH_OUTSIDE_WORKSPACE' } });
+  });
 });

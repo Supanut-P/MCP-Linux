@@ -49,6 +49,7 @@ jobs:
           pnpm test:integration
           pnpm test:release-gate
           pnpm docs:tools:check
+          pnpm test:v1
           pnpm exec vitest run tests/release/public-repo-hygiene.test.ts tests/packaging/headless-linux-tunnel.test.ts
 
       - name: Build Linux headless artifacts
@@ -58,9 +59,10 @@ jobs:
         shell: bash
         run: |
           cd dist
-          sha256sum --check Baitonghub-Linux-mcp-0.2.0-SHA256SUMS
-          dpkg-deb --contents Baitonghub-Linux-mcp-0.2.0-amd64.deb > deb-contents.txt
-          tar -tzf Baitonghub-Linux-mcp-0.2.0-linux-x64.tar.gz > tar-contents.txt
+          version=$(node -p "require('../package.json').version")
+          sha256sum --check "Baitonghub-Linux-mcp-${version}-SHA256SUMS"
+          dpkg-deb --contents "Baitonghub-Linux-mcp-${version}-amd64.deb" > deb-contents.txt
+          tar -tzf "Baitonghub-Linux-mcp-${version}-linux-x64.tar.gz" > tar-contents.txt
           if grep -Eiq '(^|/)[^/]+\.(exe|cmd|bat|ps1)$|windows-ocr|powershell' deb-contents.txt tar-contents.txt; then
             echo 'Forbidden Windows runtime found in Linux release' >&2
             exit 1
@@ -68,14 +70,15 @@ jobs:
           grep -q 'baitonghub-linux-mcp-tunnel@.service' deb-contents.txt
           grep -q 'install-linux-tunnel-client.sh' deb-contents.txt
           rm deb-contents.txt tar-contents.txt
+          sh ../scripts/verify-linux-package.sh .
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          body_path: RELEASE_NOTES_v0.2.0.md
+          body_path: RELEASE_NOTES_v1.0.0.md
           draft: false
           prerelease: false
           files: |
-            dist/Baitonghub-Linux-mcp-0.2.0-amd64.deb
-            dist/Baitonghub-Linux-mcp-0.2.0-linux-x64.tar.gz
-            dist/Baitonghub-Linux-mcp-0.2.0-SHA256SUMS
+            dist/Baitonghub-Linux-mcp-*-amd64.deb
+            dist/Baitonghub-Linux-mcp-*-linux-x64.tar.gz
+            dist/Baitonghub-Linux-mcp-*-SHA256SUMS

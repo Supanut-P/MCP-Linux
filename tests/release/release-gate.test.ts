@@ -27,8 +27,8 @@ describe('Baitonghub Linux release verification gate', () => {
     const workflow = await readFile(path.join(repositoryRoot, '.github', 'workflows', 'release.yml'), 'utf8');
     expect(workflow).toContain('pnpm package:linux:headless');
     expect(workflow).toContain('sha256sum --check');
-    expect(workflow).toContain('Baitonghub-Linux-mcp-0.2.0-amd64.deb');
-    expect(workflow).toContain('Baitonghub-Linux-mcp-0.2.0-linux-x64.tar.gz');
+    expect(workflow).toContain('Baitonghub-Linux-mcp-*-amd64.deb');
+    expect(workflow).toContain('Baitonghub-Linux-mcp-*-linux-x64.tar.gz');
     expect(workflow).toMatch(/exe\|cmd\|bat\|ps1/i);
     expect(workflow).not.toContain('package:windows');
   });

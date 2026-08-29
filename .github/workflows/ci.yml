@@ -42,4 +42,5 @@ jobs:
           pnpm test:packaging
           pnpm test:release-gate
           pnpm docs:tools:check
+          pnpm test:v1
           git diff --check

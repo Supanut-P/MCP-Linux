@@ -13,7 +13,7 @@ describe('v0.5 registered target repositories', () => {
     try {
       const repository = new SqliteDatabaseTargetRepository(database);
       await repository.insert({ id: 'pg-main', displayName: 'Main PostgreSQL', driver: 'postgresql', host: 'db.internal', port: 5432, databaseName: 'app', username: 'readonly', secretRef: 'db-pg-main' });
-      await expect(repository.get('pg-main')).resolves.toMatchObject({ driver: 'postgresql', secretRef: 'db-pg-main', port: 5432 });
+      await expect(repository.get('pg-main')).resolves.toMatchObject({ driver: 'postgresql', secretRef: 'db-pg-main', port: 5432, readOnly: true });
       expect(database.connection.prepare('SELECT secret_ref FROM database_targets').all()).toEqual([{ secret_ref: 'db-pg-main' }]);
       await expect(repository.insert({ id: 'bad', displayName: 'bad', driver: 'mysql', host: 'db', port: 3306, databaseName: 'app', username: 'u', secretRef: 'not a secret' })).rejects.toThrow();
     } finally { database.close(); }

@@ -26,6 +26,25 @@ the server rejects requests without
 the bearer token or an allowed `Host` header. The token is never written to
 stdout, logs, or audit records.
 
+## Registered database and SSH targets
+
+Target metadata is persisted in the local SQLite state database; passwords and
+SSH keys remain in Linux Secret Service and are referenced only by `secret-ref`.
+Use the packaged admin CLI to inspect or register targets before calling MCP:
+
+```sh
+baitonghub-linux-mcp database add pg-main postgresql db.internal 5432 app readonly db-pg-main
+baitonghub-linux-mcp database list
+baitonghub-linux-mcp remote-host add vm103 192.168.1.39 22 adminops ssh-vm103 SHA256:<pinned-host-key> /srv/app
+baitonghub-linux-mcp remote-host list
+```
+
+Database targets are stored as `readOnly=true` and accept only one bounded
+read query. `remote_host` read operations stay inside registered roots; remote
+mutations additionally require `workspaceId`, a matching dry-run hash, and
+`userConfirmed: true`. The CLI accepts references only; never put a secret
+value or private key on the command line.
+
 The packaged systemd template reads the per-user environment file from
 `/home/<user>/.config/baitonghub-linux-mcp/server.env`; create it with mode
 `600` before enabling `baitonghub-linux-mcp@<user>`. A system service must not

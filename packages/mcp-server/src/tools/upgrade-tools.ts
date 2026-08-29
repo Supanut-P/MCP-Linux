@@ -13,7 +13,11 @@ const upgradeInputSchema = z.object({}).passthrough();
  */
 export function upgradeTools(context: McpToolContext): McpToolDefinition[] {
   const runtime = new UpgradeRuntimeService(context.services, context.actor, context.contextEconomy);
-  return UPGRADE_TOOL_CATALOG.map((entry) => defineTool({
+  // These entries have concrete runtimes registered beside the upgrade catalog.
+  // Keep their catalog metadata for discovery, but do not register a second
+  // MCP handler under the same name.
+  const concrete = new Set(['db_inspect', 'db_query']);
+  return UPGRADE_TOOL_CATALOG.filter((entry) => !concrete.has(entry.name)).map((entry) => defineTool({
     name: entry.name,
     description: entry.description,
     permission: entry.permission,

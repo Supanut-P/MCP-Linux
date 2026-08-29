@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS database_targets (
   port INTEGER NOT NULL,
   database_name TEXT NOT NULL,
   username TEXT NOT NULL,
+  read_only INTEGER NOT NULL DEFAULT 1,
   secret_ref TEXT NOT NULL,
   created_at TEXT NOT NULL
 );

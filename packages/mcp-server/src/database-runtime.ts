@@ -16,7 +16,7 @@ import type { McpApplicationServices } from './tools/tool-types.js';
  */
 
 const SQLITE_EXTENSIONS = new Set(['.db', '.sqlite', '.sqlite3']);
-const MAX_QUERY_ROWS = 500;
+const MAX_QUERY_ROWS = 1_000;
 const MAX_SERVER_QUERY_ROWS = 1_000;
 const MAX_SERVER_QUERY_BYTES = 2 * 1024 * 1024;
 
@@ -30,6 +30,7 @@ export interface RegisteredDatabaseTarget {
   readonly port: number;
   readonly databaseName: string;
   readonly username: string;
+  readonly readOnly?: boolean;
   /** A Secret Service reference. The value itself must never cross this boundary. */
   readonly secretRef: string;
 }
@@ -57,6 +58,17 @@ export interface DatabaseRuntimeOptions {
   readonly secrets?: SecretStore;
   readonly resolveExecutable?: (name: string) => Promise<string | null>;
   readonly runner?: DatabaseCommandRunner;
+}
+
+interface DatabaseResponse {
+  readonly tool: 'db_inspect' | 'db_query';
+  readonly status: 'ready';
+  readonly available: true;
+  readonly provider: DatabaseTargetDriver;
+  readonly targetId: string;
+  readonly rows: number;
+  readonly truncated: boolean;
+  readonly result: readonly Record<string, unknown>[];
 }
 
 export class DatabaseRuntimeService {
@@ -117,15 +129,19 @@ export class DatabaseRuntimeService {
     const database = this.openReadonly(target.value);
     if (!database.ok) return database;
     try {
-      const rows = database.value.prepare(statement).all(...bindParameters(input)) as Record<string, unknown>[];
-      const bounded = rows.slice(0, maxRows);
+      const boundedStatement = /^(select|with)\b/i.test(statement)
+        ? `SELECT * FROM (${statement}) AS baitonghub_bounded LIMIT ${maxRows + 1}`
+        : statement;
+      const rows = database.value.prepare(boundedStatement).all(...bindParameters(input)) as Record<string, unknown>[];
+      const bounded = boundLocalRows(rows, maxRows);
+      if (!bounded.ok) return bounded;
       return ok({
         tool: 'db_query', status: 'ready', available: true,
         target: target.value,
-        columns: bounded.length === 0 ? [] : Object.keys(bounded[0]!),
-        rows: bounded.length,
-        truncated: rows.length > bounded.length,
-        result: bounded,
+        columns: bounded.value.rows.length === 0 ? [] : Object.keys(bounded.value.rows[0]!),
+        rows: bounded.value.rows.length,
+        truncated: bounded.value.truncated,
+        result: bounded.value.rows,
       });
     } catch (error) {
       return err(appError('INVALID_INPUT', `Query failed: ${error instanceof Error ? error.message : String(error)}`));
@@ -193,9 +209,16 @@ export class DatabaseRuntimeService {
   private async remoteInspect(target: RegisteredDatabaseTarget | null, input: Record<string, unknown>): Promise<Result<unknown>> {
     if (target === null) return err(appError('INVALID_INPUT', 'Registered database target was not found'));
     const statement = target.driver === 'postgresql'
-      ? 'SELECT table_schema, table_name FROM information_schema.tables WHERE table_schema NOT IN (\'pg_catalog\', \'information_schema\') ORDER BY table_schema, table_name'
-      : 'SELECT table_schema, table_name FROM information_schema.tables WHERE table_schema = DATABASE() ORDER BY table_schema, table_name';
-    return this.runServerQuery(target, statement, input, 'db_inspect');
+      ? `SELECT 'column' AS kind, table_schema AS schema_name, table_name, column_name AS object_name, data_type, '' AS foreign_table, '' AS foreign_column FROM information_schema.columns WHERE table_schema NOT IN ('pg_catalog', 'information_schema')
+         UNION ALL SELECT 'index', schemaname, tablename, indexname, '', '', '' FROM pg_indexes WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
+         UNION ALL SELECT 'foreign_key', kcu.table_schema, kcu.table_name, kcu.constraint_name, '', ccu.table_name, ccu.column_name FROM information_schema.key_column_usage kcu JOIN information_schema.constraint_column_usage ccu ON ccu.constraint_name = kcu.constraint_name AND ccu.table_schema = kcu.table_schema WHERE kcu.table_schema NOT IN ('pg_catalog', 'information_schema') ORDER BY 2, 3, 1, 4`
+      : `SELECT 'column' AS kind, table_schema AS schema_name, table_name, column_name AS object_name, data_type, '' AS foreign_table, '' AS foreign_column FROM information_schema.columns WHERE table_schema = DATABASE()
+         UNION ALL SELECT 'index', table_schema, table_name, index_name, '', '', '' FROM information_schema.statistics WHERE table_schema = DATABASE()
+         UNION ALL SELECT 'foreign_key', kcu.table_schema, kcu.table_name, kcu.constraint_name, '', kcu.referenced_table_name, kcu.referenced_column_name FROM information_schema.key_column_usage kcu WHERE kcu.table_schema = DATABASE() AND kcu.referenced_table_name IS NOT NULL ORDER BY 2, 3, 1, 4`;
+    const result = await this.runServerQuery(target, statement, input, 'db_inspect');
+    if (!result.ok) return result;
+    const rows = Array.isArray(result.value.result) ? result.value.result : [];
+    return ok({ ...result.value, tables: [...new Set(rows.map((row) => typeof row.table_name === 'string' ? row.table_name : undefined).filter((value): value is string => value !== undefined))], columns: rows.filter((row) => row.kind === 'column'), indexes: rows.filter((row) => row.kind === 'index'), foreignKeys: rows.filter((row) => row.kind === 'foreign_key') });
   }
 
   private async remoteQuery(target: RegisteredDatabaseTarget | null, input: Record<string, unknown>): Promise<Result<unknown>> {
@@ -206,21 +229,26 @@ export class DatabaseRuntimeService {
     return this.runServerQuery(target, statement, input, 'db_query');
   }
 
-  private async runServerQuery(target: RegisteredDatabaseTarget, statement: string, input: Record<string, unknown>, tool: 'db_inspect' | 'db_query'): Promise<Result<unknown>> {
+  private async runServerQuery(target: RegisteredDatabaseTarget, statement: string, input: Record<string, unknown>, tool: 'db_inspect' | 'db_query'): Promise<Result<DatabaseResponse>> {
+    if (target.readOnly !== true) return err(appError('PERMISSION_DENIED', 'Database target is not registered as read-only', true));
     if (this.options.secrets === undefined) return err(appError('CAPABILITY_UNAVAILABLE', 'Database Secret Service is not configured', true));
     let password: string | null;
     try { password = await this.options.secrets.get(target.secretRef); } catch { return err(appError('CAPABILITY_UNAVAILABLE', 'Database secret is unavailable', true)); }
     if (password === null || password.length === 0) return err(appError('CAPABILITY_UNAVAILABLE', 'Database secret is unavailable', true));
-    const executable = await (this.options.resolveExecutable ?? defaultResolveExecutable)(target.driver === 'postgresql' ? 'psql' : 'mysql');
+    let executable: string | null;
+    try { executable = await (this.options.resolveExecutable ?? defaultResolveExecutable)(target.driver === 'postgresql' ? 'psql' : 'mysql'); }
+    catch { return err(appError('CAPABILITY_UNAVAILABLE', `Database provider ${target.driver} is unavailable`, true)); }
     if (executable === null) return err(appError('CAPABILITY_UNAVAILABLE', `Database provider ${target.driver} is unavailable`, true));
-    const query = serverTransaction(target.driver, statement);
+    const requestedRows = typeof input.max_rows === 'number' && Number.isFinite(input.max_rows) ? Math.min(MAX_SERVER_QUERY_ROWS, Math.max(1, Math.trunc(input.max_rows))) : MAX_SERVER_QUERY_ROWS;
+    const boundedStatement = addServerLimit(statement, requestedRows);
+    const query = serverTransaction(target.driver, boundedStatement);
     const args = target.driver === 'postgresql'
       ? ['--no-password', '--tuples-only', '--csv', '--host', target.host, '--port', String(target.port), '--username', target.username, '--dbname', target.databaseName, '--command', query]
       : ['--batch', '--raw', '--skip-column-names', `--host=${target.host}`, `--port=${target.port}`, `--user=${target.username}`, `--database=${target.databaseName}`, '--execute', query];
     try {
       const result = await (this.options.runner ?? runDatabaseCommand)(executable, args, { environment: target.driver === 'postgresql' ? { PGPASSWORD: password } : { MYSQL_PWD: password }, maxBytes: MAX_SERVER_QUERY_BYTES + 1 });
       if (result.exitCode !== 0 || result.truncated === true) return err(appError('CAPABILITY_UNAVAILABLE', 'Database provider query failed or exceeded the response limit', true));
-      const bounded = boundServerRows(result.stdout, input.max_rows);
+      const bounded = boundServerRows(result.stdout, input.max_rows, tool === 'db_inspect');
       if (!bounded.ok) return bounded;
       return ok({ tool, status: 'ready', available: true, provider: target.driver, targetId: target.id, rows: bounded.value.rows.length, truncated: bounded.value.truncated, result: bounded.value.rows });
     } catch { return err(appError('CAPABILITY_UNAVAILABLE', 'Database provider query failed', true)); }
@@ -230,7 +258,8 @@ export class DatabaseRuntimeService {
 function validateServerReadQuery(statement: string): Result<string> {
   if (statement.length === 0) return err(appError('INVALID_INPUT', 'db_query requires sql'));
   if (statement.includes(';') || /(--|\/\*)/.test(statement)) return err(appError('INVALID_INPUT', 'Server database queries accept one statement without comments or semicolons'));
-  if (!/^(select|show|describe|desc|explain|with)\b/i.test(statement) || /\b(insert|update|delete|drop|alter|create|truncate|grant|revoke|replace|call|load|set|do|execute|merge)\b/i.test(statement)) return err(appError('PERMISSION_DENIED', 'Only one read-only database statement is permitted'));
+  if (!/^(select|show|describe|desc|explain|with)\b/i.test(statement) || /\b(insert|update|delete|drop|alter|create|truncate|grant|revoke|replace|call|load|set|do|execute|merge|for\s+update|lock\s+in\s+share\s+mode|into\s+(out|dump)file)\b/i.test(statement)
+    || /\b(pg_(?:terminate_backend|reload_conf|advisory_lock|try_advisory_lock)|(?:get|release)_lock|load_file|benchmark|sleep|sys_exec|xp_cmdshell|dblink|lo_import|lo_export|set_config|current_setting)\s*\(/i.test(statement)) return err(appError('PERMISSION_DENIED', 'Only one side-effect-free read-only database statement is permitted'));
   return ok(statement);
 }
 
@@ -240,21 +269,60 @@ function serverTransaction(driver: DatabaseTargetDriver, statement: string): str
     : `START TRANSACTION READ ONLY; SET SESSION MAX_EXECUTION_TIME=30000; ${statement}; COMMIT;`;
 }
 
-function boundServerRows(output: string, requested: unknown): Result<{ readonly rows: readonly Record<string, unknown>[]; readonly truncated: boolean }> {
+function addServerLimit(statement: string, maxRows: number): string {
+  return /^(select|with)\b/i.test(statement) ? `SELECT * FROM (${statement}) AS baitonghub_bounded LIMIT ${maxRows + 1}` : statement;
+}
+
+function boundServerRows(output: string, requested: unknown, inspection = false): Result<{ readonly rows: readonly Record<string, unknown>[]; readonly truncated: boolean }> {
   const maxRows = typeof requested === 'number' && Number.isFinite(requested) ? Math.min(MAX_SERVER_QUERY_ROWS, Math.max(1, Math.trunc(requested))) : MAX_SERVER_QUERY_ROWS;
   if (Buffer.byteLength(output, 'utf8') > MAX_SERVER_QUERY_BYTES) return err(appError('CAPABILITY_UNAVAILABLE', 'Database response exceeded the 2 MiB limit', true));
   const lines = output.split(/\r?\n/).filter((line) => line.length > 0);
+  const fields = ['kind', 'schema_name', 'table_name', 'object_name', 'data_type', 'foreign_table', 'foreign_column'];
   const rows: Record<string, unknown>[] = [];
   let bytes = 0;
   for (const line of lines) {
     if (rows.length >= maxRows) break;
-    const next = { value: line };
+    const values = parseDelimitedLine(line);
+    const next: Record<string, unknown> = inspection && values.length >= fields.length
+      ? Object.fromEntries(fields.map((field, index) => [field, redactSensitive(values[index] ?? '')]))
+      : { value: redactSensitive(line) };
     const nextBytes = Buffer.byteLength(JSON.stringify(next), 'utf8');
     if (bytes + nextBytes > MAX_SERVER_QUERY_BYTES) break;
     rows.push(next);
     bytes += nextBytes;
   }
   return ok({ rows, truncated: lines.length > rows.length });
+}
+
+function boundLocalRows(rows: readonly Record<string, unknown>[], maxRows: number): Result<{ readonly rows: readonly Record<string, unknown>[]; readonly truncated: boolean }> {
+  const bounded: Record<string, unknown>[] = [];
+  let bytes = 0;
+  for (const row of rows) {
+    if (bounded.length >= maxRows) break;
+    const serialized = JSON.stringify(row);
+    if (serialized === undefined) return err(appError('CAPABILITY_UNAVAILABLE', 'Database response could not be serialized', true));
+    const safe = JSON.parse(redactSensitive(serialized)) as Record<string, unknown>;
+    const size = Buffer.byteLength(JSON.stringify(safe), 'utf8');
+    if (bytes + size > MAX_SERVER_QUERY_BYTES) return err(appError('CAPABILITY_UNAVAILABLE', 'Database response exceeded the 2 MiB limit', true));
+    bounded.push(safe); bytes += size;
+  }
+  return ok({ rows: bounded, truncated: rows.length > bounded.length });
+}
+
+function parseDelimitedLine(line: string): string[] {
+  if (line.includes('\t')) return line.split('\t');
+  const values: string[] = []; let current = ''; let quoted = false;
+  for (let index = 0; index < line.length; index += 1) {
+    const character = line[index]!;
+    if (character === '"' && line[index - 1] !== '\\') { quoted = !quoted; continue; }
+    if (character === ',' && !quoted) { values.push(current); current = ''; continue; }
+    current += character;
+  }
+  values.push(current); return values;
+}
+
+function redactSensitive(value: string): string {
+  return value.replace(/((?:password|passwd|token|secret|api[_-]?key|authorization)\s*[:=]\s*)([^\s,;]+)/gi, '$1[REDACTED]');
 }
 
 async function defaultResolveExecutable(name: string): Promise<string | null> {

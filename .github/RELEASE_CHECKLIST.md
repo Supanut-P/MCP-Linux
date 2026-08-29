@@ -1,6 +1,6 @@
 # Baitonghub-Linux-mcp release checklist
 
-**Current version:** `v0.4.0`
+**Current version:** `v0.5.0`
 **Target:** Ubuntu 24.04 LTS x64, headless
 
 ## Source verification

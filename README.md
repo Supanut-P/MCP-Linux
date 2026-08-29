@@ -24,7 +24,7 @@ Baitonghub-Linux-mcp lets an MCP client work with a Linux machine through a
 controlled local runtime. It is intended for repository maintenance, coding,
 testing, Git workflows, command execution, and long-running development tasks.
 
-The v0.4.0 release is **headless**. It does not require Electron, a desktop
+The v0.5.0 release is **headless**. It does not require Electron, a desktop
 session, Chrome, Wayland, X11, or a system-installed Node.js runtime.
 
 ### What it can do
@@ -50,6 +50,10 @@ session, Chrome, Wayland, X11, or a system-installed Node.js runtime.
   with traversal and symlink checks.
 - Run read-only lockfile-selected dependency audits through `dependency_audit`
   without upgrade authority.
+- Inspect registered SQLite, PostgreSQL, and MySQL targets through `db_inspect`
+  and bounded read-only `db_query` calls.
+- Inspect explicitly registered Linux SSH hosts through `remote_host`; remote
+  mutations require a preview hash, audit workspace ID, and confirmation.
 
 ### Security model
 
@@ -70,7 +74,7 @@ They are redacted from stdout, application logs, audit records, and diagnostics.
 
 ## Supported platform
 
-| Item | v0.4 support |
+| Item | v0.5 support |
 | --- | --- |
 | Operating system | Ubuntu 24.04 LTS |
 | Architecture | x86_64 / amd64 |
@@ -80,14 +84,14 @@ They are redacted from stdout, application logs, audit records, and diagnostics.
 | Packages | DEB, Linux x64 tarball |
 
 ARM64, RPM, GUI automation, Windows migration, and unrestricted root access are
-outside the v0.4 release contract.
+outside the v0.5 release contract.
 
 ## Install
 
 Download the latest package from
 [GitHub Releases](https://github.com/Supanut-P/MCP-Linux/releases/latest).
 
-The v0.4 administration tools add bounded, explicitly confirmed mutations. They
+The v0.5 administration tools add bounded, explicitly confirmed mutations. They
 use `systemctl`, `apt`, `apt-cache`, and `dpkg-query` with fixed argv and never
 compose a shell command. Observability tools remain read-only and use `journalctl`, `ip`, `ss`,
 and `df` when those Ubuntu dependencies are available; a missing binary
@@ -96,17 +100,17 @@ returns structured `CAPABILITY_UNAVAILABLE` instead of a false success.
 ### Ubuntu DEB
 
 ```sh
- curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v0.4.0/Baitonghub-Linux-mcp-0.4.0-amd64.deb
- curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v0.4.0/Baitonghub-Linux-mcp-0.4.0-SHA256SUMS
- sha256sum --check --ignore-missing Baitonghub-Linux-mcp-0.4.0-SHA256SUMS
- sudo apt install ./Baitonghub-Linux-mcp-0.4.0-amd64.deb
+ curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v0.5.0/Baitonghub-Linux-mcp-0.5.0-amd64.deb
+ curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v0.5.0/Baitonghub-Linux-mcp-0.5.0-SHA256SUMS
+ sha256sum --check --ignore-missing Baitonghub-Linux-mcp-0.5.0-SHA256SUMS
+ sudo apt install ./Baitonghub-Linux-mcp-0.5.0-amd64.deb
 ```
 
 ### Linux x64 tarball
 
 ```sh
- curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v0.4.0/Baitonghub-Linux-mcp-0.4.0-linux-x64.tar.gz
- tar -xzf Baitonghub-Linux-mcp-0.4.0-linux-x64.tar.gz
+ curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v0.5.0/Baitonghub-Linux-mcp-0.5.0-linux-x64.tar.gz
+ tar -xzf Baitonghub-Linux-mcp-0.5.0-linux-x64.tar.gz
 ```
 
 ## Quick start: local STDIO

@@ -79,6 +79,16 @@ describe('DatabaseRuntimeService', () => {
     await expect(runtime.query({ workspaceId: 'ws-1', target: 'fake.db', sql: 'SELECT 1' })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
   });
 
+  it('fails closed when serialized query output exceeds 2 MiB', async () => {
+    await withDatabase(async (root, database) => {
+      const connection = new DatabaseSync(database);
+      connection.prepare('INSERT INTO users (name) VALUES (?)').run('x'.repeat(3 * 1024 * 1024));
+      connection.close();
+      const runtime = new DatabaseRuntimeService(servicesWithRoot(root), actor);
+      await expect(runtime.query({ workspaceId: 'ws-1', target: 'app.db', sql: 'SELECT name FROM users ORDER BY id', max_rows: 10 })).resolves.toMatchObject({ ok: false, error: { code: 'CAPABILITY_UNAVAILABLE' } });
+    });
+  });
+
   it.runIf(process.platform !== 'win32')('rejects a SQLite symlink that escapes the registered workspace', async () => {
     const root = await mkdtemp(path.join(tmpdir(), 'baitonghub-linux-mcp-db-link-test-'));
     const outside = path.join(root, '..', 'outside-link-target.db');

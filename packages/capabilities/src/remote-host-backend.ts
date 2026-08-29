@@ -1,12 +1,11 @@
 import { createHash } from 'node:crypto';
-import { access, chmod, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, chmod, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
 import type { SecretStore } from '@baitonghub-linux-mcp/shared';
 import type { NativeCapabilityBackend, NativeCapabilityHealth } from './platform/types.js';
-import { LinuxCommandRunner } from './linux-command-runner.js';
 
 export type RemoteHostOperation = 'health' | 'system_info' | 'journal' | 'network' | 'file_read' | 'git_status' | 'service-restart' | 'file-write' | 'project-command';
 
@@ -24,7 +23,7 @@ export interface RegisteredRemoteHost {
 export interface RemoteHostRegistry { get(id: string): Promise<RegisteredRemoteHost | null>; list?(): Promise<readonly RegisteredRemoteHost[]>; }
 
 export interface RemoteCommandResult { readonly exitCode: number | null; readonly stdout: string; readonly stderr?: string; readonly truncated?: boolean; }
-export type RemoteCommandRunner = (executable: string, args: readonly string[], options: { readonly input?: string; readonly signal?: AbortSignal; readonly maxBytes: number }) => Promise<RemoteCommandResult>;
+export type RemoteCommandRunner = (executable: string, args: readonly string[], options: { readonly input?: string; readonly signal?: AbortSignal; readonly maxBytes: number; readonly timeoutMs?: number }) => Promise<RemoteCommandResult>;
 
 export interface RemoteHostBackendOptions {
   readonly platform?: NodeJS.Platform;
@@ -51,7 +50,7 @@ export class RemoteHostBackend implements NativeCapabilityBackend {
     this.registry = options.registry;
     this.secrets = options.secrets;
     this.runner = options.runner ?? runRemoteCommand;
-    this.knownHostsPathProvider = options.knownHostsPathProvider ?? ((host) => createVerifiedKnownHosts(host, this.runner));
+    this.knownHostsPathProvider = options.knownHostsPathProvider ?? ((host): Promise<{ readonly path: string; readonly cleanup?: () => Promise<void> }> => createVerifiedKnownHosts(host, this.runner));
   }
 
   public async health(): Promise<NativeCapabilityHealth> {
@@ -71,7 +70,10 @@ export class RemoteHostBackend implements NativeCapabilityBackend {
     if (host === null) return invalid('Registered remote host was not found');
     if (host.roots.length === 0 || host.roots.some((root) => !path.posix.isAbsolute(root))) return invalid('Registered remote host roots are invalid');
     if (signal?.aborted === true) return cancelled();
-    if (isMutation(operation)) return this.mutation(host, operation, input, signal);
+    if (isMutation(operation)) {
+      if (typeof input.workspaceId !== 'string' || input.workspaceId.trim().length === 0) return invalid('Remote mutations require workspaceId for audit scope');
+      return this.mutation(host, operation, input, signal);
+    }
     const command = await this.readCommand(host, operation, input);
     if (!command.ok) return command;
     return this.run(host, command.value, signal);
@@ -90,7 +92,13 @@ export class RemoteHostBackend implements NativeCapabilityBackend {
     if (operation === 'network') return ok(['ip', '-j', 'addr']);
     if (operation === 'file_read') {
       const target = typeof input.path === 'string' ? input.path : '';
-      return this.registeredPath(host, target, ['cat', '--']);
+      if (isSecretPath(target)) return err(appError('PERMISSION_DENIED', 'Remote secret-file reads are not permitted', true));
+      const command = await this.registeredPath(host, target, ['cat', '--']);
+      if (!command.ok) return command;
+      const stat = await this.run(host, ['stat', '--printf=%F', '--', command.value[2]!]);
+      if (!stat.ok) return stat;
+      if (stat.value.output.trim() !== 'regular file') return err(appError('PERMISSION_DENIED', 'Remote file is not a regular file', true));
+      return command;
     }
     if (operation === 'git_status') {
       const target = typeof input.path === 'string' ? input.path : host.roots[0]!;
@@ -123,7 +131,7 @@ export class RemoteHostBackend implements NativeCapabilityBackend {
     if (supplied !== previewHash) return err(appError('PERMISSION_REQUIRED', 'Remote mutation requires a matching previewHash', true));
     if (input.userConfirmed !== true) return err(appError('PERMISSION_REQUIRED', 'Remote mutation requires explicit confirmation', true));
     const result = await this.run(host, plan.value.command, signal, plan.value.input);
-    return result.ok ? ok({ operation, hostId: host.id, previewHash, output: result.value.output }) : result;
+    return result.ok ? ok({ operation, hostId: host.id, hostAlias: host.displayName ?? host.host, ...(typeof input.workspaceId === 'string' ? { workspaceId: input.workspaceId } : {}), previewHash, output: result.value.output }) : result;
   }
 
   private async mutationPlan(host: RegisteredRemoteHost, operation: RemoteHostOperation, input: Record<string, unknown>): Promise<Result<{ readonly command: readonly string[]; readonly input?: string }>> {
@@ -133,6 +141,7 @@ export class RemoteHostBackend implements NativeCapabilityBackend {
       return ok({ command: ['systemctl', 'restart', unit] });
     }
     const target = typeof input.path === 'string' ? input.path : '';
+    if (operation === 'file-write' && isSecretPath(target)) return err(appError('PERMISSION_DENIED', 'Remote secret-file writes are not permitted', true));
     const checked = await this.registeredPath(host, target, operation === 'file-write' ? ['tee', '--'] : []);
     if (!checked.ok) return checked;
     if (operation === 'file-write') {
@@ -141,10 +150,16 @@ export class RemoteHostBackend implements NativeCapabilityBackend {
       return ok({ command: checked.value, input: content });
     }
     const executable = typeof input.executable === 'string' ? input.executable : '';
-    if (!path.posix.isAbsolute(executable) || !isWithin(target, executable) || !SAFE_ARG.test(executable)) return err(appError('PATH_OUTSIDE_WORKSPACE', 'Project executable must be inside the requested registered root', true));
+    if (!path.posix.isAbsolute(executable) || !SAFE_ARG.test(executable)) return err(appError('PATH_OUTSIDE_WORKSPACE', 'Project executable must be inside a registered root', true));
+    const executableCheck = await this.registeredPath(host, executable, []);
+    if (!executableCheck.ok) return executableCheck;
+    const canonicalExecutable = executableCheck.value[0];
+    if (canonicalExecutable === undefined) return err(appError('PATH_OUTSIDE_WORKSPACE', 'Project executable could not be resolved', true));
+    const canonicalTarget = checked.value[2];
+    if (canonicalTarget === undefined || !isWithin(canonicalTarget, canonicalExecutable)) return err(appError('PATH_OUTSIDE_WORKSPACE', 'Project executable must stay inside the requested remote workspace', true));
     const args = Array.isArray(input.arguments) ? input.arguments : [];
     if (!args.every((value) => typeof value === 'string' && SAFE_ARG.test(value))) return invalid('Project command arguments are invalid');
-    return ok({ command: [executable, ...args] });
+    return ok({ command: [canonicalExecutable, ...args] });
   }
 
   private async run(host: RegisteredRemoteHost, remoteCommand: readonly string[], signal?: AbortSignal, input?: string): Promise<Result<{ readonly output: string }>> {
@@ -152,23 +167,27 @@ export class RemoteHostBackend implements NativeCapabilityBackend {
     let credential: string | null;
     try { credential = await this.secrets.get(host.secretRef); } catch { return err(appError('CAPABILITY_UNAVAILABLE', 'Remote host credential is unavailable', true)); }
     if (credential === null || credential.length === 0) return err(appError('CAPABILITY_UNAVAILABLE', 'Remote host credential is unavailable', true));
-    const knownHosts = await this.knownHostsPathProvider(host);
+    let knownHosts: { readonly path: string; readonly cleanup?: () => Promise<void> };
+    try { knownHosts = await this.knownHostsPathProvider(host); } catch { return err(appError('CAPABILITY_UNAVAILABLE', 'Pinned SSH host verification is unavailable', true)); }
     let keyPath: string | undefined;
     let keyCleanup: (() => Promise<void>) | undefined;
     try {
       if (credential.includes('PRIVATE KEY')) {
         const dir = await mkdtemp(path.join(tmpdir(), 'baitonghub-ssh-key-'));
         keyPath = path.join(dir, 'id'); await writeFile(keyPath, credential, { mode: 0o600 }); await chmod(keyPath, 0o600);
-        keyCleanup = async () => rm(dir, { recursive: true, force: true });
+        keyCleanup = async (): Promise<void> => rm(dir, { recursive: true, force: true });
       } else {
         await access(credential); keyPath = credential;
       }
       const args = ['-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', `UserKnownHostsFile=${knownHosts.path}`, '-o', 'IdentitiesOnly=yes', '-o', 'ForwardAgent=no', '-o', 'PermitLocalCommand=no', '-o', 'ClearAllForwardings=yes', '-o', 'ConnectTimeout=10', '-p', String(host.port), '-i', keyPath!, `${host.username}@${host.host}`, ...remoteCommand];
-      const result = await this.runner('ssh', args, { ...(input === undefined ? {} : { input }), ...(signal === undefined ? {} : { signal }), maxBytes: MAX_OUTPUT_BYTES });
+      const result = await this.runner('ssh', args, { ...(input === undefined ? {} : { input }), ...(signal === undefined ? {} : { signal }), maxBytes: MAX_OUTPUT_BYTES, timeoutMs: 30_000 });
       if (result.exitCode !== 0 || result.truncated === true) return err(appError('CAPABILITY_UNAVAILABLE', 'Remote SSH operation failed or exceeded the response limit', true));
       return ok({ output: redact(result.stdout) });
     } catch { return err(appError('CAPABILITY_UNAVAILABLE', 'Remote SSH operation failed', true)); }
-    finally { await keyCleanup?.(); await knownHosts.cleanup?.(); }
+    finally {
+      if (keyCleanup !== undefined) await keyCleanup().catch(() => undefined);
+      if (knownHosts.cleanup !== undefined) await knownHosts.cleanup().catch(() => undefined);
+    }
   }
 }
 
@@ -189,12 +208,16 @@ function matchesFingerprint(line: string, expected: string): boolean {
   try { return `SHA256:${createHash('sha256').update(Buffer.from(parts[2]!, 'base64')).digest('base64').replace(/=+$/, '')}` === expected; } catch { return false; }
 }
 
-async function runRemoteCommand(executable: string, args: readonly string[], options: { readonly input?: string; readonly signal?: AbortSignal; readonly maxBytes: number }): Promise<RemoteCommandResult> {
+async function runRemoteCommand(executable: string, args: readonly string[], options: { readonly input?: string; readonly signal?: AbortSignal; readonly maxBytes: number; readonly timeoutMs?: number }): Promise<RemoteCommandResult> {
   const child = spawn(executable, [...args], { shell: false, stdio: ['pipe', 'pipe', 'ignore'], signal: options.signal });
   return new Promise((resolve, reject) => {
     let stdout = ''; let bytes = 0; let truncated = false;
+    let timedOut = false;
+    let closed = false;
+    const escalation = options.timeoutMs === undefined ? undefined : setTimeout(() => { timedOut = true; child.kill('SIGTERM'); setTimeout(() => { if (!closed) child.kill('SIGKILL'); }, 500); }, options.timeoutMs);
     child.stdout.on('data', (chunk: Buffer) => { const slice = chunk.subarray(0, Math.max(0, options.maxBytes - bytes)); stdout += slice.toString('utf8'); bytes += slice.byteLength; if (slice.byteLength < chunk.byteLength) truncated = true; });
-    child.once('error', reject); child.once('close', (exitCode) => resolve({ exitCode, stdout, truncated })); child.stdin.end(options.input ?? '');
+    child.once('error', (error) => { closed = true; if (escalation !== undefined) clearTimeout(escalation); reject(error); });
+    child.once('close', (exitCode) => { closed = true; if (escalation !== undefined) clearTimeout(escalation); resolve({ exitCode: timedOut ? null : exitCode, stdout, truncated }); }); child.stdin.end(options.input ?? '');
   });
 }
 
@@ -203,5 +226,9 @@ function isRecord(value: unknown): value is Record<string, unknown> { return typ
 function isMutation(operation: RemoteHostOperation): boolean { return operation === 'service-restart' || operation === 'file-write' || operation === 'project-command'; }
 function isWithin(root: string, candidate: string): boolean { const relative = path.posix.relative(path.posix.normalize(root), path.posix.normalize(candidate)); return relative === '' || (relative !== '..' && !relative.startsWith('../') && !path.posix.isAbsolute(relative)); }
 function redact(value: string): string { return value.replace(/\b(token|secret|password|api[_-]?key|private[_-]?key)\s*[:=]\s*[^\s,;]+/gi, '$1=[redacted]'); }
+function isSecretPath(value: string): boolean {
+  const basename = path.posix.basename(value).toLowerCase();
+  return basename === '.env' || basename.startsWith('.env.') || basename === 'id_rsa' || basename === 'id_ed25519' || basename === 'credentials' || basename.startsWith('secret') || basename.includes('password');
+}
 function invalid(message: string): Result<never> { return err(appError('INVALID_INPUT', message)); }
 function cancelled(): Result<never> { return err(appError('PROCESS_TIMEOUT', 'Remote operation was cancelled', true)); }

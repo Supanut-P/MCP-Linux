@@ -30,7 +30,7 @@ describe('MCP tool registry', () => {
       'read_file_page', 'read_file_page_continue',
       'workspace_index', 'workspace_index_status', 'workspace_index_watch', 'workspace_index_stop',
       'session_handoff', 'verify_incremental',
-      ...UPGRADE_TOOL_CATALOG.map((entry) => entry.name),
+      ...UPGRADE_TOOL_CATALOG.filter((entry) => !['db_inspect', 'db_query'].includes(entry.name)).map((entry) => entry.name),
       'tool_batch',
     ]);
   });

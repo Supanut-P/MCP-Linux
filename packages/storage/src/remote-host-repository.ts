@@ -54,4 +54,4 @@ function validateRemoteHost(host: RemoteHostRegistration): void {
     || !/^SHA256:[A-Za-z0-9+/=]{20,}$/.test(host.pinnedFingerprint) || host.roots.length === 0 || host.roots.some((root) => !root.startsWith('/'))) throw new Error('Remote host registration is invalid');
 }
 
-function isRecord(value: unknown): value is Record<string, any> { return typeof value === 'object' && value !== null && !Array.isArray(value); }
+function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null && !Array.isArray(value); }

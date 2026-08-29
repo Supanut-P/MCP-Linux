@@ -389,6 +389,7 @@ export const dependencyAuditCapabilitySchema = z.object({
 
 export const remoteHostCapabilitySchema = z.object({
   hostId: z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/),
+  workspaceId: optionalWorkspaceIdSchema,
   operation: z.enum(['health', 'system_info', 'journal', 'network', 'file_read', 'git_status', 'service-restart', 'file-write', 'project-command']),
   unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,256}\.service$/).optional(),
   path: pathSchema.optional(),

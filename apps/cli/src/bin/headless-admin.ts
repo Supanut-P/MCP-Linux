@@ -2,7 +2,7 @@ import { createServer } from 'node:net';
 import { existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { resolveBaitonghubLinuxMcpPaths } from '@baitonghub-linux-mcp/shared';
-import { SqliteDatabase, SqliteWorkspaceRepository } from '@baitonghub-linux-mcp/storage';
+import { SqliteDatabase, SqliteDatabaseTargetRepository, SqliteRemoteHostRepository, SqliteWorkspaceRepository, type DatabaseTargetDriver } from '@baitonghub-linux-mcp/storage';
 import { WorkspaceService } from '@baitonghub-linux-mcp/workspace';
 
 export async function main(): Promise<void> {
@@ -12,7 +12,11 @@ export async function main(): Promise<void> {
   if (command === 'doctor') return doctor();
   if (command === 'workspace' && args[1] === 'list') return listWorkspaces();
   if (command === 'workspace' && args[1] === 'add' && args[2] !== undefined) return addWorkspace(args[2]);
-  process.stderr.write('Usage: baitonghub-linux-mcp status | doctor | workspace add <path> | workspace list\n');
+  if (command === 'database' && args[1] === 'list') return listDatabases();
+  if (command === 'database' && args[1] === 'add') return addDatabase(args.slice(2));
+  if (command === 'remote-host' && args[1] === 'list') return listRemoteHosts();
+  if (command === 'remote-host' && args[1] === 'add') return addRemoteHost(args.slice(2));
+  process.stderr.write('Usage: baitonghub-linux-mcp status | doctor | workspace add <path> | workspace list | database list | database add <id> <driver> <host> <port> <database> <username> <secret-ref> | remote-host list | remote-host add <id> <host> <port> <username> <secret-ref> <fingerprint> <root[,root...]>\n');
   process.exitCode = 2;
 }
 
@@ -21,6 +25,13 @@ function openDatabase(): { readonly dataPath: string; readonly database: SqliteD
   mkdirSync(dataPath, { recursive: true });
   const database = new SqliteDatabase(path.join(dataPath, 'baitonghub-linux-mcp.sqlite'), { backupDirectory: path.join(dataPath, 'backups') });
   return { dataPath, database, workspaces: new SqliteWorkspaceRepository(database) };
+}
+
+function openRegistries(): { readonly database: SqliteDatabase; readonly targets: SqliteDatabaseTargetRepository; readonly hosts: SqliteRemoteHostRepository } {
+  const dataPath = resolveBaitonghubLinuxMcpPaths(process.env, process.platform).dataPath;
+  mkdirSync(dataPath, { recursive: true });
+  const database = new SqliteDatabase(path.join(dataPath, 'baitonghub-linux-mcp.sqlite'), { backupDirectory: path.join(dataPath, 'backups') });
+  return { database, targets: new SqliteDatabaseTargetRepository(database), hosts: new SqliteRemoteHostRepository(database) };
 }
 
 async function status(): Promise<void> {
@@ -45,6 +56,49 @@ async function addWorkspace(rootPath: string): Promise<void> {
     if (!result.ok) { process.stderr.write(`${result.error.message}\n`); process.exitCode = 1; return; }
     process.stdout.write(`workspace added: ${result.value.id}\n`);
   } finally { opened.database.close(); }
+}
+
+async function listDatabases(): Promise<void> {
+  const opened = openRegistries();
+  try {
+    const targets = await opened.targets.list();
+    if (targets.length === 0) process.stdout.write('No database targets configured\n');
+    else for (const target of targets) process.stdout.write(`${target.id}\t${target.driver}\t${target.host}:${target.port}/${target.databaseName}\treadOnly=${target.readOnly}\n`);
+  } finally { opened.database.close(); }
+}
+
+async function addDatabase(values: readonly string[]): Promise<void> {
+  if (values.length !== 7 || !['postgresql', 'mysql'].includes(values[1]!)) { process.stderr.write('Usage: database add <id> <postgresql|mysql> <host> <port> <database> <username> <secret-ref>\n'); process.exitCode = 2; return; }
+  const port = Number(values[3]);
+  if (!Number.isInteger(port)) { process.stderr.write('Database port must be an integer\n'); process.exitCode = 2; return; }
+  const opened = openRegistries();
+  try {
+    await opened.targets.insert({ id: values[0]!, displayName: values[0]!, driver: values[1]! as DatabaseTargetDriver, host: values[2]!, port, databaseName: values[4]!, username: values[5]!, secretRef: values[6]!, readOnly: true });
+    process.stdout.write(`database target added: ${values[0]}\n`);
+  } catch (error: unknown) { process.stderr.write(`${error instanceof Error ? error.message : 'database target could not be added'}\n`); process.exitCode = 1; }
+  finally { opened.database.close(); }
+}
+
+async function listRemoteHosts(): Promise<void> {
+  const opened = openRegistries();
+  try {
+    const hosts = await opened.hosts.list();
+    if (hosts.length === 0) process.stdout.write('No remote hosts configured\n');
+    else for (const host of hosts) process.stdout.write(`${host.id}\t${host.displayName}\t${host.host}:${host.port}\troots=${host.roots.join(',')}\n`);
+  } finally { opened.database.close(); }
+}
+
+async function addRemoteHost(values: readonly string[]): Promise<void> {
+  if (values.length !== 7) { process.stderr.write('Usage: remote-host add <id> <host> <port> <username> <secret-ref> <SHA256:fingerprint> <root[,root...]>\n'); process.exitCode = 2; return; }
+  const port = Number(values[2]);
+  const roots = values[6]!.split(',').map((root) => root.trim()).filter(Boolean);
+  if (!Number.isInteger(port) || roots.length === 0) { process.stderr.write('Remote host port must be an integer and at least one root is required\n'); process.exitCode = 2; return; }
+  const opened = openRegistries();
+  try {
+    await opened.hosts.insert({ id: values[0]!, displayName: values[0]!, host: values[1]!, port, username: values[3]!, secretRef: values[4]!, pinnedFingerprint: values[5]!, roots });
+    process.stdout.write(`remote host added: ${values[0]}\n`);
+  } catch (error: unknown) { process.stderr.write(`${error instanceof Error ? error.message : 'remote host could not be added'}\n`); process.exitCode = 1; }
+  finally { opened.database.close(); }
 }
 
 async function doctor(): Promise<void> {

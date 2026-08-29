@@ -56,6 +56,7 @@ export const capabilityDescriptors: readonly CapabilityDescriptor[] = Object.fre
   descriptor('container', 'optional', 'DANGEROUS', 'container', ['docker or podman'], true, true),
   descriptor('archive', 'always', 'DANGEROUS', 'filesystem', ['tar/unzip/zip'], true, true),
   descriptor('dependency_audit', 'optional', 'READ', 'workspace', ['pnpm/npm/pip/cargo'], true, true),
+  descriptor('remote_host', 'optional', 'DANGEROUS', 'remote-host', ['OpenSSH, registered host, Secret Service'], true, true),
 ]);
 
 export function capabilityToolNamesForPlatform(platform: NodeJS.Platform): readonly CapabilityToolName[] {

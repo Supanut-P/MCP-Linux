@@ -62,6 +62,10 @@ export function inspectDestructiveOperation(toolName: string, input: unknown): D
       return value.operation === 'create' || value.operation === 'extract'
         ? destructive('archive write or extraction requires explicit confirmation')
         : { destructive: false };
+    case 'remote_host':
+      return ['service-restart', 'file-write', 'project-command'].includes(String(value.operation ?? ''))
+        ? destructive('remote host mutation requires a matching preview and explicit confirmation')
+        : { destructive: false };
     case 'mcp_call':
       return destructive('child MCP side effects cannot be proven non-destructive at the gateway boundary');
     case 'window':

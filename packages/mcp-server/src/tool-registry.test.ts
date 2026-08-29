@@ -23,7 +23,7 @@ describe('MCP tool registry', () => {
       'apply_patch', 'move_file', 'copy_file', 'delete_file', 'restore_deleted_file', 'process_start', 'process_list', 'process_status',
       'process_logs', 'process_stop', 'project_dev', 'project_test', 'project_lint',
       'project_typecheck', 'project_build', 'shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'vision_annotated_capture', 'ui_target_action', 'window', 'health',
-      'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit',
+      'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit', 'remote_host', 'db_inspect', 'db_query',
       'skills_list', 'skills_read', 'mcp_list', 'mcp_describe', 'mcp_call',
       'workspace_context', 'workspace_context_continue', 'workspace_full_scan', 'workspace_full_scan_continue',
       'workspace_snapshot', 'search_all', 'read_many_files',
@@ -71,6 +71,9 @@ describe('MCP tool registry', () => {
     expect(byName.get('package')?.parse({ operation: 'install', packages: ['jq'], dry_run: true })).toMatchObject({ ok: true });
     expect(byName.get('package')?.parse({ operation: 'install', packages: ['../../etc/passwd'] })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
     expect(byName.get('schedule')?.parse({ operation: 'list' })).toMatchObject({ ok: true });
+    expect(byName.get('remote_host')?.parse({ hostId: 'vm103', operation: 'system_info' })).toMatchObject({ ok: true });
+    expect(byName.get('db_inspect')?.parse({ targetId: 'pg-main' })).toMatchObject({ ok: true });
+    expect(byName.get('db_query')?.parse({ targetId: 'pg-main', sql: 'SELECT 1' })).toMatchObject({ ok: true });
   });
 
   it('allows workspace discovery under the balanced tunnel profile', async () => {

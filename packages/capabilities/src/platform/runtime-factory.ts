@@ -20,6 +20,8 @@ import { WebFetchCapabilityBackend } from '../web-fetch-backend.js';
 import { ContainerBackend } from '../container-backend.js';
 import { ArchiveBackend } from '../archive-backend.js';
 import { DependencyAuditBackend } from '../dependency-audit-backend.js';
+import { RemoteHostBackend, type RemoteHostRegistry } from '../remote-host-backend.js';
+import type { SecretStore } from '@baitonghub-linux-mcp/shared';
 import type { PlatformRuntimeFactory } from './types.js';
 
 export interface PlatformCapabilityRuntime {
@@ -42,6 +44,8 @@ export interface PlatformCapabilityRuntimeOptions {
   /** Optional fixed command runner seam for deterministic host-level administration tests. */
   readonly adminRunner?: LinuxCommandRunner;
   readonly adminResolveExecutable?: (name: string) => Promise<string | null>;
+  readonly remoteHostRegistry?: RemoteHostRegistry;
+  readonly secretStore?: SecretStore;
 }
 
 /** Linux-headless composition root shared by STDIO and HTTP transports. */
@@ -116,6 +120,11 @@ function linuxRuntime(
   const container = new ContainerBackend({ ...adminOptions, allowedRootsProvider: options.allowedRootsProvider });
   const archive = new ArchiveBackend({ ...adminOptions, allowedRootsProvider: options.allowedRootsProvider });
   const dependencyAudit = new DependencyAuditBackend({ ...adminOptions, allowedRootsProvider: options.allowedRootsProvider });
+  const remoteHost = new RemoteHostBackend({
+    platform: 'linux',
+    ...(options.remoteHostRegistry === undefined ? {} : { registry: options.remoteHostRegistry }),
+    ...(options.secretStore === undefined ? {} : { secrets: options.secretStore }),
+  });
   const notification = new LinuxNativeCapabilityBackend('notification', nativeOptions);
   const fileDialog = new LinuxNativeCapabilityBackend('file_dialog', nativeOptions);
   const clipboard = new LinuxNativeCapabilityBackend('clipboard', nativeOptions);
@@ -137,6 +146,7 @@ function linuxRuntime(
     container,
     archive,
     dependency_audit: dependencyAudit,
+    remote_host: remoteHost,
   };
   const health = new HealthCapabilityBackend({ platform: 'linux', environment, backends });
   const service = new LocalCapabilityService({
@@ -160,6 +170,7 @@ function linuxRuntime(
     container,
     archive,
     dependencyAudit,
+    remoteHost,
   }, capabilityToolNamesForPlatform('linux'));
   return { service, health };
 }

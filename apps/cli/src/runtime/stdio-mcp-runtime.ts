@@ -19,13 +19,13 @@ import {
   createPlatformCapabilityRuntime,
   LocalCapabilityService,
 } from '@baitonghub-linux-mcp/capabilities';
-import { ALLOW_AI_DELETE_SETTING_KEY, DESTRUCTIVE_AUTO_APPROVAL_SETTING_KEY, DEFAULT_CODEX_TOOLS_ENABLED, DEFAULT_MCP_CALL_TIMEOUT_MS, DEFAULT_MCP_IDLE_TIMEOUT_MS, DEFAULT_PROCESS_TIMEOUT_MS, DEFAULT_MCP_POLL_WAIT_SECONDS, DEFAULT_SHELL_SYNCHRONOUS_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS, USER_SETTING_KEYS, loadCheckpointEncryptionKey, parseBooleanSetting, parseCustomPermissionSettings, parseDestructiveAutoApprovalPolicy, parseIntegerSetting, parsePathList, parseStringRecordSetting, type DestructiveAutoApprovalPolicy } from '@baitonghub-linux-mcp/shared';
+import { ALLOW_AI_DELETE_SETTING_KEY, DESTRUCTIVE_AUTO_APPROVAL_SETTING_KEY, DEFAULT_CODEX_TOOLS_ENABLED, DEFAULT_MCP_CALL_TIMEOUT_MS, DEFAULT_MCP_IDLE_TIMEOUT_MS, DEFAULT_PROCESS_TIMEOUT_MS, DEFAULT_MCP_POLL_WAIT_SECONDS, DEFAULT_SHELL_SYNCHRONOUS_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS, USER_SETTING_KEYS, LibsecretSecretStore, loadCheckpointEncryptionKey, parseBooleanSetting, parseCustomPermissionSettings, parseDestructiveAutoApprovalPolicy, parseIntegerSetting, parsePathList, parseStringRecordSetting, type DestructiveAutoApprovalPolicy } from '@baitonghub-linux-mcp/shared';
 import {
   EXTENSIONS_SETTINGS_KEY,
   createLocalExtensionsService,
   type ExtensionsService,
 } from '@baitonghub-linux-mcp/extensions';
-import { ActivityTracker, SharedActivitySnapshotLease, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices } from '@baitonghub-linux-mcp/mcp-server';
+import { ActivityTracker, DatabaseRuntimeService, SharedActivitySnapshotLease, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices } from '@baitonghub-linux-mcp/mcp-server';
 import { permissionProfiles, type PermissionProfile, type PermissionProfileName } from '@baitonghub-linux-mcp/permissions';
 import {
   AesGcmCheckpointCipher,
@@ -34,6 +34,8 @@ import {
   SqliteDatabase,
   SqliteSettingsRepository,
   SqliteWorkspaceRepository,
+  SqliteDatabaseTargetRepository,
+  SqliteRemoteHostRepository,
 } from '@baitonghub-linux-mcp/storage';
 import { SecretPolicy, WorkspacePathGuard, WorkspaceService, type Workspace } from '@baitonghub-linux-mcp/workspace';
 import { StrictWorkspaceRepository } from './strict-workspace-repository.js';
@@ -74,16 +76,20 @@ export function createStdioMcpRuntime(
   const settingsRepository = new SqliteSettingsRepository(database);
   const auditRepository = new SqliteAuditRepository(database);
   const auditService = new AuditService(auditRepository);
+  const strictRoots = options.strictAllowedRoots !== undefined;
+  const effectiveUnrestricted = false;
   const checkpointRepository = new SqliteCheckpointRepository(database, new AesGcmCheckpointCipher(loadCheckpointEncryptionKey(dataPath, {
     // Headless Linux prefers Secret Service/libsecret; an explicit base64 env key
     // remains supported for non-interactive service accounts and CI.
     useLinuxSecretService: process.platform === 'linux',
   })));
   const workspaceService = new WorkspaceService(workspaceRepository);
+  const workspaceInfoService = new WorkspaceInfoService(workspaceRepository, workspaceService, effectiveUnrestricted);
+  const databaseTargets = new SqliteDatabaseTargetRepository(database);
+  const remoteHosts = new SqliteRemoteHostRepository(database);
+  const secretStore = new LibsecretSecretStore();
   const profileName = options.permissionProfile ?? 'full';
   const activeProfile = profileName === 'custom' ? customPermissionProfile(settingsRepository) : permissionProfiles[profileName];
-  const strictRoots = options.strictAllowedRoots !== undefined;
-  const effectiveUnrestricted = false;
   const profileProvider = (): PermissionProfile => activeProfile;
   const destructivePolicyProvider = (): DestructiveAutoApprovalPolicy => parseDestructiveAutoApprovalPolicy(
     settingsRepository.get(DESTRUCTIVE_AUTO_APPROVAL_SETTING_KEY),
@@ -124,14 +130,15 @@ export function createStdioMcpRuntime(
     auditService,
     profileProvider,
   });
+  const actor: FileActor = { clientId: 'cli-mcp-stdio', clientName: 'baitonghub-linux-mcp cli MCP' };
   const capabilityService = createStdioCapabilityService(dataPath, workspace.realRootPath, async () => {
     const listed = await workspaceRepository.list();
     const roots = listed.map((entry) => entry.realRootPath);
     if (roots.length === 0) return [workspace.realRootPath];
     return roots;
   }, effectiveUnrestricted, options.strictAllowedRoots, () => parsePathList(settingsRepository.get(USER_SETTING_KEYS.capabilityRoots)),
-  () => parseIntegerSetting(settingsRepository.get(USER_SETTING_KEYS.shellSynchronousWaitSeconds), DEFAULT_SHELL_SYNCHRONOUS_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS));
-  const actor: FileActor = { clientId: 'cli-mcp-stdio', clientName: 'baitonghub-linux-mcp cli MCP' };
+  () => parseIntegerSetting(settingsRepository.get(USER_SETTING_KEYS.shellSynchronousWaitSeconds), DEFAULT_SHELL_SYNCHRONOUS_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS), remoteHosts, secretStore);
+  const databaseRuntime = new DatabaseRuntimeService({ workspaceInfo: workspaceInfoService }, actor, { targetRegistry: databaseTargets, secrets: secretStore });
   const sharedActivityLease = createSharedActivityLease(process.env.TUNNEL_CLIENT_PROFILE_DIR);
   const activityReady = sharedActivityLease.then(async (lease) => lease?.initialize());
   const sharedActivitySink: ActivitySink = {
@@ -182,7 +189,7 @@ export function createStdioMcpRuntime(
     }),
     capabilities: capabilityService,
     extensions,
-    workspaceInfo: new WorkspaceInfoService(workspaceRepository, workspaceService, effectiveUnrestricted),
+    workspaceInfo: workspaceInfoService,
     workspaceQuery,
     projectSnapshot: new ProjectSnapshotService(workspaceRepository, {
       projectService,
@@ -197,6 +204,7 @@ export function createStdioMcpRuntime(
     git: gitService,
     process: processService,
     codex: codexService,
+    database: databaseRuntime,
   };
 
   return {
@@ -240,6 +248,8 @@ function createStdioCapabilityService(
   strictAllowedRoots?: readonly string[],
   configuredRootsProvider: () => readonly string[] = () => [],
   synchronousWaitSecondsProvider: () => number = () => DEFAULT_SHELL_SYNCHRONOUS_WAIT_SECONDS,
+  remoteHostRegistry?: import('@baitonghub-linux-mcp/capabilities').RemoteHostRegistry,
+  secretStore?: import('@baitonghub-linux-mcp/shared').SecretStore,
 ): LocalCapabilityService {
   const capabilityRootsProvider = async (): Promise<readonly string[]> => {
     const workspaceRoots = await workspaceRootsProvider();
@@ -259,6 +269,8 @@ function createStdioCapabilityService(
     unrestricted: false,
     maxSynchronousWaitSecondsProvider: synchronousWaitSecondsProvider,
     platform: process.platform,
+    ...(remoteHostRegistry === undefined ? {} : { remoteHostRegistry }),
+    ...(secretStore === undefined ? {} : { secretStore }),
   }).service;
 }
 

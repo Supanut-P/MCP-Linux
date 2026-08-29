@@ -26,6 +26,7 @@ export interface LocalCapabilityBackends {
   readonly container?: CapabilityBackend;
   readonly archive?: CapabilityBackend;
   readonly dependencyAudit?: CapabilityBackend;
+  readonly remoteHost?: CapabilityBackend;
 }
 
 export class LocalCapabilityService implements CapabilityService {
@@ -70,6 +71,7 @@ export class LocalCapabilityService implements CapabilityService {
       case 'container': return this.backends.container;
       case 'archive': return this.backends.archive;
       case 'dependency_audit': return this.backends.dependencyAudit;
+      case 'remote_host': return this.backends.remoteHost;
     }
   }
 }

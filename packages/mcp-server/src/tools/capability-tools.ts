@@ -26,6 +26,7 @@ import {
   containerCapabilitySchema,
   archiveCapabilitySchema,
   dependencyAuditCapabilitySchema,
+  remoteHostCapabilitySchema,
 } from './schemas.js';
 
 function currentMcpPollWaitSeconds(context: McpToolContext): number {
@@ -235,6 +236,14 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
       annotations: { readOnlyHint: true, destructiveHint: false },
       inputSchema: dependencyAuditCapabilitySchema,
       handler: async (input, signal) => execute('dependency_audit', input, signal),
+    }),
+    defineTool({
+      name: 'remote_host',
+      description: 'Operate on explicitly registered SSH hosts with pinned fingerprints. Read operations are bounded and mutations require a matching preview hash plus explicit confirmation.',
+      permission: 'DANGEROUS',
+      annotations: { readOnlyHint: false, destructiveHint: true },
+      inputSchema: remoteHostCapabilitySchema,
+      handler: async (input, signal) => execute('remote_host', input, signal),
     }),
   ];
 }

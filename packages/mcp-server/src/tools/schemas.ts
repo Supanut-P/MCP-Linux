@@ -258,7 +258,7 @@ export const windowCapabilitySchema = z.object({
 
 export const healthCapabilitySchema = z.object({
   operation: z.enum(['check_all', 'check_tool']).default('check_all'),
-  tool: z.enum(['shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window', 'health', 'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit']).optional(),
+  tool: z.enum(['shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window', 'health', 'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit', 'remote_host']).optional(),
   request_id: z.string().trim().min(1).max(128).optional(),
 }).strict();
 
@@ -386,6 +386,42 @@ export const dependencyAuditCapabilitySchema = z.object({
   cwd: pathSchema.optional(),
   ...capabilityRequestSchema,
 }).strict();
+
+export const remoteHostCapabilitySchema = z.object({
+  hostId: z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/),
+  operation: z.enum(['health', 'system_info', 'journal', 'network', 'file_read', 'git_status', 'service-restart', 'file-write', 'project-command']),
+  unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,256}\.service$/).optional(),
+  path: pathSchema.optional(),
+  content: z.string().max(1_048_576).optional(),
+  executable: pathSchema.optional(),
+  arguments: z.array(z.string().max(4_096)).max(64).optional(),
+  lines: z.number().int().min(1).max(1_000).optional(),
+  previewHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  preview_hash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  ...capabilityRequestSchema,
+}).strict();
+
+const databaseTargetFields = {
+  workspaceId: optionalWorkspaceIdSchema,
+  targetId: z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/).optional(),
+  target_id: z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/).optional(),
+  target: pathSchema.optional(),
+};
+
+const hasDatabaseTarget = (value: unknown): boolean => {
+  if (typeof value !== 'object' || value === null) return false;
+  const candidate = value as Record<string, unknown>;
+  return candidate.targetId !== undefined || candidate.target_id !== undefined || (candidate.workspaceId !== undefined && candidate.target !== undefined);
+};
+
+export const databaseInspectSchema = z.object(databaseTargetFields).strict().refine(hasDatabaseTarget, 'A registered targetId or workspaceId plus local target is required');
+
+export const databaseQuerySchema = z.object({
+  ...databaseTargetFields,
+  sql: z.string().trim().min(1).max(64_000),
+  max_rows: z.number().int().min(1).max(1_000).optional(),
+  parameters: z.array(z.union([z.string(), z.number(), z.boolean(), z.null()])).max(100).optional(),
+}).strict().refine(hasDatabaseTarget, 'A registered targetId or workspaceId plus local target is required');
 
 export const skillsListSchema = z.object({
   query: z.string().max(1024).optional(),

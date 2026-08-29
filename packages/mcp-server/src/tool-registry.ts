@@ -19,6 +19,7 @@ import { upgradeTools } from './tools/upgrade-tools.js';
 import { ToolSchemaRegistry } from './tool-schema-registry.js';
 import { codexTools } from './tools/codex-tools.js';
 import { capabilityTools } from './tools/capability-tools.js';
+import { databaseTools } from './tools/database-tools.js';
 import { fileTools } from './tools/file-tools.js';
 import { gitTools } from './tools/git-tools.js';
 import { mcpBridgeTools } from './tools/mcp-bridge-tools.js';
@@ -98,6 +99,7 @@ export class ToolRegistry {
       ...processTools(context),
       ...(options.codexToolsEnabled === true ? codexTools(context) : []),
       ...advertisedCapabilityTools(context),
+      ...databaseTools(context),
       ...skillTools(context),
       ...mcpBridgeTools(context),
       ...contextTools(context, contextEngine),

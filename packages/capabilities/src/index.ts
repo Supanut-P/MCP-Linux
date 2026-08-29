@@ -14,6 +14,7 @@ export { WebFetchCapabilityBackend } from './web-fetch-backend.js';
 export { ContainerBackend, LinuxContainerBackend, type ContainerBackendOptions, type ContainerOperation, type ContainerProvider } from './container-backend.js';
 export { ArchiveBackend, LinuxArchiveBackend, type ArchiveBackendOptions, type ArchiveOperation, validateArchiveMembers } from './archive-backend.js';
 export { DependencyAuditBackend, LinuxDependencyAuditBackend, type DependencyAuditBackendOptions, type DependencyAuditProvider, type DependencyFinding } from './dependency-audit-backend.js';
+export { RemoteHostBackend, LinuxRemoteHostBackend, type RemoteHostBackendOptions, type RemoteHostOperation, type RegisteredRemoteHost, type RemoteHostRegistry, type RemoteCommandResult, type RemoteCommandRunner } from './remote-host-backend.js';
 export { LinuxCommandRunner as BoundedLinuxCommandRunner, type LinuxCommandResult as BoundedLinuxCommandResult, type LinuxCommandRunnerOptions, type LinuxSpawn, type LinuxSpawnOptions } from './linux-command-runner.js';
 export { LinuxObservabilityBackend, type LinuxObservabilityBackendOptions, type LinuxObservabilityCapabilityName } from './linux-observability-backend.js';
 export { SystemdBackend, LinuxSystemdBackend, type SystemdBackendOptions, type SystemdOperation } from './systemd-backend.js';

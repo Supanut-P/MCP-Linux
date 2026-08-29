@@ -20,7 +20,7 @@ describe('createPlatformCapabilityRuntime', () => {
 
     expect(runtime.service.listTools()).toEqual([
       'shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window',
-      'health', 'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit',
+      'health', 'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit', 'remote_host',
     ]);
     await expect(runtime.health.execute({ operation: 'check_tool', tool: 'system_info' })).resolves.toMatchObject({
       ok: true,

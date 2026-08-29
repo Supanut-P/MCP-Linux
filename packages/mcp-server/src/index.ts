@@ -15,3 +15,4 @@ export * from './upgrade-catalog.js';
 export * from './tools/tool-types.js';
 
 export * from './request-scope.js';
+export * from './database-runtime.js';

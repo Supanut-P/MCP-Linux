@@ -54,6 +54,10 @@ scripts/verify-linux-package.sh dist
 scripts/verify-upgrade-rollback.sh dist
 ```
 
+Release builds also emit commit-bound `BUILD-METADATA.json`, CycloneDX
+`SBOM.cdx.json`, and `PROVENANCE-SHA256SUMS` files. The rollback preflight
+verifies these files alongside the DEB, tarball, and primary checksum manifest.
+
 - Run the installed STDIO launcher without system Node.js.
 - Confirm the DEB metadata reports the selected `VERSION` and architecture
   `amd64`.

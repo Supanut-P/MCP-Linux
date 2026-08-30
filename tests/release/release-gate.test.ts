@@ -34,6 +34,9 @@ describe('Baitonghub Linux release verification gate', () => {
     expect(workflow).toContain('Baitonghub-Linux-mcp-*-linux-x64.tar.gz');
     expect(workflow).toMatch(/exe\|cmd\|bat\|ps1/i);
     expect(workflow).not.toContain('package:windows');
+    expect(workflow).toContain('generate-release-provenance.mjs');
+    expect(workflow).toContain('PROVENANCE-SHA256SUMS');
+    expect(workflow).toContain('SBOM.cdx.json');
   });
 
   it('rejects release tags that do not match the package version', async () => {
@@ -79,6 +82,16 @@ describe('Baitonghub Linux release verification gate', () => {
     expect(verifier).toContain('soak evidence needs at least two samples');
     expect(verifier).toContain('RSS growth exceeds limit');
     expect(verifier).toContain('pid or owner changed');
+  });
+
+  it('ships a commit-bound provenance and SBOM generator', async () => {
+    const generator = await readFile(path.join(repositoryRoot, 'scripts', 'generate-release-provenance.mjs'), 'utf8');
+    const rollbackVerifier = await readFile(path.join(repositoryRoot, 'scripts', 'verify-upgrade-rollback.sh'), 'utf8');
+    expect(generator).toContain("schema: 'baitonghub.release-provenance.v1'");
+    expect(generator).toContain("bomFormat: 'CycloneDX'");
+    expect(generator).toContain("sourceCommit: commit");
+    expect(rollbackVerifier).toContain('PROVENANCE-SHA256SUMS');
+    expect(rollbackVerifier).toContain('sourceDirty!==false');
   });
 
   it.runIf(process.platform !== 'win32')('executes the soak verifier and rejects invalid evidence', async () => {

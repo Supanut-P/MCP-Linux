@@ -40,6 +40,7 @@ The 2026-08-30 Ubuntu acceptance established this baseline:
 - [x] v1.2.0 bounded read-only operator probes
 - [x] v1.3.0 registered remote fleet inspection
 - [x] v1.4.0 registered-root backup and recovery
+- [x] v1.5.0 release provenance, SBOM, and fail-closed artifact verification
 - [ ] v1.5.0 clean-machine upgrade/rollback and seven-day production evidence
 - [ ] v2.0.0 breaking contract design (requires deprecation and usage evidence)
 

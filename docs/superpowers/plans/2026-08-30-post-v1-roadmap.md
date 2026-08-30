@@ -42,7 +42,7 @@ The 2026-08-30 Ubuntu acceptance established this baseline:
 - [x] v1.4.0 registered-root backup and recovery
 - [x] v1.5.0 release provenance, SBOM, and fail-closed artifact verification
 - [ ] v1.5.0 clean-machine upgrade/rollback and seven-day production evidence
-- [ ] v2.0.0 breaking contract design (requires deprecation and usage evidence)
+- [x] v2.0.0 decision gate reviewed; no breaking contract is justified by current usage evidence
 
 The v1.4.0 implementation is complete and tested. The remaining unchecked
 items are intentionally evidence or approval gates, not missing v1.4 code.
@@ -379,6 +379,15 @@ Do not schedule v2.0 merely because v1.x has many tool names. Open a separate br
 - split the server into independently versioned core, operator, and remote capability sets.
 
 v2.0 requires an explicit migration guide, dual-version contract tests, and human approval before implementation or release.
+
+### v2.0 decision review (2026-08-30)
+
+The VM103 evidence database contained 90 audit events. The observed usage was
+limited to the core workspace, file, Git, process, shell, system-info, and
+DOM-inspection tools; no `remote_fleet`, database, or backup tool was used, and
+no deprecated v1 field or incompatible contract was identified. v2.0 therefore
+remains unscheduled: continue additive v1.x work and reopen this gate only when
+retained usage/deprecation evidence supports a specific breaking migration.
 
 ## Release checklist for every version
 

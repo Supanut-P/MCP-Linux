@@ -94,6 +94,14 @@ describe('Baitonghub Linux release verification gate', () => {
     expect(rollbackVerifier).toContain('sourceDirty!==false');
   });
 
+  it('documents the operator-only v1.5 evidence runbook', async () => {
+    const runbook = await readFile(path.join(repositoryRoot, 'docs', 'linux', 'evidence', 'v1.5.0', 'RUNBOOK.md'), 'utf8');
+    expect(runbook).toContain('disposable Ubuntu 24.04 x86_64 snapshot');
+    expect(runbook).toContain('Upgrade, rollback, uninstall, and reinstall');
+    expect(runbook).toContain('SOAK_DURATION_SECONDS=604800');
+    expect(runbook).toContain('production proof');
+  });
+
   it.runIf(process.platform !== 'win32')('executes the soak verifier and rejects invalid evidence', async () => {
     const root = await mkdtemp(path.join(process.cwd(), '.tmp-soak-gate-'));
     const verifier = path.join(repositoryRoot, 'scripts', 'verify-soak-linux-headless.sh');

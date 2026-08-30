@@ -67,6 +67,7 @@ docs/linux/*
 docs/linux/evidence/*
 !docs/linux/evidence/v1.5.0/
 !docs/linux/evidence/v1.5.0/README.md
+!docs/linux/evidence/v1.5.0/RUNBOOK.md
 !docs/architecture/
 docs/architecture/*
 !docs/architecture/UPGRADE_ARCHITECTURE.md

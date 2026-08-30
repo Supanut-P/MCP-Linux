@@ -263,6 +263,11 @@ extracted launchers and records the provider-filtered `tools/list` count. No
 seven-day soak completion is implied; use `scripts/soak-linux-headless.sh` for
 an explicit bounded stability run.
 
+Release assets also include commit-bound `BUILD-METADATA.json`, CycloneDX
+`SBOM.cdx.json`, and `PROVENANCE-SHA256SUMS`. Use
+[`docs/linux/evidence/v1.5.0/RUNBOOK.md`](docs/linux/evidence/v1.5.0/RUNBOOK.md)
+for the operator-only clean-VM upgrade, rollback, and soak evidence procedure.
+
 ## Repository layout
 
 ```text

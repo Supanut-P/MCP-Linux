@@ -26,6 +26,7 @@ jobs:
         run: |
           version=$(node -p "require('./package.json').version")
           test "${{ github.ref_name }}" = "v${version}"
+          test -f "RELEASE_NOTES_${GITHUB_REF_NAME}.md"
 
       - name: Setup Node.js 24
         uses: actions/setup-node@v4

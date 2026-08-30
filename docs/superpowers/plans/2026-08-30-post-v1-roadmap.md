@@ -357,7 +357,7 @@ SOAK_DURATION_SECONDS=604800 SOAK_INTERVAL_SECONDS=300 bash scripts/soak-linux-h
 
 Store the TSV, start/end system state, package hashes, service restart count, tunnel reconnect evidence, and acceptance summary under `docs/linux/evidence/v1.5.0/`. Fail on unbounded RSS/file-descriptor/WAL growth, owner loss, task corruption, or unrecovered tunnel disconnection.
 
-- [ ] **Step 3: Add release provenance**
+- [x] **Step 3: Add release provenance**
 
 Generate checksums, SBOM, and build metadata from the exact tag commit. Release workflow verifies the package manifest and refuses tag/package version mismatch. Signing keys and release credentials remain outside the repository.
 

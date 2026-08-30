@@ -1,8 +1,11 @@
-import { readFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { promisify } from 'node:util';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '..', '..');
+const execFileAsync = promisify(execFile);
 
 describe('Baitonghub Linux release verification gate', () => {
   it('runs CI and release verification on Ubuntu 24.04', async () => {
@@ -76,5 +79,29 @@ describe('Baitonghub Linux release verification gate', () => {
     expect(verifier).toContain('soak evidence needs at least two samples');
     expect(verifier).toContain('RSS growth exceeds limit');
     expect(verifier).toContain('pid or owner changed');
+  });
+
+  it.runIf(process.platform !== 'win32')('executes the soak verifier and rejects invalid evidence', async () => {
+    const root = await mkdtemp(path.join(process.cwd(), '.tmp-soak-gate-'));
+    const verifier = path.join(repositoryRoot, 'scripts', 'verify-soak-linux-headless.sh');
+    const header = 'timestamp\trss_kb\tfd_count\twal_bytes\ttask_count\ttunnel_reconnects\tservice_restarts\tpid\towner_uid\n';
+    const valid = path.join(root, 'valid.tsv');
+    const invalid = path.join(root, 'invalid.tsv');
+    try {
+      await writeFile(valid, `${header}2026-01-01T00:00:00Z\t100\t5\t0\t0\t0\t0\t1234\t1000\n2026-01-01T00:00:01Z\t110\t6\t0\t0\t0\t0\t1234\t1000\n`, 'utf8');
+      const verified = await execFileAsync('sh', [verifier, valid], {
+        cwd: repositoryRoot,
+        env: { ...process.env, SOAK_MIN_DURATION_SECONDS: '1' },
+      });
+      expect(verified.stdout).toContain('Soak evidence verified');
+
+      await writeFile(invalid, `${header}2026-01-01T00:00:00Z\t100\t5\t0\t0\t0\t0\t1234\t1000\n2026-01-01T00:00:01Z\t110\t6\t0\t0\t0\t0\t1234\t1001\n`, 'utf8');
+      await expect(execFileAsync('sh', [verifier, invalid], {
+        cwd: repositoryRoot,
+        env: { ...process.env, SOAK_MIN_DURATION_SECONDS: '1' },
+      })).rejects.toThrow();
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 });

@@ -1,6 +1,6 @@
 {
   "name": "baitonghub-linux-mcp",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "private": true,
   "packageManager": "pnpm@10.15.0",
   "engines": {
@@ -12,7 +12,7 @@
     "rebrand:check": "node scripts/check-branding.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --build",
-    "test": "corepack pnpm@10.15.0 -r --if-present test",
+    "test": "corepack pnpm@10.15.0 --workspace-concurrency=1 -r --if-present test",
     "test:integration": "vitest run tests/integration/mcp-development-flow.test.ts tests/integration/codex-review-flow.test.ts",
     "test:packaging": "vitest run tests/packaging/headless-linux-tunnel.test.ts tests/release/public-repo-hygiene.test.ts",
     "test:release-gate": "vitest run tests/release/release-gate.test.ts",

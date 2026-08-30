@@ -52,6 +52,13 @@ jobs:
           pnpm test:v1
           pnpm exec vitest run tests/release/public-repo-hygiene.test.ts tests/packaging/headless-linux-tunnel.test.ts
 
+      - name: Require production evidence for v1.5 releases
+        if: startsWith(github.ref_name, 'v1.5.')
+        run: |
+          test -f docs/linux/evidence/v1.5.0/ACCEPTANCE_SUMMARY.md
+          test -f docs/linux/evidence/v1.5.0/soak-linux-headless.tsv
+          SOAK_MIN_DURATION_SECONDS=604800 bash scripts/verify-soak-linux-headless.sh docs/linux/evidence/v1.5.0/soak-linux-headless.tsv
+
       - name: Build Linux headless artifacts
         run: pnpm package:linux:headless
 

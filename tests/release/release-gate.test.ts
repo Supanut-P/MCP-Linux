@@ -23,7 +23,12 @@ describe('Baitonghub Linux release verification gate', () => {
       expect(workflow).toContain('pnpm test:integration');
       expect(workflow).toContain('pnpm test:release-gate');
       expect(workflow).toContain('pnpm docs:tools:check');
-      if (workflowName === 'release.yml') expect(workflow).toContain('body_path: RELEASE_NOTES_${{ github.ref_name }}.md');
+      if (workflowName === 'release.yml') {
+        expect(workflow).toContain('body_path: RELEASE_NOTES_${{ github.ref_name }}.md');
+        expect(workflow).toContain("startsWith(github.ref_name, 'v1.5.')");
+        expect(workflow).toContain('ACCEPTANCE_SUMMARY.md');
+        expect(workflow).toContain('SOAK_MIN_DURATION_SECONDS=604800');
+      }
     }
   });
 

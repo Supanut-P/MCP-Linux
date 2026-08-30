@@ -7,12 +7,18 @@ production readiness.
 Required artifacts:
 
 - package SHA-256 manifest and exact source/tag commit;
+- `ACCEPTANCE_SUMMARY.md` describing clean install, upgrade, rollback,
+  uninstall, reinstall, service owner, and tunnel evidence;
 - clean install, upgrade, rollback, uninstall, and reinstall transcript;
 - XDG state preservation hash and non-root service owner proof;
 - secret-canary scan covering stdout, logs, SQLite, task metadata, and reports;
 - tunnel reconnect/health evidence; and
 - a bounded soak TSV from `scripts/soak-linux-headless.sh` with start/end
   system state and reviewed RSS, file-descriptor, WAL, task, and restart data.
+
+The release workflow refuses every `v1.5.*` tag until both
+`ACCEPTANCE_SUMMARY.md` and the seven-day TSV exist and the default verifier
+accepts the TSV.
 
 Validate the retained TSV before review:
 

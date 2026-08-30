@@ -57,7 +57,7 @@ describe.runIf(process.platform === 'linux')('durable shell background tasks', (
     const started = await backend.execute({
       operation: 'run',
       executable: process.execPath,
-      arguments: ['-e', 'setTimeout(() => {}, 10000)'],
+      arguments: ['-e', 'setTimeout(() => {}, 60000)'],
       cwd: root,
       execution: 'background',
       timeout_seconds: 30,
@@ -182,7 +182,7 @@ describe.runIf(process.platform === 'linux')('durable shell background tasks', (
     const started = await firstRuntime.execute({
       operation: 'run',
       executable: process.execPath,
-      arguments: ['-e', 'setTimeout(() => {}, 10000)'],
+      arguments: ['-e', 'setTimeout(() => {}, 60000)'],
       cwd: root,
       execution: 'background',
       timeout_seconds: 30,

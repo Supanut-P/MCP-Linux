@@ -13,10 +13,10 @@ describe('BackupBackend', () => {
       const archive = path.join(root, 'project.bhb');
       await mkdir(source);
       await writeFile(path.join(source, 'hello.txt'), 'hello');
-      const backend = new BackupBackend({ allowedRootsProvider: (): readonly string[] => [root], workspaceRootProvider: (): string => root });
+      const backend = new BackupBackend({ platform: 'linux', allowedRootsProvider: (): readonly string[] => [root], workspaceRootProvider: (): string => root });
       const plan = await backend.execute({ operation: 'plan', workspaceId: 'w', source: 'project' });
       if (!plan.ok) throw new Error('expected backup plan');
-      expect(plan.value.entries.some((entry) => entry.path === 'project/hello.txt' && entry.type === 'file' && entry.bytes === 5)).toBe(true);
+      expect(plan.value.entries.some((entry) => entry.path === path.join('project', 'hello.txt') && entry.type === 'file' && entry.bytes === 5)).toBe(true);
       await expect(backend.execute({ operation: 'create', workspaceId: 'w', source: 'project', archive, userConfirmed: true })).resolves.toMatchObject({ ok: true, value: { entries: 2 } });
       await expect(backend.execute({ operation: 'verify', archive })).resolves.toMatchObject({ ok: true, value: { entries: 2, bytes: 5 } });
       await expect(backend.execute({ operation: 'restore', workspaceId: 'w', archive, destination: 'restored', userConfirmed: true })).resolves.toMatchObject({ ok: true, value: { entries: 2 } });
@@ -31,7 +31,7 @@ describe('BackupBackend', () => {
       await mkdir(path.join(root, 'project'));
       await writeFile(path.join(outside, 'secret'), 'secret');
       try { await symlink(path.join(outside, 'secret'), path.join(root, 'project', 'link')); } catch { return; }
-      const backend = new BackupBackend({ allowedRootsProvider: (): readonly string[] => [root], workspaceRootProvider: (): string => root });
+      const backend = new BackupBackend({ platform: 'linux', allowedRootsProvider: (): readonly string[] => [root], workspaceRootProvider: (): string => root });
       await expect(backend.execute({ operation: 'create', workspaceId: 'w', source: 'project' })).resolves.toMatchObject({ ok: false, error: { code: 'PERMISSION_REQUIRED' } });
       await expect(backend.execute({ operation: 'plan', workspaceId: 'w', source: 'project' })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
       await expect(backend.execute({ operation: 'plan', workspaceId: 'w', source: '../outside' })).resolves.toMatchObject({ ok: false, error: { code: 'PATH_OUTSIDE_WORKSPACE' } });
@@ -40,6 +40,7 @@ describe('BackupBackend', () => {
 
   it('returns a structured unavailable result when registered roots cannot be read', async (): Promise<void> => {
     const backend = new BackupBackend({
+      platform: 'linux',
       allowedRootsProvider: (): readonly string[] => { throw new Error('root provider unavailable'); },
       workspaceRootProvider: (): string => '/tmp/workspace',
     });

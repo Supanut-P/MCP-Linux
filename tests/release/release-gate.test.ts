@@ -23,6 +23,7 @@ describe('Baitonghub Linux release verification gate', () => {
       expect(workflow).toContain('pnpm test:integration');
       expect(workflow).toContain('pnpm test:release-gate');
       expect(workflow).toContain('pnpm docs:tools:check');
+      if (workflowName === 'release.yml') expect(workflow).toContain('body_path: RELEASE_NOTES_${{ github.ref_name }}.md');
     }
   });
 

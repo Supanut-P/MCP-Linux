@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -49,7 +49,7 @@ const sbomName = `Baitonghub-Linux-mcp-${version}-SBOM.cdx.json`;
 const provenanceSumsName = `Baitonghub-Linux-mcp-${version}-PROVENANCE-SHA256SUMS`;
 await writeFile(path.join(artifactDirectory, metadataName), `${JSON.stringify(metadata, null, 2)}\n`, 'utf8');
 
-const components = await workspaceComponents();
+const components = await productionComponents();
 const sbom = {
   bomFormat: 'CycloneDX',
   specVersion: '1.5',
@@ -87,34 +87,40 @@ async function sha256(filePath) {
   return digest.digest('hex');
 }
 
-async function workspaceComponents() {
-  const components = new Map();
-  const workspaceDirectories = [path.join(repositoryRoot, 'apps'), path.join(repositoryRoot, 'packages')];
-  for (const parent of workspaceDirectories) {
-    let entries;
-    try {
-      entries = await readdir(parent, { withFileTypes: true });
-    } catch {
-      continue;
-    }
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-      try {
-        const manifest = JSON.parse(await readFile(path.join(parent, entry.name, 'package.json'), 'utf8'));
-        if (typeof manifest.name === 'string' && typeof manifest.version === 'string') {
-          components.set(`${manifest.name}@${manifest.version}`, {
-            type: 'library',
-            name: manifest.name,
-            version: manifest.version,
-            'bom-ref': `${manifest.name}@${manifest.version}`,
-            purl: `pkg:npm/${encodeURIComponent(manifest.name)}@${manifest.version}`,
-          });
-        }
-      } catch {
-        // Ignore non-package workspace directories.
-      }
-    }
+async function productionComponents() {
+  const command = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+  let tree;
+  try {
+    const output = execFileSync(command, ['-r', 'list', '--prod', '--json', '--depth', 'Infinity'], {
+      cwd: repositoryRoot,
+      encoding: 'utf8',
+      maxBuffer: 16 * 1024 * 1024,
+      shell: process.platform === 'win32',
+    });
+    tree = JSON.parse(output);
+  } catch (error) {
+    throw new Error(`production dependency inventory unavailable: ${error instanceof Error ? error.message : String(error)}`);
   }
+  const components = new Map();
+  const visit = (node, hintedName) => {
+    if (!node || typeof node !== 'object') return;
+    const name = typeof node.name === 'string' ? node.name : typeof node.from === 'string' ? node.from : hintedName;
+    const version = typeof node.version === 'string' && !node.version.startsWith('link:') ? node.version : undefined;
+    if (name && version) {
+      components.set(`${name}@${version}`, {
+        type: 'library',
+        name,
+        version,
+        'bom-ref': `${name}@${version}`,
+        purl: `pkg:npm/${encodeURIComponent(name)}@${version}`,
+      });
+    }
+    if (node.dependencies && typeof node.dependencies === 'object') {
+      for (const [dependencyName, dependency] of Object.entries(node.dependencies)) visit(dependency, dependencyName);
+    }
+  };
+  for (const packageTree of Array.isArray(tree) ? tree : []) visit(packageTree);
+  if (components.size === 0) throw new Error('production dependency inventory was empty');
   return [...components.values()].sort((left, right) => left['bom-ref'].localeCompare(right['bom-ref']));
 }
 

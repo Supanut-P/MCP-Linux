@@ -90,6 +90,8 @@ describe('Baitonghub Linux release verification gate', () => {
     expect(generator).toContain("schema: 'baitonghub.release-provenance.v1'");
     expect(generator).toContain("bomFormat: 'CycloneDX'");
     expect(generator).toContain("sourceCommit: commit");
+    expect(generator).toContain("'--prod'");
+    expect(generator).toContain("'--depth', 'Infinity'");
     expect(rollbackVerifier).toContain('PROVENANCE-SHA256SUMS');
     expect(rollbackVerifier).toContain('sourceDirty!==false');
   });

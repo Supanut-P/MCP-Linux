@@ -46,7 +46,7 @@ git diff --check
 ## Package gate
 
 ```sh
-VERSION=1.4.0  # set this to the release tag under test
+VERSION=1.4.2  # set this to the release tag under test
 corepack pnpm@10.15.0 package:linux:headless
 sha256sum --check "dist/Baitonghub-Linux-mcp-${VERSION}-SHA256SUMS"
 sudo apt install "./dist/Baitonghub-Linux-mcp-${VERSION}-amd64.deb"

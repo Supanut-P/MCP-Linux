@@ -4556,6 +4556,65 @@
       }
     },
     {
+      "name": "target_catalog",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "enum": [
+                  "database",
+                  "remote-host"
+                ],
+                "type": "string"
+              },
+              "operation": {
+                "const": "list",
+                "type": "string"
+              }
+            },
+            "required": [
+              "operation"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "database",
+                  "remote-host"
+                ],
+                "type": "string"
+              },
+              "operation": {
+                "const": "describe",
+                "type": "string"
+              }
+            },
+            "required": [
+              "operation",
+              "kind",
+              "id"
+            ],
+            "type": "object"
+          }
+        ]
+      }
+    },
+    {
       "name": "task_cancel",
       "permission": "EXECUTE",
       "annotations": {

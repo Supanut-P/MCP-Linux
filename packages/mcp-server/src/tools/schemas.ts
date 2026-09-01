@@ -390,6 +390,12 @@ export const backupCapabilitySchema = z.object({
   dry_run: z.boolean().optional(),
 }).strict();
 
+const targetCatalogIdSchema = z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/);
+export const targetCatalogSchema = z.discriminatedUnion('operation', [
+  z.object({ operation: z.literal('list'), kind: z.enum(['database', 'remote-host']).optional() }).strict(),
+  z.object({ operation: z.literal('describe'), kind: z.enum(['database', 'remote-host']), id: targetCatalogIdSchema }).strict(),
+]);
+
 export const containerCapabilitySchema = z.object({
   workspaceId: optionalWorkspaceIdSchema,
   project_root: pathSchema.optional(),

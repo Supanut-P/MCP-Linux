@@ -14,6 +14,7 @@ import type {
   ReadFileRequest,
   ReadFilesRequest,
   SearchService,
+  TargetCatalogService,
   WorkspaceIndexService,
   WorkspaceQueryService,
   WriteFileRequest,
@@ -57,6 +58,7 @@ export interface McpApplicationServices {
   readonly process?: Pick<ProcessService, 'start' | 'list' | 'status' | 'logs' | 'stop' | 'startProjectCommand'>;
   readonly codex?: Pick<CodexService, 'status' | 'run' | 'list' | 'taskStatus' | 'taskLogs' | 'stop'>;
   readonly database?: Pick<DatabaseRuntimeService, 'inspect' | 'query'>;
+  readonly targetCatalog?: Pick<TargetCatalogService, 'list' | 'describe'>;
 }
 
 export interface McpToolAnnotations {

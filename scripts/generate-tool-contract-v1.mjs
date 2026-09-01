@@ -8,7 +8,12 @@ const { z } = await import(pathToFileURL(path.join(root, 'packages', 'mcp-server
 const { ToolRegistry } = await import(pathToFileURL(path.join(root, 'packages', 'mcp-server', 'dist', 'tool-registry.js')).href);
 const output = path.join(root, 'tests', 'fixtures', 'tool-contract-v1.json');
 const checkOnly = process.argv.includes('--check');
-const registry = new ToolRegistry({}, { clientId: 'contract-generator', clientName: 'contract-generator' }, { codexToolsEnabled: true });
+const registry = new ToolRegistry({
+  targetCatalog: {
+    list: async () => ({ ok: true, value: [] }),
+    describe: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Not available in contract generation', recoverable: false } }),
+  },
+}, { clientId: 'contract-generator', clientName: 'contract-generator' }, { codexToolsEnabled: true });
 const canonicalize = (value) => Array.isArray(value)
   ? value.map(canonicalize)
   : typeof value !== 'object' || value === null

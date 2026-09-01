@@ -17,6 +17,10 @@ describe('v0.5 registered target repositories', () => {
       expect(database.connection.prepare('SELECT secret_ref FROM database_targets').all()).toEqual([{ secret_ref: 'db-pg-main' }]);
       await expect(repository.insert({ id: 'bad', displayName: 'bad', driver: 'mysql', host: 'db', port: 3306, databaseName: 'app', username: 'u', secretRef: 'not a secret', readOnly: true })).rejects.toThrow();
       await expect(repository.insert({ id: 'writable', displayName: 'writable', driver: 'mysql', host: 'db', port: 3306, databaseName: 'app', username: 'u', secretRef: 'db-writable', readOnly: false } as unknown as DatabaseTargetRegistration)).rejects.toThrow();
+      await expect(repository.remove('missing')).resolves.toBe(false);
+      await expect(repository.replace({ id: 'pg-main', displayName: 'Renamed', driver: 'postgresql', host: 'db.internal', port: 5432, databaseName: 'app', username: 'readonly', secretRef: 'db-pg-main', readOnly: true })).resolves.toBeUndefined();
+      await expect(repository.get('pg-main')).resolves.toMatchObject({ displayName: 'Renamed' });
+      await expect(repository.replace({ id: 'missing', displayName: 'Missing', driver: 'postgresql', host: 'db.internal', port: 5432, databaseName: 'app', username: 'readonly', secretRef: 'db-pg-main', readOnly: true })).rejects.toThrow('not found');
     } finally { database.close(); }
   });
 
@@ -28,6 +32,10 @@ describe('v0.5 registered target repositories', () => {
       await repository.insert({ id: 'vm103', displayName: 'VM103', host: '192.168.1.39', port: 22, username: 'adminops', secretRef: 'ssh-vm103', pinnedFingerprint: 'SHA256:abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN=', roots: ['/home/adminops/project'] });
       await expect(repository.list()).resolves.toMatchObject([{ id: 'vm103', pinnedFingerprint: expect.stringContaining('SHA256:'), roots: ['/home/adminops/project'] }]);
       await expect(repository.insert({ id: 'bad', displayName: 'bad', host: 'host', port: 22, username: 'u', secretRef: 'ssh', pinnedFingerprint: 'ssh-rsa AAAA', roots: ['/'] })).rejects.toThrow();
+      await expect(repository.remove('missing')).resolves.toBe(false);
+      await expect(repository.replace({ id: 'vm103', displayName: 'VM103 updated', host: '192.168.1.39', port: 22, username: 'adminops', secretRef: 'ssh-vm103', pinnedFingerprint: 'SHA256:abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN=', roots: ['/srv/app'] })).resolves.toBeUndefined();
+      await expect(repository.get('vm103')).resolves.toMatchObject({ displayName: 'VM103 updated' });
+      await expect(repository.replace({ id: 'missing', displayName: 'Missing', host: 'host', port: 22, username: 'u', secretRef: 'ssh', pinnedFingerprint: 'SHA256:abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN=', roots: ['/srv/app'] })).rejects.toThrow('not found');
     } finally { database.close(); }
   });
 });

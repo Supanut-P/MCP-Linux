@@ -11,7 +11,12 @@ const endMarker = '<!-- END GENERATED TOOL REGISTRY -->';
 const checkOnly = process.argv.includes('--check');
 
 const { ToolRegistry } = await import(pathToFileURL(registryModulePath).href);
-const registry = new ToolRegistry({}, { clientId: 'catalog-generator', clientName: 'catalog-generator' }, { codexToolsEnabled: true });
+const registry = new ToolRegistry({
+  targetCatalog: {
+    list: async () => ({ ok: true, value: [] }),
+    describe: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Not available in catalog generation', recoverable: false } }),
+  },
+}, { clientId: 'catalog-generator', clientName: 'catalog-generator' }, { codexToolsEnabled: true });
 const tools = registry.list();
 const current = await readFile(contractPath, 'utf8');
 const newline = current.includes('\r\n') ? '\r\n' : '\n';

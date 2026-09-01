@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { appError, err, ok } from '@baitonghub-linux-mcp/domain';
+import type { Result } from '@baitonghub-linux-mcp/domain';
+import type { TargetCatalogEntry, TargetCatalogKind } from '@baitonghub-linux-mcp/application';
 import { permissionProfiles } from '@baitonghub-linux-mcp/permissions';
 import { DEFAULT_DESTRUCTIVE_AUTO_APPROVAL_POLICY, type DestructiveAutoApprovalPolicy } from '@baitonghub-linux-mcp/shared';
 import type { ActivitySinkEvent } from './activity-tracker.js';
@@ -42,6 +44,23 @@ describe('MCP tool registry', () => {
     expect(hidden.list().filter((tool) => tool.name.startsWith('codex_'))).toHaveLength(0);
     expect(enabled.list().filter((tool) => tool.name.startsWith('codex_')).map((tool) => tool.name)).toEqual([...CODEX_TOOL_NAMES]);
     expect(enabled.list()).toHaveLength(hidden.list().length + CODEX_TOOL_NAMES.length);
+  });
+
+  it('advertises and dispatches the sanitized target catalog only when the registry is wired', async () => {
+    const registry = new ToolRegistry({
+      targetCatalog: {
+        list: async (kind: TargetCatalogKind | undefined): Promise<Result<readonly TargetCatalogEntry[]>> => ok(kind === 'remote-host'
+          ? [{ id: 'vm103', kind: 'remote-host', displayName: 'VM103', provider: 'openssh', readOnly: true, rootCount: 1, createdAt: '2026-09-01T00:00:00.000Z' }]
+          : []),
+        describe: async (): Promise<Result<TargetCatalogEntry>> => ok({ id: 'vm103', kind: 'remote-host', displayName: 'VM103', provider: 'openssh', readOnly: true, rootCount: 1, createdAt: '2026-09-01T00:00:00.000Z' }),
+      },
+    }, actor);
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'target_catalog')).toBe(false);
+    expect(registry.list().map((tool) => tool.name)).toContain('target_catalog');
+    expect(registry.list().find((tool) => tool.name === 'target_catalog')?.parse({ operation: 'list', kind: 'remote-host' })).toMatchObject({ ok: true });
+    await expect(registry.invoke('target_catalog', { operation: 'list', kind: 'remote-host' })).resolves.toMatchObject({
+      structuredContent: { value: [{ id: 'vm103', kind: 'remote-host' }] },
+    });
   });
 
   it('does not advertise a fixed drive letter in workspace registration metadata', () => {

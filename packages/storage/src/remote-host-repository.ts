@@ -32,7 +32,18 @@ export class SqliteRemoteHostRepository {
     );
   }
 
-  public async remove(id: string): Promise<void> { this.database.connection.prepare('DELETE FROM remote_hosts WHERE id = ?').run(id); }
+  public async replace(host: RemoteHostRegistration): Promise<void> {
+    validateRemoteHost(host);
+    const result = this.database.connection.prepare(
+      'UPDATE remote_hosts SET display_name = ?, host = ?, port = ?, username = ?, secret_ref = ?, pinned_fingerprint = ?, roots_json = ? WHERE id = ?',
+    ).run(host.displayName, host.host, host.port, host.username, host.secretRef, host.pinnedFingerprint, JSON.stringify(host.roots), host.id);
+    if (Number(result.changes) !== 1) throw new Error('Remote host was not found');
+  }
+
+  public async remove(id: string): Promise<boolean> {
+    validateTargetId(id);
+    return Number(this.database.connection.prepare('DELETE FROM remote_hosts WHERE id = ?').run(id).changes) === 1;
+  }
 
   private rows(values: readonly unknown[]): readonly RemoteHost[] { return values.flatMap((value) => { const host = this.toHost(value); return host === null ? [] : [host]; }); }
 
@@ -52,6 +63,10 @@ function validateRemoteHost(host: RemoteHostRegistration): void {
     || !/^[A-Za-z0-9_.-]{1,253}$/.test(host.host) || !Number.isInteger(host.port) || host.port < 1 || host.port > 65535
     || host.username.trim().length === 0 || !/^[A-Za-z0-9._-]{1,128}$/.test(host.secretRef)
     || !/^SHA256:[A-Za-z0-9+/=]{20,}$/.test(host.pinnedFingerprint) || host.roots.length === 0 || host.roots.some((root) => !root.startsWith('/'))) throw new Error('Remote host registration is invalid');
+}
+
+function validateTargetId(id: string): void {
+  if (!/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/.test(id)) throw new Error('Remote host id is invalid');
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null && !Array.isArray(value); }

@@ -39,6 +39,24 @@ baitonghub-linux-mcp remote-host add vm103 192.168.1.39 22 adminops ssh-vm103 SH
 baitonghub-linux-mcp remote-host list
 ```
 
+The MCP client can discover the safe aliases without receiving connection or
+credential metadata:
+
+```text
+target_catalog {"operation":"list"}
+target_catalog {"operation":"describe","kind":"remote-host","id":"vm103"}
+```
+
+Target replacement and removal stay local-admin operations. Removal requires
+an exact repeated ID as confirmation:
+
+```sh
+baitonghub-linux-mcp database replace pg-main postgresql db.internal 5432 app readonly db-pg-main
+baitonghub-linux-mcp database remove pg-main --confirm pg-main
+baitonghub-linux-mcp remote-host replace vm103 192.168.1.39 22 adminops ssh-vm103 SHA256:<pinned-host-key> /srv/app
+baitonghub-linux-mcp remote-host remove vm103 --confirm vm103
+```
+
 Database targets are stored as `readOnly=true` and accept only one bounded
 read query. `remote_host` read operations stay inside registered roots; remote
 mutations additionally require `workspaceId`, a matching dry-run hash, and

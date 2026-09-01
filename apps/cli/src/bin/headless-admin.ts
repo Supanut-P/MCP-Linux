@@ -14,9 +14,13 @@ export async function main(): Promise<void> {
   if (command === 'workspace' && args[1] === 'add' && args[2] !== undefined) return addWorkspace(args[2]);
   if (command === 'database' && args[1] === 'list') return listDatabases();
   if (command === 'database' && args[1] === 'add') return addDatabase(args.slice(2));
+  if (command === 'database' && args[1] === 'replace') return replaceDatabase(args.slice(2));
+  if (command === 'database' && args[1] === 'remove') return removeDatabase(args.slice(2));
   if (command === 'remote-host' && args[1] === 'list') return listRemoteHosts();
   if (command === 'remote-host' && args[1] === 'add') return addRemoteHost(args.slice(2));
-  process.stderr.write('Usage: baitonghub-linux-mcp status | doctor | workspace add <path> | workspace list | database list | database add <id> <driver> <host> <port> <database> <username> <secret-ref> | remote-host list | remote-host add <id> <host> <port> <username> <secret-ref> <fingerprint> <root[,root...]>\n');
+  if (command === 'remote-host' && args[1] === 'replace') return replaceRemoteHost(args.slice(2));
+  if (command === 'remote-host' && args[1] === 'remove') return removeRemoteHost(args.slice(2));
+  process.stderr.write('Usage: baitonghub-linux-mcp status | doctor | workspace add <path> | workspace list | database list | database add <id> <driver> <host> <port> <database> <username> <secret-ref> | database replace <id> <driver> <host> <port> <database> <username> <secret-ref> | database remove <id> --confirm <id> | remote-host list | remote-host add <id> <host> <port> <username> <secret-ref> <fingerprint> <root[,root...]> | remote-host replace <id> <host> <port> <username> <secret-ref> <fingerprint> <root[,root...]> | remote-host remove <id> --confirm <id>\n');
   process.exitCode = 2;
 }
 
@@ -79,6 +83,28 @@ async function addDatabase(values: readonly string[]): Promise<void> {
   finally { opened.database.close(); }
 }
 
+async function replaceDatabase(values: readonly string[]): Promise<void> {
+  if (values.length !== 7 || !['postgresql', 'mysql'].includes(values[1]!)) { process.stderr.write('Usage: database replace <id> <postgresql|mysql> <host> <port> <database> <username> <secret-ref>\n'); process.exitCode = 2; return; }
+  const port = Number(values[3]);
+  if (!Number.isInteger(port)) { process.stderr.write('Database port must be an integer\n'); process.exitCode = 2; return; }
+  const opened = openRegistries();
+  try {
+    await opened.targets.replace({ id: values[0]!, displayName: values[0]!, driver: values[1]! as DatabaseTargetDriver, host: values[2]!, port, databaseName: values[4]!, username: values[5]!, secretRef: values[6]!, readOnly: true });
+    process.stdout.write(`database target replaced: ${values[0]}\n`);
+  } catch (error: unknown) { process.stderr.write(`${error instanceof Error ? error.message : 'database target could not be replaced'}\n`); process.exitCode = 1; }
+  finally { opened.database.close(); }
+}
+
+async function removeDatabase(values: readonly string[]): Promise<void> {
+  if (values.length !== 3 || values[1] !== '--confirm' || values[0] !== values[2]) { process.stderr.write('Usage: database remove <id> --confirm <id>\n'); process.exitCode = 2; return; }
+  const opened = openRegistries();
+  try {
+    if (!await opened.targets.remove(values[0]!)) { process.stderr.write('Database target was not found\n'); process.exitCode = 1; return; }
+    process.stdout.write(`database target removed: ${values[0]}\n`);
+  } catch (error: unknown) { process.stderr.write(`${error instanceof Error ? error.message : 'database target could not be removed'}\n`); process.exitCode = 1; }
+  finally { opened.database.close(); }
+}
+
 async function listRemoteHosts(): Promise<void> {
   const opened = openRegistries();
   try {
@@ -98,6 +124,29 @@ async function addRemoteHost(values: readonly string[]): Promise<void> {
     await opened.hosts.insert({ id: values[0]!, displayName: values[0]!, host: values[1]!, port, username: values[3]!, secretRef: values[4]!, pinnedFingerprint: values[5]!, roots });
     process.stdout.write(`remote host added: ${values[0]}\n`);
   } catch (error: unknown) { process.stderr.write(`${error instanceof Error ? error.message : 'remote host could not be added'}\n`); process.exitCode = 1; }
+  finally { opened.database.close(); }
+}
+
+async function replaceRemoteHost(values: readonly string[]): Promise<void> {
+  if (values.length !== 7) { process.stderr.write('Usage: remote-host replace <id> <host> <port> <username> <secret-ref> <SHA256:fingerprint> <root[,root...]>\n'); process.exitCode = 2; return; }
+  const port = Number(values[2]);
+  const roots = values[6]!.split(',').map((root) => root.trim()).filter(Boolean);
+  if (!Number.isInteger(port) || roots.length === 0) { process.stderr.write('Remote host port must be an integer and at least one root is required\n'); process.exitCode = 2; return; }
+  const opened = openRegistries();
+  try {
+    await opened.hosts.replace({ id: values[0]!, displayName: values[0]!, host: values[1]!, port, username: values[3]!, secretRef: values[4]!, pinnedFingerprint: values[5]!, roots });
+    process.stdout.write(`remote host replaced: ${values[0]}\n`);
+  } catch (error: unknown) { process.stderr.write(`${error instanceof Error ? error.message : 'remote host could not be replaced'}\n`); process.exitCode = 1; }
+  finally { opened.database.close(); }
+}
+
+async function removeRemoteHost(values: readonly string[]): Promise<void> {
+  if (values.length !== 3 || values[1] !== '--confirm' || values[0] !== values[2]) { process.stderr.write('Usage: remote-host remove <id> --confirm <id>\n'); process.exitCode = 2; return; }
+  const opened = openRegistries();
+  try {
+    if (!await opened.hosts.remove(values[0]!)) { process.stderr.write('Remote host was not found\n'); process.exitCode = 1; return; }
+    process.stdout.write(`remote host removed: ${values[0]}\n`);
+  } catch (error: unknown) { process.stderr.write(`${error instanceof Error ? error.message : 'remote host could not be removed'}\n`); process.exitCode = 1; }
   finally { opened.database.close(); }
 }
 

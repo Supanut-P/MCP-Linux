@@ -12,6 +12,7 @@ import {
   JsonWorkspaceIndexStore,
   WorkspaceIndexService,
   WorkspaceQueryService,
+  TargetCatalogService,
   type FileActor,
 } from '@baitonghub-linux-mcp/application';
 import { AuditService } from '@baitonghub-linux-mcp/audit';
@@ -87,6 +88,7 @@ export function createStdioMcpRuntime(
   const workspaceInfoService = new WorkspaceInfoService(workspaceRepository, workspaceService, effectiveUnrestricted);
   const databaseTargets = new SqliteDatabaseTargetRepository(database);
   const remoteHosts = new SqliteRemoteHostRepository(database);
+  const targetCatalog = new TargetCatalogService(databaseTargets, remoteHosts);
   const secretStore = new LibsecretSecretStore();
   const profileName = options.permissionProfile ?? 'full';
   const activeProfile = profileName === 'custom' ? customPermissionProfile(settingsRepository) : permissionProfiles[profileName];
@@ -206,6 +208,7 @@ export function createStdioMcpRuntime(
     process: processService,
     codex: codexService,
     database: databaseRuntime,
+    targetCatalog,
   };
 
   return {

@@ -41,8 +41,17 @@ export class SqliteDatabaseTargetRepository {
     );
   }
 
-  public async remove(id: string): Promise<void> {
-    this.database.connection.prepare('DELETE FROM database_targets WHERE id = ?').run(id);
+  public async replace(target: DatabaseTargetRegistration): Promise<void> {
+    validateDatabaseTarget(target);
+    const result = this.database.connection.prepare(
+      'UPDATE database_targets SET display_name = ?, driver = ?, host = ?, port = ?, database_name = ?, username = ?, read_only = 1, secret_ref = ? WHERE id = ?',
+    ).run(target.displayName, target.driver, target.host, target.port, target.databaseName, target.username, target.secretRef, target.id);
+    if (Number(result.changes) !== 1) throw new Error('Database target was not found');
+  }
+
+  public async remove(id: string): Promise<boolean> {
+    validateTargetId(id);
+    return Number(this.database.connection.prepare('DELETE FROM database_targets WHERE id = ?').run(id).changes) === 1;
   }
 
   private rows(values: readonly unknown[]): readonly DatabaseTarget[] {
@@ -63,6 +72,10 @@ function validateDatabaseTarget(target: DatabaseTargetRegistration): void {
     || !['postgresql', 'mysql'].includes(target.driver) || !/^[A-Za-z0-9_.-]{1,253}$/.test(target.host)
     || !Number.isInteger(target.port) || target.port < 1 || target.port > 65535 || target.databaseName.trim().length === 0
     || target.username.trim().length === 0 || !/^[A-Za-z0-9._-]{1,128}$/.test(target.secretRef)) throw new Error('Database target registration is invalid');
+}
+
+function validateTargetId(id: string): void {
+  if (!/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/.test(id)) throw new Error('Database target id is invalid');
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null && !Array.isArray(value); }

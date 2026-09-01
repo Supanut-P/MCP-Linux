@@ -1,7 +1,7 @@
 # baitonghub-linux-mcp + MCP Tasks spec (2025-11-25)
 
 > สถานะ: experimental (ตามสเปก MCP Tasks รุ่น 2025-11-25)
-> ใช้ได้ตั้งแต่รุ่นถัดจาก v4.7.1
+> v1.7.0 เพิ่มการสร้าง task ผ่าน `tools/call` แบบมาตรฐาน
 
 baitonghub-linux-mcp เปิดดู durable background tasks ผ่านเมธอดระดับโปรโตคอลของ MCP Tasks
 เพื่อให้ client ที่รองรับสเปกเรียกดู/เก็บผล/ยกเลิกงานยาวได้โดยไม่ต้องรู้จัก
@@ -12,10 +12,10 @@ baitonghub-linux-mcp เปิดดู durable background tasks ผ่านเ
 - **ครอบคลุม**: durable background tasks ของ `shell`
   (ใช้ task store ที่รอดการ restart runtime ด้วย task ID)
 - **ไม่รวม**: `process_start` (in-memory ไม่ durable — เป็น legacy path)
-- **การสร้าง task ยังทำผ่าน tool เดิม**: `shell { execution: "background" }`
-  — Tasks surface เป็นฝั่งอ่าน/เก็บผล/ยกเลิกเท่านั้น
-- **ไม่ประกาศ `tasks.requests.tools.call`** ตามความตั้งใจ: client จึงจะไม่ส่ง
-  task-augmented `tools/call` มา (Phase B — ดูท้ายเอกสาร)
+- **การสร้างแบบ legacy** ยังทำผ่าน tool เดิมได้: `shell { execution: "background" }`
+- **การสร้างแบบมาตรฐาน** รองรับ `tools/call` ที่แนบ `task: { ttl }` สำหรับ `shell`
+  operation `run` เท่านั้น และคืน `CreateTaskResult` โดยไม่ส่ง `resume_token`
+- `process_start` และ tool อื่นไม่รองรับ task-augmented call
 - **ไม่ส่ง `notifications/tasks/status`** (optional ตามสเปก) — client ต้อง poll `tasks/get`
 
 ## เมธอดที่รองรับ
@@ -27,7 +27,10 @@ baitonghub-linux-mcp เปิดดู durable background tasks ผ่านเ
 | `tasks/list { cursor? }` | รายการ task เรียงใหม่สุดก่อน + cursor pagination (หน้าละ 50) |
 | `tasks/cancel { taskId }` | ยกเลิกงานที่ยังไม่ terminal; task terminal แล้ว → `-32602` |
 
-Capability ที่ประกาศตอน initialize: `{ tasks: { list: {}, cancel: {} } }`
+Capability ที่ประกาศตอน initialize: `{ tasks: { list: {}, cancel: {}, requests: { tools: { call: {} } } } }`
+
+`tools/list` ใน wire รุ่น 2025-11-25 จะระบุ `shell.execution.taskSupport = "required"`
+เฉพาะ shell; รุ่น 2026-07-28 จะตัดฟิลด์ deprecated นี้ตาม codec ของ SDK
 
 ## การแม็ปสถานะ
 
@@ -74,10 +77,19 @@ Capability ที่ประกาศตอน initialize: `{ tasks: { list: {}
 - Integration (client จริงผ่าน HTTP loopback, ยุค 2025):
   `packages/mcp-server/src/tasks-protocol.integration.test.ts`
 
-## Phase B — task-augmented tools/call (ยังไม่ทำ)
+## Task-augmented `tools/call` (v1.7.0)
 
-การรับ `tools/call` ที่แนบ `task` มาด้วย (ให้ server ตอบ `CreateTaskResult`
-ทันทีแล้วค่อยเก็บผล) ยังเปิดไว้เป็นขั้นถัดไป เพราะต้อง override dispatcher
-`tools/call` ของ SDK ทั้งตัว และยังไม่มี client เป้าหมายที่ใช้งานจริง
-เมื่อจะทำ: ประกาศ `tasks.requests.tools.call` + `execution.taskSupport`
-ใน tools/list ของ tool ที่รองรับ (เช่น `shell`)
+client ที่รองรับ MCP Tasks ส่งตัวอย่างนี้ได้:
+
+```json
+{
+  "name": "shell",
+  "arguments": { "executable": "node", "arguments": ["-e", "build()"] },
+  "task": { "ttl": 60000 }
+}
+```
+
+server จะบังคับ `operation=run` และ `execution=background` ผ่าน registry เดิม,
+ผูก owner/permission/audit เดิม และคืนเฉพาะ `taskId`, status, TTL, timestamps และ
+poll interval จาก task snapshot. `tasks/get`, `tasks/result`, `tasks/list` และ
+`tasks/cancel` ใช้ต่อได้หลัง reconnect หรือ runtime restart.

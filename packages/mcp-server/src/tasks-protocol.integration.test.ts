@@ -25,15 +25,35 @@ const taskResultSchema = z.looseObject({
 
 describe('MCP tasks protocol over localhost HTTP', () => {
   let handle: McpHttpServerHandle;
+  let createdTask: typeof completedTask | undefined;
+  let creationRequest: Record<string, unknown> | undefined;
 
   beforeEach(async () => {
+    createdTask = undefined;
+    creationRequest = undefined;
     handle = await startMcpHttp({
       port: 0,
       services: {
         capabilities: {
-          async execute(tool: string, request: { operation?: string; task_id?: string }) {
+          async execute(tool: string, request: { operation?: string; task_id?: string; timeout_seconds?: number }) {
             if (tool !== 'shell') return { ok: false, error: { code: 'INVALID_INPUT', message: 'unsupported tool' } } as const;
+            if (request.operation === 'run') {
+              const startedAt = '2026-09-01T00:00:00.000Z';
+              const timeoutSeconds = request.timeout_seconds ?? 86_400;
+              const { finished_at, ...baseTask } = completedTask;
+              void finished_at;
+              createdTask = {
+                ...baseTask,
+                task_id: 'task-created',
+                state: 'running',
+                started_at: startedAt,
+                deadline_at: new Date(Date.parse(startedAt) + timeoutSeconds * 1_000).toISOString(),
+              };
+              creationRequest = { ...request };
+              return ok(createdTask);
+            }
             if (request.operation === 'list') return ok({ tasks: [completedTask] });
+            if (request.task_id === 'task-created' && createdTask !== undefined) return ok(createdTask);
             if (request.task_id === 'task-done') return ok(completedTask);
             return { ok: false, error: { code: 'PROCESS_NOT_FOUND', message: 'Task was not found' } } as const;
           },
@@ -56,7 +76,7 @@ describe('MCP tasks protocol over localhost HTTP', () => {
 
     try {
       await client.connect(transport);
-      expect(client.getServerCapabilities()?.tasks).toEqual({ list: {}, cancel: {} });
+      expect(client.getServerCapabilities()?.tasks).toEqual({ list: {}, cancel: {}, requests: { tools: { call: {} } } });
 
       const listed = await client.request({ method: 'tasks/list', params: {} }, z.looseObject({ tasks: z.array(taskResultSchema) }));
       expect(listed.tasks).toHaveLength(1);
@@ -82,4 +102,67 @@ describe('MCP tasks protocol over localhost HTTP', () => {
       await client.close();
     }
   }, 30_000);
+
+  it('creates a durable shell task through task-augmented tools/call and keeps it owner-scoped', async () => {
+    const client = new Client(
+      { name: 'task-creation-client', version: '0.1.0' },
+      {
+        capabilities: { tasks: { requests: { tools: { call: {} } } } },
+        versionNegotiation: { mode: 'legacy' },
+      },
+    );
+    const transport = new StreamableHTTPClientTransport(handle.endpoint);
+
+    try {
+      await client.connect(transport);
+      const result = await client.callTool({
+        name: 'shell',
+        arguments: { executable: 'node', arguments: ['-e', 'setTimeout(()=>{}, 1000)'] },
+        task: { ttl: 60_000 },
+      });
+      expect(result).toMatchObject({ task: { taskId: 'task-created', status: 'working', ttl: 60_000 } });
+      expect(result).not.toHaveProperty('resume_token');
+      expect(createdTask).toMatchObject({ task_id: 'task-created', state: 'running' });
+      expect(creationRequest?.metadata).toMatchObject({
+        'baitonghub-linux-mcp.taskOwner.v1': { clientId: 'tasks-http-test', sessionId: expect.any(String) },
+      });
+    } finally {
+      await client.close();
+    }
+  }, 30_000);
+
+  it('advertises task support only for shell on the legacy task-capable tools/list surface', async () => {
+    const client = new Client(
+      { name: 'task-metadata-client', version: '0.1.0' },
+      { versionNegotiation: { mode: 'legacy' } },
+    );
+    const transport = new StreamableHTTPClientTransport(handle.endpoint);
+
+    try {
+      await client.connect(transport);
+      const listed = await client.listTools();
+      const shell = listed.tools.find((tool) => tool.name === 'shell');
+      const processStart = listed.tools.find((tool) => tool.name === 'process_start');
+      expect(shell?.execution).toEqual({ taskSupport: 'required' });
+      expect(processStart?.execution).toBeUndefined();
+    } finally {
+      await client.close();
+    }
+  });
+
+  it('rejects task envelopes for unsupported tools and shell follow-up operations', async () => {
+    const client = new Client(
+      { name: 'task-rejection-client', version: '0.1.0' },
+      { versionNegotiation: { mode: 'legacy' } },
+    );
+    const transport = new StreamableHTTPClientTransport(handle.endpoint);
+
+    try {
+      await client.connect(transport);
+      await expect(client.callTool({ name: 'process_start', arguments: {}, task: { ttl: 60_000 } })).rejects.toMatchObject({ code: -32602 });
+      await expect(client.callTool({ name: 'shell', arguments: { operation: 'wait' }, task: { ttl: 60_000 } })).rejects.toMatchObject({ code: -32602 });
+    } finally {
+      await client.close();
+    }
+  });
 });

@@ -8,10 +8,11 @@ import { withCapabilityOwnerMetadata } from './request-scope.js';
 
 /**
  * Protocol-level exposure of durable background tasks per the MCP Tasks
- * utility (spec 2025-11-25, experimental). Tasks are still created through
- * the `shell` tool with execution=background; this surface only serves
- * tasks/get, tasks/result, tasks/list, and tasks/cancel so spec-aware
- * clients can poll and retrieve results without knowing baitonghub-linux-mcp's tool names.
+ * utility (spec 2025-11-25, experimental). Tasks can be created through the
+ * standard task-augmented `shell` tools/call path or the legacy shell tool
+ * with execution=background; this surface serves tasks/get, tasks/result,
+ * tasks/list, and tasks/cancel so spec-aware clients can poll and retrieve
+ * results without knowing baitonghub-linux-mcp's tool names.
  */
 
 export interface ProtocolTask {
@@ -38,7 +39,7 @@ export interface TasksProtocolOptions {
   readonly pollTickMs?: number;
 }
 
-type ShellSnapshot = Record<string, unknown>;
+export type ShellSnapshot = Record<string, unknown>;
 type TaskIdParams = { readonly taskId: string };
 type ListParams = { readonly cursor?: string | undefined };
 
@@ -63,7 +64,7 @@ function protocolStatus(state: string): ProtocolTask['status'] {
   }
 }
 
-function toProtocolTask(snapshot: ShellSnapshot, pollIntervalMs: number): ProtocolTask | undefined {
+export function toProtocolTask(snapshot: ShellSnapshot, pollIntervalMs: number): ProtocolTask | undefined {
   const taskId = typeof snapshot.task_id === 'string' ? snapshot.task_id.trim() : '';
   const startedAt = typeof snapshot.started_at === 'string' ? snapshot.started_at : '';
   if (taskId.length === 0 || startedAt.length === 0) return undefined;
@@ -128,6 +129,11 @@ export class TasksProtocol {
 
   public async getTask(params: TaskIdParams): Promise<ProtocolTask> {
     return this.protocolTask(params.taskId);
+  }
+
+  /** Map a freshly-created shell snapshot using the same poll/TTL contract as tasks/get. */
+  public taskFromSnapshot(snapshot: ShellSnapshot): ProtocolTask | undefined {
+    return toProtocolTask(snapshot, this.currentPollIntervalMs());
   }
 
   public async listTasks(params: ListParams): Promise<{ tasks: ProtocolTask[]; nextCursor?: string }> {

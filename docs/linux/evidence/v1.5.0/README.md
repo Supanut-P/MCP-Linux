@@ -16,9 +16,11 @@ Required artifacts:
 - a bounded soak TSV from `scripts/soak-linux-headless.sh` with start/end
   system state and reviewed RSS, file-descriptor, WAL, task, and restart data.
 
-The release workflow refuses every `v1.5.*` tag until both
-`ACCEPTANCE_SUMMARY.md` and the seven-day TSV exist and the default verifier
-accepts the TSV.
+The release workflow refuses every `v1.5.*` tag until either the retained
+production evidence exists and the default verifier accepts the TSV, or an
+explicit `SEVEN_DAY_SOAK_WAIVER.md` is present. A waiver is a transparent
+non-production release path: it must state `SEVEN_DAY_SOAK_GATE: WAIVED` and
+`PRODUCTION_EVIDENCE_CLAIM: NONE` and never implies a completed soak.
 
 Validate the retained TSV before review:
 

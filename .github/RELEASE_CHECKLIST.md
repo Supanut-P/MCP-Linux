@@ -1,7 +1,12 @@
 # Baitonghub-Linux-mcp release checklist
 
-**Current version:** `v1.4.2`
+**Current version:** `v1.5.0`
 **Target:** Ubuntu 24.04 LTS x64, headless
+
+**Evidence note:** The product owner waived the seven-day soak on 2026-09-01
+to continue version development. `v1.5.0` makes no production-readiness claim;
+the machine-checked waiver is tracked at
+`docs/linux/evidence/v1.5.0/SEVEN_DAY_SOAK_WAIVER.md`.
 
 ## Source verification
 

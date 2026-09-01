@@ -56,9 +56,16 @@ jobs:
       - name: Require production evidence for v1.5 releases
         if: startsWith(github.ref_name, 'v1.5.')
         run: |
-          test -f docs/linux/evidence/v1.5.0/ACCEPTANCE_SUMMARY.md
-          test -f docs/linux/evidence/v1.5.0/soak-linux-headless.tsv
-          SOAK_MIN_DURATION_SECONDS=604800 bash scripts/verify-soak-linux-headless.sh docs/linux/evidence/v1.5.0/soak-linux-headless.tsv
+          waiver=docs/linux/evidence/v1.5.0/SEVEN_DAY_SOAK_WAIVER.md
+          if test -f "$waiver"; then
+            grep -q 'SEVEN_DAY_SOAK_GATE: WAIVED' "$waiver"
+            grep -q 'PRODUCTION_EVIDENCE_CLAIM: NONE' "$waiver"
+            echo 'Seven-day soak gate explicitly waived; this release makes no production-evidence claim.'
+          else
+            test -f docs/linux/evidence/v1.5.0/ACCEPTANCE_SUMMARY.md
+            test -f docs/linux/evidence/v1.5.0/soak-linux-headless.tsv
+            SOAK_MIN_DURATION_SECONDS=604800 bash scripts/verify-soak-linux-headless.sh docs/linux/evidence/v1.5.0/soak-linux-headless.tsv
+          fi
 
       - name: Build Linux headless artifacts
         run: pnpm package:linux:headless

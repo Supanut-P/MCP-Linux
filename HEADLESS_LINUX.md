@@ -138,6 +138,12 @@ dependency readiness with fixed sections and a bounded serialized response.
 It does not expose commands, paths, host topology, credentials, or provider
 stderr, and a missing source provider is reported as degraded/unavailable.
 
+`remote_fleet_diff` compares a previous bounded `remote_fleet` snapshot with a
+fresh read-only snapshot of the same registered host aliases. It returns only
+changed sections (`health`, `inventory`, or `service-status`) and sanitized
+unavailable status; it accepts no hostname, command, credential, or mutation
+input.
+
 `workspace_changes` provides a bounded snapshot/diff feed from an active
 workspace watcher. Events contain only a monotonic sequence, a normalized
 relative path, an event kind, and an observation timestamp. The feed never

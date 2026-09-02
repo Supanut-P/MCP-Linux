@@ -33,6 +33,7 @@ import { auditTools } from './tools/audit-tools.js';
 import { taskEventsTools } from './tools/task-events-tools.js';
 import { taskHistoryTools } from './tools/task-history-tools.js';
 import { diagnosticsSnapshotTools } from './tools/diagnostics-snapshot-tools.js';
+import { remoteFleetDiffTools } from './tools/remote-fleet-diff-tools.js';
 import { policyExplainTools } from './tools/policy-explain-tools.js';
 import { skillTools } from './tools/skill-tools.js';
 import { workspaceTools } from './tools/workspace-tools.js';
@@ -119,6 +120,7 @@ export class ToolRegistry {
       ...taskEventsTools(context),
       ...taskHistoryTools(context),
       ...diagnosticsSnapshotTools(context),
+      ...remoteFleetDiffTools(context),
       ...databaseTools(context),
       ...targetCatalogTools(context),
       ...supportBundleTools(context),

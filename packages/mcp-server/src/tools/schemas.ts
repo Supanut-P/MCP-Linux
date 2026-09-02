@@ -521,6 +521,12 @@ export const remoteFleetCapabilitySchema = z.object({
   ...capabilityRequestSchema,
 }).strict();
 
+export const remoteFleetDiffSchema = z.object({
+  hostIds: z.array(remoteHostIdSchema).min(1).max(20).refine((ids) => new Set(ids).size === ids.length, 'hostIds must not contain duplicates'),
+  baseline: z.unknown(),
+  maxParallel: z.number().int().min(1).max(4).default(4),
+}).strict();
+
 const rolloutIdSchema = z.string().trim().uuid();
 const rolloutWorkspaceSchema = z.string().trim().min(1).max(256);
 export const remoteRolloutCapabilitySchema = z.discriminatedUnion('operation', [

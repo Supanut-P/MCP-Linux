@@ -165,6 +165,14 @@ describe('MCP tool registry', () => {
     await expect(registry.invoke('diagnostics_snapshot', {})).resolves.toMatchObject({ structuredContent: { status: 'ready' } });
   });
 
+  it('advertises and dispatches remote_fleet_diff only when the diff service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'remote_fleet_diff')).toBe(false);
+    const registry = new ToolRegistry({ remoteFleetDiff: { execute: async (): Promise<Result<unknown>> => ok({ operation: 'remote_fleet_diff', hosts: [], summary: { requested: 0 } }) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('remote_fleet_diff');
+    expect(registry.list().find((tool) => tool.name === 'remote_fleet_diff')?.parse({ hostIds: ['vm1'], baseline: { hosts: [] } })).toMatchObject({ ok: true });
+    await expect(registry.invoke('remote_fleet_diff', { hostIds: ['vm1'], baseline: { hosts: [] } })).resolves.toMatchObject({ structuredContent: { operation: 'remote_fleet_diff' } });
+  });
+
   it('explains active profile and registered-root policy without dispatching the target tool', async () => {
     let called = false;
     const registry = new ToolRegistry({

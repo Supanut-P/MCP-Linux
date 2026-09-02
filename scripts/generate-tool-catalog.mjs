@@ -23,6 +23,7 @@ const registry = new ToolRegistry({
   taskEvents: { execute: async () => ({ ok: true, value: { taskId: 'catalog-task', state: 'completed', events: [], count: 0, truncated: false } }) },
   taskHistory: { execute: async () => ({ ok: true, value: { entries: [], count: 0, truncated: false } }) },
   diagnosticsSnapshot: { execute: async () => ({ ok: true, value: { snapshotAt: new Date(0).toISOString(), status: 'ready', health: { available: true, ready: true, unavailableCount: 0, consentRequiredCount: 0, missingDependencies: [] }, runtime: { available: true, ready: true }, audit: { available: true, ready: true, count: 0, truncated: false }, dependencies: { ready: true, missingDependencies: [] } } }) },
+  remoteFleetDiff: { execute: async () => ({ ok: true, value: { operation: 'remote_fleet_diff', hosts: [], summary: { requested: 0, changed: 0, unchanged: 0, unavailable: 0, maxParallel: 4 } } }) },
 }, { clientId: 'catalog-generator', clientName: 'catalog-generator' }, { codexToolsEnabled: true });
 const tools = registry.list();
 const current = await readFile(contractPath, 'utf8');

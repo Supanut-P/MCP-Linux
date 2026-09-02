@@ -47,6 +47,9 @@ try {
   if (tools.tools.length < expectedToolsMin) {
     throw new Error(`tools/list returned ${tools.tools.length} tools; expected at least ${expectedToolsMin}`);
   }
+  if (!tools.tools.some((tool) => tool.name === 'remote_fleet_diff')) {
+    throw new Error('tools/list did not advertise remote_fleet_diff');
+  }
 
   const listed = await callTool(client, 'workspace_list', {});
   const entries = readArray(listed);
@@ -165,6 +168,7 @@ try {
     auditCount: auditValue.count,
     auditTruncated: auditValue.truncated,
     diagnosticsStatus: diagnosticsValue.status,
+    remoteFleetDiffAdvertised: true,
     snapshotCount: snapshotValue.count,
     snapshotTruncated: snapshotValue.truncated,
   }) + '\n');

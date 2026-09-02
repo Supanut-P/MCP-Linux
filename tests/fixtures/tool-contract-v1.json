@@ -3563,6 +3563,75 @@
       }
     },
     {
+      "name": "release_verify",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "artifacts": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "sha256": {
+                  "pattern": "^[a-f0-9]{64}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "type": "object"
+            },
+            "maxItems": 4,
+            "minItems": 1,
+            "type": "array"
+          },
+          "checksumsPath": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "metadataPath": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "sbomPath": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "version": {
+            "pattern": "^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$",
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "metadataPath",
+          "checksumsPath",
+          "artifacts"
+        ],
+        "type": "object"
+      }
+    },
+    {
       "name": "remote_fleet",
       "permission": "READ",
       "annotations": {

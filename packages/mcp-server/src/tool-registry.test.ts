@@ -173,6 +173,14 @@ describe('MCP tool registry', () => {
     await expect(registry.invoke('remote_fleet_diff', { hostIds: ['vm1'], baseline: { hosts: [] } })).resolves.toMatchObject({ structuredContent: { operation: 'remote_fleet_diff' } });
   });
 
+  it('advertises and dispatches release_verify only when the verification service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'release_verify')).toBe(false);
+    const registry = new ToolRegistry({ releaseVerify: { execute: async (): Promise<Result<unknown>> => ok({ operation: 'release_verify', verified: true, artifacts: [], reasonCodes: [] }) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('release_verify');
+    expect(registry.list().find((tool) => tool.name === 'release_verify')?.parse({ workspaceId: 'workspace-1', metadataPath: 'dist/meta.json', checksumsPath: 'dist/sums', artifacts: [{ path: 'dist/app.deb', sha256: 'a'.repeat(64) }] })).toMatchObject({ ok: true });
+    await expect(registry.invoke('release_verify', { workspaceId: 'workspace-1', metadataPath: 'dist/meta.json', checksumsPath: 'dist/sums', artifacts: [{ path: 'dist/app.deb', sha256: 'a'.repeat(64) }] })).resolves.toMatchObject({ structuredContent: { operation: 'release_verify', verified: true } });
+  });
+
   it('explains active profile and registered-root policy without dispatching the target tool', async () => {
     let called = false;
     const registry = new ToolRegistry({

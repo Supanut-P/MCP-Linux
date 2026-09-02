@@ -527,6 +527,20 @@ export const remoteFleetDiffSchema = z.object({
   maxParallel: z.number().int().min(1).max(4).default(4),
 }).strict();
 
+const releaseVerifyArtifactSchema = z.object({
+  path: pathSchema,
+  sha256: z.string().regex(/^[a-f0-9]{64}$/i),
+}).strict();
+
+export const releaseVerifySchema = z.object({
+  workspaceId: workspaceIdSchema,
+  version: z.string().trim().regex(/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/).optional(),
+  metadataPath: pathSchema,
+  checksumsPath: pathSchema,
+  sbomPath: pathSchema.optional(),
+  artifacts: z.array(releaseVerifyArtifactSchema).min(1).max(4),
+}).strict();
+
 const rolloutIdSchema = z.string().trim().uuid();
 const rolloutWorkspaceSchema = z.string().trim().min(1).max(256);
 export const remoteRolloutCapabilitySchema = z.discriminatedUnion('operation', [

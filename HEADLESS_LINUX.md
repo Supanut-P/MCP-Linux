@@ -144,6 +144,14 @@ changed sections (`health`, `inventory`, or `service-status`) and sanitized
 unavailable status; it accepts no hostname, command, credential, or mutation
 input.
 
+`release_verify` verifies an already-present Linux release before an operator
+chooses an upgrade. Supply explicit relative paths for generated build
+metadata, a checksum manifest, an optional CycloneDX SBOM, and one to four
+artifacts with their expected SHA-256 values. The operation is offline and
+read-only: it uses the registered-root `artifact_verify` capability, rejects
+mismatched provenance, and never invokes shell, network, apt, dpkg, or an
+installer.
+
 `workspace_changes` provides a bounded snapshot/diff feed from an active
 workspace watcher. Events contain only a monotonic sequence, a normalized
 relative path, an event kind, and an observation timestamp. The feed never

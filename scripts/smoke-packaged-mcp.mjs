@@ -50,6 +50,9 @@ try {
   if (!tools.tools.some((tool) => tool.name === 'remote_fleet_diff')) {
     throw new Error('tools/list did not advertise remote_fleet_diff');
   }
+  if (!tools.tools.some((tool) => tool.name === 'release_verify')) {
+    throw new Error('tools/list did not advertise release_verify');
+  }
 
   const listed = await callTool(client, 'workspace_list', {});
   const entries = readArray(listed);
@@ -169,6 +172,7 @@ try {
     auditTruncated: auditValue.truncated,
     diagnosticsStatus: diagnosticsValue.status,
     remoteFleetDiffAdvertised: true,
+    releaseVerifyAdvertised: true,
     snapshotCount: snapshotValue.count,
     snapshotTruncated: snapshotValue.truncated,
   }) + '\n');

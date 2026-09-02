@@ -1,6 +1,6 @@
 # Baitonghub-Linux-mcp release checklist
 
-**Current version:** `v1.23.0`
+**Current version:** `v1.24.0`
 **Target:** Ubuntu 24.04 LTS x64, headless
 
 **Evidence note:** The product owner waived the seven-day soak on 2026-09-01
@@ -40,6 +40,8 @@ the machine-checked waiver is tracked at
       flows pass inside a disposable workspace.
 - [ ] `audit_query` returns owner-scoped, bounded, redacted summaries without
       command lines, paths, environments, client identity, or secrets.
+- [ ] `release_verify` validates explicit local artifacts, checksums, metadata,
+      and optional SBOM without invoking shell, network, apt, dpkg, or install.
 - [ ] Multi-workspace ownership and isolation pass.
 
 ## Package evidence

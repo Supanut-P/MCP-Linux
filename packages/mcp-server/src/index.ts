@@ -34,5 +34,7 @@ export * from './tools/task-events-tools.js';
 export * from './tools/task-history-tools.js';
 export * from './tools/diagnostics-snapshot-tools.js';
 export * from './tools/remote-fleet-diff-tools.js';
+export * from './tools/release-verify-tools.js';
+export * from './release-verify-service.js';
 export * from './tools/policy-explain-tools.js';
 export * from './task-creation.js';

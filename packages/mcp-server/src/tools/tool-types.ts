@@ -33,6 +33,7 @@ import type { TaskEventsService } from '../task-events-service.js';
 import type { TaskHistoryService } from '../task-history-service.js';
 import type { DiagnosticsSnapshotService } from '../diagnostics-snapshot-service.js';
 import type { RemoteFleetDiffService } from '../remote-fleet-diff-service.js';
+import type { ReleaseVerifyService } from '../release-verify-service.js';
 
 export interface WorkspaceInfoPort {
   info(actor: FileActor, workspaceId: string): Promise<Result<unknown>>;
@@ -90,6 +91,8 @@ export interface McpApplicationServices {
   readonly diagnosticsSnapshot?: Pick<DiagnosticsSnapshotService, 'execute'>;
   /** Read-only comparison of two bounded registered-host snapshots. */
   readonly remoteFleetDiff?: Pick<RemoteFleetDiffService, 'execute'>;
+  /** Offline verification of local release provenance and checksums. */
+  readonly releaseVerify?: Pick<ReleaseVerifyService, 'execute'>;
 }
 
 export interface McpToolAnnotations {

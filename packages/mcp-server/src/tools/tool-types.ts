@@ -28,6 +28,7 @@ import type { RuntimeTaskSnapshot } from '../runtime-metrics-service.js';
 import type { SupportBundleService } from '@baitonghub-linux-mcp/application';
 import type { ServerProfileName } from '../server-profile.js';
 import type { AuditQueryService } from '../audit-query-service.js';
+import type { WorkspaceSnapshotService } from '../workspace-snapshot-service.js';
 
 export interface WorkspaceInfoPort {
   info(actor: FileActor, workspaceId: string): Promise<Result<unknown>>;
@@ -75,6 +76,8 @@ export interface McpApplicationServices {
   readonly supportBundle?: Pick<SupportBundleService, 'execute'>;
   /** Bounded, session-scoped access to redacted MCP audit summaries. */
   readonly auditQuery?: Pick<AuditQueryService, 'execute'>;
+  /** Bounded registered-root manifest snapshots; identity snapshots remain available without this service. */
+  readonly workspaceSnapshot?: Pick<WorkspaceSnapshotService, 'execute'>;
 }
 
 export interface McpToolAnnotations {

@@ -1,6 +1,6 @@
 # Baitonghub-Linux-mcp release checklist
 
-**Current version:** `v1.17.0`
+**Current version:** `v1.18.0`
 **Target:** Ubuntu 24.04 LTS x64, headless
 
 **Evidence note:** The product owner waived the seven-day soak on 2026-09-01

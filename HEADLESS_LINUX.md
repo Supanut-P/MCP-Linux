@@ -109,6 +109,14 @@ arguments, paths, environments, client identity, secrets, approval material,
 and provider stderr are never returned. If the local audit store is unavailable
 the tool returns `CAPABILITY_UNAVAILABLE`.
 
+`workspace_snapshot` keeps its original identity response when called with only
+`workspaceId`. Set `operation: "manifest"` to receive a sorted, read-only
+regular-file manifest (`path`, byte size, modification time, and optional
+SHA-256) from that registered root. The manifest supports bounded `maxEntries`
+and an opaque owner-bound `cursor`; it never follows symlinks, rejects escapes
+and special files, and caps serialized output at 256 KiB. Files larger than the
+bounded hash budget are returned without a hash rather than read without limit.
+
 `workspace_changes` provides a bounded snapshot/diff feed from an active
 workspace watcher. Events contain only a monotonic sequence, a normalized
 relative path, an event kind, and an observation timestamp. The feed never

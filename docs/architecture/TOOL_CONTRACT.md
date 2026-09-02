@@ -516,7 +516,14 @@ workspace_context: {
 workspace_context_continue: { continuationToken: string; pageSize?: number }
 workspace_full_scan: { workspaceId?: string; path?: string; glob?: string; pageSize?: number; includeIgnored?: boolean }
 workspace_full_scan_continue: { continuationToken: string; pageSize?: number }
-workspace_snapshot: { workspaceId: string }
+workspace_snapshot: {
+  workspaceId: string;
+  operation?: 'identity' | 'manifest';
+  path?: string;
+  maxEntries?: number;
+  hashMode?: 'none' | 'sha256';
+  cursor?: string;
+}
 search_all: { query: string; workspaceId?: string; path?: string; glob?: string; maxResults?: number; includeIgnored?: boolean }
 read_many_files: { workspaceId?: string; files: Array<{ path: string; startLine?: number; endLine?: number }> }
 ```

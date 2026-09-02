@@ -57,6 +57,8 @@ describe('headless Linux Secure MCP Tunnel packaging', () => {
     expect(smoke).toContain("'workspace_list'");
     expect(smoke).toContain("'workspace_register'");
     expect(smoke).toContain("'apply_patch'");
+    expect(smoke).toContain("'workspace_snapshot'");
+    expect(smoke).toContain("operation: 'manifest'");
     expect(smoke).toContain("'/usr/bin/printf'");
   });
 

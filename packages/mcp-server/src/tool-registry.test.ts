@@ -115,6 +115,19 @@ describe('MCP tool registry', () => {
     });
   });
 
+  it('dispatches the manifest branch of the backwards-compatible workspace_snapshot tool', async () => {
+    const registry = new ToolRegistry({
+      workspaceSnapshot: {
+        execute: async (_actor, input): Promise<Result<unknown>> => ok({ workspaceId: input.workspaceId, entries: [], count: 0, truncated: false }),
+      },
+    }, actor);
+    const tool = registry.list().find((candidate) => candidate.name === 'workspace_snapshot');
+    expect(tool?.parse({ workspaceId: 'workspace-1', operation: 'manifest', maxEntries: 10, hashMode: 'none' })).toMatchObject({ ok: true });
+    await expect(registry.invoke('workspace_snapshot', { workspaceId: 'workspace-1', operation: 'manifest', maxEntries: 10 })).resolves.toMatchObject({
+      structuredContent: { workspaceId: 'workspace-1', entries: [], count: 0, truncated: false },
+    });
+  });
+
   it('advertises support_bundle only when the redaction service is wired', () => {
     expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'support_bundle')).toBe(false);
     const registry = new ToolRegistry({ supportBundle: { execute: async (): Promise<Result<unknown>> => ok({ dry_run: true }) } }, actor);

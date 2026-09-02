@@ -111,6 +111,20 @@ try {
     throw new Error('audit_query did not return bounded structured summaries');
   }
 
+  const snapshot = await callTool(client, 'workspace_snapshot', {
+    workspaceId,
+    operation: 'manifest',
+    maxEntries: 10,
+    hashMode: 'none',
+  });
+  const snapshotValue = readObject(snapshot);
+  if (snapshotValue.workspaceId !== workspaceId
+    || !Array.isArray(snapshotValue.entries)
+    || typeof snapshotValue.count !== 'number'
+    || typeof snapshotValue.truncated !== 'boolean') {
+    throw new Error('workspace_snapshot manifest did not return bounded metadata');
+  }
+
   process.stdout.write(JSON.stringify({
     ok: true,
     toolCount: tools.tools.length,
@@ -120,6 +134,8 @@ try {
     taskId,
     auditCount: auditValue.count,
     auditTruncated: auditValue.truncated,
+    snapshotCount: snapshotValue.count,
+    snapshotTruncated: snapshotValue.truncated,
   }) + '\n');
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);

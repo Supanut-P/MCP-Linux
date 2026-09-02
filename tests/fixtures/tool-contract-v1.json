@@ -6409,6 +6409,35 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "additionalProperties": false,
         "properties": {
+          "cursor": {
+            "maxLength": 512,
+            "minLength": 8,
+            "type": "string"
+          },
+          "hashMode": {
+            "enum": [
+              "none",
+              "sha256"
+            ],
+            "type": "string"
+          },
+          "maxEntries": {
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "operation": {
+            "enum": [
+              "identity",
+              "manifest"
+            ],
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
           "workspaceId": {
             "maxLength": 128,
             "minLength": 1,

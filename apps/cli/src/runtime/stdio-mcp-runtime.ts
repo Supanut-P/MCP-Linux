@@ -30,7 +30,7 @@ import {
   createLocalExtensionsService,
   type ExtensionsService,
 } from '@baitonghub-linux-mcp/extensions';
-import { ActivityTracker, AuditQueryService, DatabaseRuntimeService, RemoteRolloutRuntime, SharedActivitySnapshotLease, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type AuditQueryEvent, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices, type RemoteFleetAuditEvent, type RuntimeTaskSnapshot, type RuntimeTaskState, type ServerProfileName } from '@baitonghub-linux-mcp/mcp-server';
+import { ActivityTracker, AuditQueryService, DatabaseRuntimeService, RemoteRolloutRuntime, SharedActivitySnapshotLease, WorkspaceSnapshotService, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type AuditQueryEvent, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices, type RemoteFleetAuditEvent, type RuntimeTaskSnapshot, type RuntimeTaskState, type ServerProfileName, type WorkspaceSnapshotRootInfo } from '@baitonghub-linux-mcp/mcp-server';
 import { permissionProfiles, type PermissionProfile, type PermissionProfileName } from '@baitonghub-linux-mcp/permissions';
 import {
   AesGcmCheckpointCipher,
@@ -98,6 +98,12 @@ export function createStdioMcpRuntime(
   })));
   const workspaceService = new WorkspaceService(workspaceRepository);
   const workspaceInfoService = new WorkspaceInfoService(workspaceRepository, workspaceService, effectiveUnrestricted);
+  const workspaceSnapshot = new WorkspaceSnapshotService({
+    info: async (actor, workspaceId): Promise<Result<WorkspaceSnapshotRootInfo>> => {
+      const result = await workspaceInfoService.info(actor, workspaceId);
+      return result.ok ? ok({ id: result.value.id, realRootPath: result.value.realRootPath }) : err(result.error);
+    },
+  });
   const databaseTargets = new SqliteDatabaseTargetRepository(database);
   const remoteHosts = new SqliteRemoteHostRepository(database);
   const targetCatalog = new TargetCatalogService(databaseTargets, remoteHosts);
@@ -263,6 +269,7 @@ export function createStdioMcpRuntime(
     search: new SearchService(workspaceRepository),
     workspaceIndex,
     workspaceChanges,
+    workspaceSnapshot,
     git: gitService,
     process: processService,
     codex: codexService,

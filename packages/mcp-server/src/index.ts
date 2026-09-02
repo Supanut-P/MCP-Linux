@@ -1,6 +1,7 @@
 export * from './activity-log-file.js';
 export * from './activity-tracker.js';
 export * from './audit-query-service.js';
+export * from './workspace-snapshot-service.js';
 export * from './runtime-metrics-service.js';
 export * from './http.js';
 export * from './origin-policy.js';

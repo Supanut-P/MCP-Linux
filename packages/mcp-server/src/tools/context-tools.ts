@@ -1,4 +1,5 @@
 import { defineTool, type McpToolContext, type McpToolDefinition } from './tool-types.js';
+import { appError, err } from '@baitonghub-linux-mcp/domain';
 import { ContextEngine } from '../context-engine.js';
 import {
   readManyFilesSchema,
@@ -62,11 +63,22 @@ export function contextTools(context: McpToolContext, engine: ContextEngine): Mc
     }),
     defineTool({
       name: 'workspace_snapshot',
-      description: 'Return workspace identity and project snapshot metadata without source contents.',
+      description: 'Return workspace identity metadata, or a bounded regular-file manifest with optional SHA-256 hashes.',
       permission: 'READ',
       annotations: { readOnlyHint: true, destructiveHint: false },
       inputSchema: workspaceSnapshotSchema,
-      handler: async (input) => engine.snapshot(input.workspaceId),
+      handler: async (input) => input.operation === 'manifest'
+        ? context.services.workspaceSnapshot === undefined
+          ? err(appError('CAPABILITY_UNAVAILABLE', 'Workspace snapshot manifest is unavailable', true))
+          : context.services.workspaceSnapshot.execute(context.actor, {
+            workspaceId: input.workspaceId,
+            operation: input.operation,
+            ...(input.hashMode === undefined ? {} : { hashMode: input.hashMode }),
+            ...(input.path === undefined ? {} : { path: input.path }),
+            ...(input.maxEntries === undefined ? {} : { maxEntries: input.maxEntries }),
+            ...(input.cursor === undefined ? {} : { cursor: input.cursor }),
+          })
+        : engine.snapshot(input.workspaceId),
     }),
     defineTool({
       name: 'search_all',

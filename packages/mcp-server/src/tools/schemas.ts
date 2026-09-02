@@ -117,7 +117,18 @@ export const workspaceFullScanSchema = z.object({
   pageSize: z.number().int().min(1).max(500).optional(),
 }).strict();
 export const workspaceFullScanContinueSchema = workspaceContextContinueSchema;
-export const workspaceSnapshotSchema = workspaceInfoSchema;
+export const workspaceSnapshotSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  operation: z.enum(['identity', 'manifest']).optional(),
+  path: pathSchema.optional(),
+  maxEntries: z.number().int().min(1).max(1_000).optional(),
+  hashMode: z.enum(['none', 'sha256']).optional(),
+  cursor: z.string().trim().min(8).max(512).optional(),
+}).strict().superRefine((value, context) => {
+  if ((value.operation ?? 'identity') === 'identity' && (value.path !== undefined || value.maxEntries !== undefined || value.cursor !== undefined || value.hashMode !== undefined)) {
+    context.addIssue({ code: 'custom', message: 'Manifest fields require operation=manifest', path: ['operation'] });
+  }
+});
 export const searchAllSchema = z.object({
   query: z.string().trim().min(1).max(32_768),
   workspaceId: optionalWorkspaceIdSchema,

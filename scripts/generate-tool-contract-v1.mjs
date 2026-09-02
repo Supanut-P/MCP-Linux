@@ -16,6 +16,7 @@ const registry = new ToolRegistry({
   remoteRollout: { execute: async () => ({ ok: true, value: {} }) },
   remoteRolloutResume: { resume: async () => ({ ok: true, value: {} }) },
   supportBundle: { execute: async () => ({ ok: true, value: {} }) },
+  auditQuery: { execute: async () => ({ ok: true, value: { entries: [], count: 0, truncated: false } }) },
 }, { clientId: 'contract-generator', clientName: 'contract-generator' }, { codexToolsEnabled: true });
 const canonicalize = (value) => Array.isArray(value)
   ? value.map(canonicalize)

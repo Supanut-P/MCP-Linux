@@ -10,7 +10,7 @@ const CORE_TOOLS = new Set([
   'git_status', 'git_diff', 'git_log', 'git',
   'process_start', 'process_list', 'process_status', 'process_logs', 'process_stop',
   'project_dev', 'project_test', 'project_lint', 'project_typecheck', 'project_build',
-  'shell', 'health', 'system_info', 'runtime_metrics', 'journal', 'service_logs', 'network',
+  'shell', 'health', 'runtime_metrics', 'audit_query', 'system_info', 'journal', 'service_logs', 'network',
   'artifact_verify', 'http_probe', 'storage_usage',
   'workspace_context', 'workspace_context_continue', 'workspace_full_scan', 'workspace_full_scan_continue',
   'workspace_snapshot', 'workspace_index', 'workspace_index_status', 'workspace_index_watch', 'workspace_index_stop', 'workspace_changes',

@@ -27,6 +27,7 @@ import type { RemoteRolloutRuntime, RemoteRolloutTaskPort } from '../remote-roll
 import type { RuntimeTaskSnapshot } from '../runtime-metrics-service.js';
 import type { SupportBundleService } from '@baitonghub-linux-mcp/application';
 import type { ServerProfileName } from '../server-profile.js';
+import type { AuditQueryService } from '../audit-query-service.js';
 
 export interface WorkspaceInfoPort {
   info(actor: FileActor, workspaceId: string): Promise<Result<unknown>>;
@@ -72,6 +73,8 @@ export interface McpApplicationServices {
   readonly remoteRolloutTasks?: RemoteRolloutTaskPort;
   readonly remoteFleetAudit?: (event: import('../remote-fleet-runtime.js').RemoteFleetAuditEvent) => Promise<void>;
   readonly supportBundle?: Pick<SupportBundleService, 'execute'>;
+  /** Bounded, session-scoped access to redacted MCP audit summaries. */
+  readonly auditQuery?: Pick<AuditQueryService, 'execute'>;
 }
 
 export interface McpToolAnnotations {

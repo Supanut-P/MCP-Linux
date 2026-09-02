@@ -30,7 +30,7 @@ import {
   createLocalExtensionsService,
   type ExtensionsService,
 } from '@baitonghub-linux-mcp/extensions';
-import { ActivityTracker, DatabaseRuntimeService, RemoteRolloutRuntime, SharedActivitySnapshotLease, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices, type RemoteFleetAuditEvent, type RuntimeTaskSnapshot, type RuntimeTaskState, type ServerProfileName } from '@baitonghub-linux-mcp/mcp-server';
+import { ActivityTracker, AuditQueryService, DatabaseRuntimeService, RemoteRolloutRuntime, SharedActivitySnapshotLease, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type AuditQueryEvent, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices, type RemoteFleetAuditEvent, type RuntimeTaskSnapshot, type RuntimeTaskState, type ServerProfileName } from '@baitonghub-linux-mcp/mcp-server';
 import { permissionProfiles, type PermissionProfile, type PermissionProfileName } from '@baitonghub-linux-mcp/permissions';
 import {
   AesGcmCheckpointCipher,
@@ -86,6 +86,9 @@ export function createStdioMcpRuntime(
   const settingsRepository = new SqliteSettingsRepository(database);
   const auditRepository = new SqliteAuditRepository(database);
   const auditService = new AuditService(auditRepository);
+  const auditQuery = new AuditQueryService({
+    list: async (query, limit): Promise<readonly AuditQueryEvent[]> => auditRepository.listScoped(query, limit),
+  });
   const strictRoots = options.strictAllowedRoots !== undefined;
   const effectiveUnrestricted = false;
   const checkpointRepository = new SqliteCheckpointRepository(database, new AesGcmCheckpointCipher(loadCheckpointEncryptionKey(dataPath, {
@@ -278,6 +281,7 @@ export function createStdioMcpRuntime(
       metadata: { operation: event.operation, ...(event.truncated === true ? { truncated: true } : {}) },
     }),
     supportBundle,
+    auditQuery,
   };
 
   return {

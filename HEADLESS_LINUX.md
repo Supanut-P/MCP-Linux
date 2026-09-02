@@ -101,6 +101,14 @@ paths, client identity, or secrets. A task snapshot is returned only when the
 runtime task port is wired; otherwise the tool fails closed with
 `CAPABILITY_UNAVAILABLE`.
 
+`audit_query` is a bounded read-only view of the current authenticated
+transport session's MCP activity. It returns only sanitized timestamps, tool
+names, result codes, durations, and hashed workspace aliases. Filters and an
+opaque owner-bound cursor are supported; output is capped at 256 KiB. Command
+arguments, paths, environments, client identity, secrets, approval material,
+and provider stderr are never returned. If the local audit store is unavailable
+the tool returns `CAPABILITY_UNAVAILABLE`.
+
 `workspace_changes` provides a bounded snapshot/diff feed from an active
 workspace watcher. Events contain only a monotonic sequence, a normalized
 relative path, an event kind, and an observation timestamp. The feed never

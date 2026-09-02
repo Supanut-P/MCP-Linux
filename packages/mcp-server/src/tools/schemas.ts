@@ -147,6 +147,16 @@ export const workspaceChangesSchema = z.discriminatedUnion('operation', [
   z.object({ operation: z.literal('diff'), workspaceId: workspaceIdSchema, afterSequence: z.number().int().min(0), maxEvents: z.number().int().min(1).max(200).default(50) }).strict(),
 ]);
 
+export const auditQuerySchema = z.object({
+  workspaceId: optionalWorkspaceIdSchema,
+  tool: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]*$/).optional(),
+  resultCode: z.string().trim().min(1).max(64).regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]*$/).optional(),
+  since: z.string().datetime({ offset: true }).optional(),
+  until: z.string().datetime({ offset: true }).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  cursor: z.string().trim().min(8).max(512).optional(),
+}).strict();
+
 const capabilityMetadataSchema = z.record(z.string(), z.unknown());
 const capabilityParametersSchema = z.record(z.string(), z.unknown());
 const capabilityApprovalSchema = z.enum(['use_policy', 'always_ask', 'skip']).default('use_policy');

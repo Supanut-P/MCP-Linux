@@ -1,5 +1,6 @@
 export * from './activity-log-file.js';
 export * from './activity-tracker.js';
+export * from './audit-query-service.js';
 export * from './runtime-metrics-service.js';
 export * from './http.js';
 export * from './origin-policy.js';
@@ -23,4 +24,5 @@ export * from './server-profile.js';
 export * from './remote-rollout-runtime.js';
 export * from './approval-receipt.js';
 export * from './tools/support-bundle-tools.js';
+export * from './tools/audit-tools.js';
 export * from './task-creation.js';

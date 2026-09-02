@@ -29,6 +29,7 @@ import { sessionTools } from './tools/session-tools.js';
 import { searchTools } from './tools/search-tools.js';
 import { targetCatalogTools } from './tools/target-catalog-tools.js';
 import { supportBundleTools } from './tools/support-bundle-tools.js';
+import { auditTools } from './tools/audit-tools.js';
 import { skillTools } from './tools/skill-tools.js';
 import { workspaceTools } from './tools/workspace-tools.js';
 import type { McpApplicationServices, McpToolContext, McpToolDefinition } from './tools/tool-types.js';
@@ -110,6 +111,7 @@ export class ToolRegistry {
       ...processTools(context),
       ...(options.codexToolsEnabled === true ? codexTools(context) : []),
       ...advertisedCapabilityTools(context),
+      ...auditTools(context),
       ...databaseTools(context),
       ...targetCatalogTools(context),
       ...supportBundleTools(context),

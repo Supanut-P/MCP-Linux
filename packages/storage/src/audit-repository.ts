@@ -58,8 +58,28 @@ export class SqliteAuditRepository implements AuditEventRepository {
       clauses.push('action LIKE ?');
       parameters.push(`${query.actionPrefix}%`);
     }
+    if (query.actorId !== undefined) {
+      clauses.push('actor_id = ?');
+      parameters.push(query.actorId);
+    }
     appendNullableScopeClause(clauses, parameters, 'workspace_id', query.workspaceId);
     appendNullableScopeClause(clauses, parameters, 'session_id', query.sessionId);
+    if (query.resultCode !== undefined) {
+      clauses.push('result_code = ?');
+      parameters.push(query.resultCode);
+    }
+    if (query.since !== undefined) {
+      clauses.push('timestamp >= ?');
+      parameters.push(query.since);
+    }
+    if (query.until !== undefined) {
+      clauses.push('timestamp <= ?');
+      parameters.push(query.until);
+    }
+    if (query.before !== undefined) {
+      clauses.push('(timestamp < ? OR (timestamp = ? AND id < ?))');
+      parameters.push(query.before.timestamp, query.before.timestamp, query.before.id);
+    }
     const where = clauses.length === 0 ? '' : ` WHERE ${clauses.join(' AND ')}`;
     const rows = this.database.connection.prepare(
       `${AUDIT_SELECT}${where} ORDER BY timestamp DESC, id DESC LIMIT ?`,

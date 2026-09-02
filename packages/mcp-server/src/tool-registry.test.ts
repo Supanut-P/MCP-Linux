@@ -100,6 +100,21 @@ describe('MCP tool registry', () => {
     expect(registry.list().find((tool) => tool.name === 'remote_rollout_resume')?.parse({ operation: 'preview', rolloutId: '00000000-0000-4000-8000-000000000001', workspaceId: 'workspace-1' })).toMatchObject({ ok: true });
   });
 
+  it('advertises and dispatches bounded audit_query only when the audit port is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'audit_query')).toBe(false);
+    const registry = new ToolRegistry({
+      auditQuery: {
+        execute: async (): Promise<Result<unknown>> => ok({ entries: [], count: 0, truncated: false }),
+      },
+    }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('audit_query');
+    const tool = registry.list().find((candidate) => candidate.name === 'audit_query');
+    expect(tool?.parse({ tool: 'read_file', limit: 5 })).toMatchObject({ ok: true });
+    await expect(registry.invoke('audit_query', { tool: 'read_file', limit: 5 })).resolves.toMatchObject({
+      structuredContent: { entries: [], count: 0, truncated: false },
+    });
+  });
+
   it('advertises support_bundle only when the redaction service is wired', () => {
     expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'support_bundle')).toBe(false);
     const registry = new ToolRegistry({ supportBundle: { execute: async (): Promise<Result<unknown>> => ok({ dry_run: true }) } }, actor);

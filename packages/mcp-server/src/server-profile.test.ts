@@ -12,6 +12,7 @@ describe('server profiles', () => {
 
   it('keeps core tools available and adds only the selected surface', () => {
     expect(serverProfileToolAllowed('workspace_list', 'core')).toBe(true);
+    expect(serverProfileToolAllowed('audit_query', 'core')).toBe(true);
     expect(serverProfileToolAllowed('service', 'core')).toBe(false);
     expect(serverProfileToolAllowed('service', 'operator')).toBe(true);
     expect(serverProfileToolAllowed('remote_host', 'operator')).toBe(false);

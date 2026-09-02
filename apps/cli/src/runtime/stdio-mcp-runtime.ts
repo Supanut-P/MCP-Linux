@@ -48,6 +48,7 @@ export interface StdioMcpRuntime {
   readonly extensions: ExtensionsService;
   readonly activityTracker: ActivityTracker;
   readonly activityReady: Promise<void>;
+  readonly remoteRolloutReady: Promise<void>;
   readonly profileProvider: () => PermissionProfile;
   readonly allowAiDeleteProvider: () => boolean;
   readonly destructivePolicyProvider: () => DestructiveAutoApprovalPolicy;
@@ -143,9 +144,10 @@ export function createStdioMcpRuntime(
   () => parseIntegerSetting(settingsRepository.get(USER_SETTING_KEYS.shellSynchronousWaitSeconds), DEFAULT_SHELL_SYNCHRONOUS_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS), remoteHosts, secretStore,
   async (workspaceId: string): Promise<string | null> => (await workspaceRepository.get(workspaceId))?.realRootPath ?? null);
   const databaseRuntime = new DatabaseRuntimeService({ workspaceInfo: workspaceInfoService }, actor, { targetRegistry: databaseTargets, secrets: secretStore });
+  const remoteRolloutRepository = new SqliteRemoteRolloutRepository(database);
   const remoteRollouts = new RemoteRolloutRuntime({
     capabilities: capabilityService,
-    repository: new SqliteRemoteRolloutRepository(database),
+    repository: remoteRolloutRepository,
     audit: async (event): Promise<void> => auditService.record({
       actorId: actor.clientId,
       actorName: actor.clientName,
@@ -157,6 +159,7 @@ export function createStdioMcpRuntime(
       metadata: { rolloutId: event.rolloutId, phase: event.phase },
     }),
   });
+  const remoteRolloutReady = remoteRollouts.reconcile();
   const sharedActivityLease = createSharedActivityLease(process.env.TUNNEL_CLIENT_PROFILE_DIR);
   const activityReady = sharedActivityLease.then(async (lease) => lease?.initialize());
   const sharedActivitySink: ActivitySink = {
@@ -233,6 +236,7 @@ export function createStdioMcpRuntime(
     extensions,
     activityTracker,
     activityReady,
+    remoteRolloutReady,
     profileProvider,
     allowAiDeleteProvider,
     destructivePolicyProvider,

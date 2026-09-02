@@ -35,6 +35,7 @@ export interface RemoteRolloutPlan {
 export interface RemoteRolloutRepository {
   create(plan: RemoteRolloutPlan): Promise<void>;
   get(id: string): Promise<RemoteRolloutPlan | null>;
+  list?(state?: RemoteRolloutState): Promise<readonly RemoteRolloutPlan[]>;
   claim(id: string, state: 'planned'): Promise<boolean>;
   update(id: string, patch: Partial<RemoteRolloutPlan>): Promise<void>;
 }
@@ -71,6 +72,21 @@ export class RemoteRolloutRuntime {
 
   public constructor(private readonly options: RemoteRolloutRuntimeOptions) {
     this.now = options.now ?? ((): Date => new Date());
+  }
+
+  /** Marks in-flight plans as interrupted after a process restart. No remote action is inferred as successful. */
+  public async reconcile(): Promise<void> {
+    if (this.options.repository.list === undefined) return;
+    const running = await this.options.repository.list('running');
+    for (const plan of running) {
+      const results = [...(plan.results ?? [])];
+      const recorded = new Set(results.map((entry) => entry.hostId));
+      for (const hostId of plan.hostIds) {
+        if (recorded.has(hostId)) continue;
+        results.push({ hostId, status: 'error', error: { code: 'CAPABILITY_UNAVAILABLE', message: 'execution_interrupted', recoverable: true } });
+      }
+      await this.options.repository.update(plan.id, { state: 'failed', results, updatedAt: this.now().toISOString() });
+    }
   }
 
   public async execute(input: unknown, signal?: AbortSignal): Promise<Result<unknown>> {

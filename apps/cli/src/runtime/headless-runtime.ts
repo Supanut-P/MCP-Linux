@@ -114,6 +114,7 @@ export async function createHeadlessRuntime(options: HeadlessRuntimeOptions = {}
       ...(strictAllowedRoots === undefined ? {} : { strictAllowedRoots }),
     });
     await runtime.activityReady;
+    await runtime.remoteRolloutReady;
     return { dataPath, workspace, runtime, profile, ...(strictAllowedRoots === undefined ? {} : { strictAllowedRoots }), unrestricted: false };
   } catch (error) {
     // Avoid masking the original startup error with a second close() failure.

@@ -35,4 +35,18 @@ describe('SqliteRemoteRolloutRepository', () => {
       await expect(repository.get(value.id)).resolves.toMatchObject({ state: 'failed', cancelRequested: true, results: [{ hostId: 'vm-a', status: 'error' }] });
     } finally { database.close(); }
   });
+
+  it('lists running plans for restart reconciliation without exposing connection metadata', async () => {
+    const database = new SqliteDatabase(':memory:');
+    try {
+      const repository = new SqliteRemoteRolloutRepository(database);
+      const first = plan();
+      const second = plan();
+      await repository.create(first);
+      await repository.create({ ...second, state: 'running' });
+      await expect(repository.list('running')).resolves.toMatchObject([{ id: second.id, state: 'running' }]);
+      const serialized = JSON.stringify(await repository.list());
+      expect(serialized).not.toMatch(/password|secret|private[_-]?key|192\.168\./i);
+    } finally { database.close(); }
+  });
 });

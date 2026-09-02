@@ -55,6 +55,13 @@ export class SqliteRemoteRolloutRepository {
     return this.toRollout(this.database.connection.prepare('SELECT id, workspace_id, host_ids_json, unit, canary_count, max_parallel, host_plans_json, preview_hash, expires_at, state, created_at, updated_at, results_json, cancel_requested FROM remote_rollouts WHERE id = ?').get(id));
   }
 
+  public async list(state?: RemoteRolloutState): Promise<readonly RemoteRollout[]> {
+    const rows = state === undefined
+      ? this.database.connection.prepare('SELECT id, workspace_id, host_ids_json, unit, canary_count, max_parallel, host_plans_json, preview_hash, expires_at, state, created_at, updated_at, results_json, cancel_requested FROM remote_rollouts ORDER BY created_at, id').all()
+      : this.database.connection.prepare('SELECT id, workspace_id, host_ids_json, unit, canary_count, max_parallel, host_plans_json, preview_hash, expires_at, state, created_at, updated_at, results_json, cancel_requested FROM remote_rollouts WHERE state = ? ORDER BY created_at, id').all(state);
+    return rows.map((row) => this.toRollout(row)).filter((plan): plan is RemoteRollout => plan !== null);
+  }
+
   /** Claim is atomic so two execute requests cannot both run a plan. */
   public async claim(id: string, state: 'planned'): Promise<boolean> {
     const result = this.database.connection.prepare('UPDATE remote_rollouts SET state = ?, updated_at = ? WHERE id = ? AND state = ?').run('running', new Date().toISOString(), id, state);

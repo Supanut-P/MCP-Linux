@@ -38,6 +38,8 @@ the machine-checked waiver is tracked at
       pass without exposing a resume token.
 - [ ] File, search, Git, shell, logs, wait, cancel, checkpoint, backup, and audit
       flows pass inside a disposable workspace.
+- [ ] `audit_query` returns owner-scoped, bounded, redacted summaries without
+      command lines, paths, environments, client identity, or secrets.
 - [ ] Multi-workspace ownership and isolation pass.
 
 ## Package evidence

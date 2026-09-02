@@ -103,6 +103,14 @@ try {
     throw new Error(`shell wait did not complete successfully: ${JSON.stringify({ state: final.state, exit_code: final.exit_code, stdout: final.stdout })}`);
   }
 
+  const audit = await callTool(client, 'audit_query', { limit: 10 });
+  const auditValue = readObject(audit);
+  if (!Array.isArray(auditValue.entries)
+    || typeof auditValue.count !== 'number'
+    || typeof auditValue.truncated !== 'boolean') {
+    throw new Error('audit_query did not return bounded structured summaries');
+  }
+
   process.stdout.write(JSON.stringify({
     ok: true,
     toolCount: tools.tools.length,
@@ -110,6 +118,8 @@ try {
     registeredWorkspaceId: workspaceId,
     parentKind: listedMachineRoot ? 'machine_root' : 'project_compatibility_fallback',
     taskId,
+    auditCount: auditValue.count,
+    auditTruncated: auditValue.truncated,
   }) + '\n');
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);

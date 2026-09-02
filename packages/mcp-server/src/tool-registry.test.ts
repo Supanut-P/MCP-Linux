@@ -181,6 +181,14 @@ describe('MCP tool registry', () => {
     await expect(registry.invoke('release_verify', { workspaceId: 'workspace-1', metadataPath: 'dist/meta.json', checksumsPath: 'dist/sums', artifacts: [{ path: 'dist/app.deb', sha256: 'a'.repeat(64) }] })).resolves.toMatchObject({ structuredContent: { operation: 'release_verify', verified: true } });
   });
 
+  it('advertises and dispatches environment_preflight only when the service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'environment_preflight')).toBe(false);
+    const registry = new ToolRegistry({ environmentPreflight: { execute: async (): Promise<Result<unknown>> => ok({ operation: 'environment_preflight', status: 'ready' }) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('environment_preflight');
+    expect(registry.list().find((tool) => tool.name === 'environment_preflight')?.parse({})).toMatchObject({ ok: true });
+    await expect(registry.invoke('environment_preflight', {})).resolves.toMatchObject({ structuredContent: { operation: 'environment_preflight', status: 'ready' } });
+  });
+
   it('explains active profile and registered-root policy without dispatching the target tool', async () => {
     let called = false;
     const registry = new ToolRegistry({

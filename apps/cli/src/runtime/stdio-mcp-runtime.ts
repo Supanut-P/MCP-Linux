@@ -30,7 +30,7 @@ import {
   createLocalExtensionsService,
   type ExtensionsService,
 } from '@baitonghub-linux-mcp/extensions';
-import { ActivityTracker, AuditQueryService, DatabaseRuntimeService, DiagnosticsSnapshotService, ReleaseVerifyService, RemoteFleetDiffService, RemoteRolloutRuntime, RuntimeMetricsService, SharedActivitySnapshotLease, TaskEventsService, TaskHistoryService, WorkspaceSnapshotService, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type AuditQueryEvent, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices, type RemoteFleetAuditEvent, type RuntimeTaskSnapshot, type RuntimeTaskState, type ServerProfileName, type WorkspaceSnapshotRootInfo } from '@baitonghub-linux-mcp/mcp-server';
+import { ActivityTracker, AuditQueryService, DatabaseRuntimeService, DiagnosticsSnapshotService, EnvironmentPreflightService, ReleaseVerifyService, RemoteFleetDiffService, RemoteRolloutRuntime, RuntimeMetricsService, SharedActivitySnapshotLease, TaskEventsService, TaskHistoryService, WorkspaceSnapshotService, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type AuditQueryEvent, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices, type RemoteFleetAuditEvent, type RuntimeTaskSnapshot, type RuntimeTaskState, type ServerProfileName, type WorkspaceSnapshotRootInfo } from '@baitonghub-linux-mcp/mcp-server';
 import { permissionProfiles, type PermissionProfile, type PermissionProfileName } from '@baitonghub-linux-mcp/permissions';
 import {
   AesGcmCheckpointCipher,
@@ -256,6 +256,7 @@ export function createStdioMcpRuntime(
   const diagnosticsSnapshot = new DiagnosticsSnapshotService({ capabilities: capabilityService, runtimeMetrics, auditQuery });
   const remoteFleetDiff = new RemoteFleetDiffService({ capabilities: capabilityService });
   const releaseVerify = new ReleaseVerifyService({ file: fileService, capabilities: capabilityService });
+  const environmentPreflight = new EnvironmentPreflightService({ capabilities: capabilityService });
   const services: McpApplicationServices = {
     runtimeStatePath: path.join(dataPath, 'upgrade-runtime.json'),
     runtimeTiming: () => ({
@@ -306,6 +307,7 @@ export function createStdioMcpRuntime(
     diagnosticsSnapshot,
     remoteFleetDiff,
     releaseVerify,
+    environmentPreflight,
   };
 
   return {

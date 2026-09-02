@@ -541,6 +541,8 @@ export const releaseVerifySchema = z.object({
   artifacts: z.array(releaseVerifyArtifactSchema).min(1).max(4),
 }).strict();
 
+export const environmentPreflightSchema = z.object({}).strict();
+
 const rolloutIdSchema = z.string().trim().uuid();
 const rolloutWorkspaceSchema = z.string().trim().min(1).max(256);
 export const remoteRolloutCapabilitySchema = z.discriminatedUnion('operation', [

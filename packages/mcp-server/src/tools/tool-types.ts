@@ -34,6 +34,7 @@ import type { TaskHistoryService } from '../task-history-service.js';
 import type { DiagnosticsSnapshotService } from '../diagnostics-snapshot-service.js';
 import type { RemoteFleetDiffService } from '../remote-fleet-diff-service.js';
 import type { ReleaseVerifyService } from '../release-verify-service.js';
+import type { EnvironmentPreflightService } from '../environment-preflight-service.js';
 
 export interface WorkspaceInfoPort {
   info(actor: FileActor, workspaceId: string): Promise<Result<unknown>>;
@@ -93,6 +94,8 @@ export interface McpApplicationServices {
   readonly remoteFleetDiff?: Pick<RemoteFleetDiffService, 'execute'>;
   /** Offline verification of local release provenance and checksums. */
   readonly releaseVerify?: Pick<ReleaseVerifyService, 'execute'>;
+  /** Sanitized runtime/dependency readiness matrix from the health provider. */
+  readonly environmentPreflight?: Pick<EnvironmentPreflightService, 'execute'>;
 }
 
 export interface McpToolAnnotations {

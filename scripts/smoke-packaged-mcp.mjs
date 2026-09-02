@@ -53,6 +53,9 @@ try {
   if (!tools.tools.some((tool) => tool.name === 'release_verify')) {
     throw new Error('tools/list did not advertise release_verify');
   }
+  if (!tools.tools.some((tool) => tool.name === 'environment_preflight')) {
+    throw new Error('tools/list did not advertise environment_preflight');
+  }
 
   const listed = await callTool(client, 'workspace_list', {});
   const entries = readArray(listed);
@@ -173,6 +176,7 @@ try {
     diagnosticsStatus: diagnosticsValue.status,
     remoteFleetDiffAdvertised: true,
     releaseVerifyAdvertised: true,
+    environmentPreflightAdvertised: true,
     snapshotCount: snapshotValue.count,
     snapshotTruncated: snapshotValue.truncated,
   }) + '\n');

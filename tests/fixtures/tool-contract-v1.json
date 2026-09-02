@@ -1541,6 +1541,20 @@
       }
     },
     {
+      "name": "environment_preflight",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
       "name": "execution_plan",
       "permission": "READ",
       "annotations": {

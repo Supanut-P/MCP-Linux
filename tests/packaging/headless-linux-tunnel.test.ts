@@ -68,6 +68,8 @@ describe('headless Linux Secure MCP Tunnel packaging', () => {
     expect(smoke).toContain('remoteFleetDiffAdvertised');
     expect(smoke).toContain('releaseVerifyAdvertised');
     expect(smoke).toContain("tool.name === 'release_verify'");
+    expect(smoke).toContain('environmentPreflightAdvertised');
+    expect(smoke).toContain("tool.name === 'environment_preflight'");
     expect(smoke).toContain("'/usr/bin/printf'");
   });
 

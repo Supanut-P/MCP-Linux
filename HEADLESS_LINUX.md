@@ -152,6 +152,12 @@ read-only: it uses the registered-root `artifact_verify` capability, rejects
 mismatched provenance, and never invokes shell, network, apt, dpkg, or an
 installer.
 
+`environment_preflight` gives a bounded readiness matrix before a workflow.
+It delegates only to `health check_all` and returns platform, display-server,
+Node major version, capability availability/readiness, consent counts, and
+sanitized missing-dependency names. It never returns hostnames, absolute
+paths, command lines, environment values, provider errors, or secrets.
+
 `workspace_changes` provides a bounded snapshot/diff feed from an active
 workspace watcher. Events contain only a monotonic sequence, a normalized
 relative path, an event kind, and an observation timestamp. The feed never

@@ -58,4 +58,18 @@ describe('WorkspaceIndexQueue', () => {
       vi.useRealTimers();
     }
   });
+
+  it('records coalesced bounded change events and rejects unsafe paths', async () => {
+    const queue = new WorkspaceIndexQueue(async () => undefined, { debounceMs: 0, maxHistory: 2 });
+    queue.enqueue({ relativePath: '../escape', kind: 'change' });
+    queue.enqueue({ relativePath: 'src/a.ts', kind: 'change', changeKind: 'created' });
+    queue.enqueue({ relativePath: 'src/a.ts', kind: 'change', changeKind: 'modified' });
+    queue.enqueue({ relativePath: 'src/b.ts', kind: 'change', changeKind: 'modified' });
+    queue.enqueue({ relativePath: 'src/c.ts', kind: 'change', changeKind: 'deleted' });
+    const journal = queue.changes(0, 10);
+    expect(journal.events.map((event) => event.relativePath)).toEqual(['src/b.ts', 'src/c.ts']);
+    expect(journal.events[0]?.sequence).toBeLessThan(journal.events[1]?.sequence ?? 0);
+    expect(journal.truncated).toBe(true);
+    await queue.drain();
+  });
 });

@@ -13,6 +13,7 @@ import {
   WorkspaceInfoService,
   JsonWorkspaceIndexStore,
   WorkspaceIndexService,
+  WorkspaceChangesService,
   WorkspaceQueryService,
   TargetCatalogService,
   SupportBundleService,
@@ -79,6 +80,7 @@ export function createStdioMcpRuntime(
     ? rawWorkspaceRepository
     : new StrictWorkspaceRepository(rawWorkspaceRepository, options.strictAllowedRoots);
   const workspaceIndex = new WorkspaceIndexService(workspaceRepository, new JsonWorkspaceIndexStore(path.join(dataPath, 'workspace-index')));
+  const workspaceChanges = new WorkspaceChangesService(workspaceIndex);
   const settingsRepository = new SqliteSettingsRepository(database);
   const auditRepository = new SqliteAuditRepository(database);
   const auditService = new AuditService(auditRepository);
@@ -254,6 +256,7 @@ export function createStdioMcpRuntime(
     file: fileService,
     search: new SearchService(workspaceRepository),
     workspaceIndex,
+    workspaceChanges,
     git: gitService,
     process: processService,
     codex: codexService,

@@ -5917,6 +5917,77 @@
       }
     },
     {
+      "name": "workspace_changes",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "maxEvents": {
+                "default": 50,
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "operation": {
+                "const": "snapshot",
+                "type": "string"
+              },
+              "workspaceId": {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "operation",
+              "workspaceId",
+              "maxEvents"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "afterSequence": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "maxEvents": {
+                "default": 50,
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "operation": {
+                "const": "diff",
+                "type": "string"
+              },
+              "workspaceId": {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "operation",
+              "workspaceId",
+              "afterSequence",
+              "maxEvents"
+            ],
+            "type": "object"
+          }
+        ]
+      }
+    },
+    {
       "name": "workspace_context",
       "permission": "READ",
       "annotations": {

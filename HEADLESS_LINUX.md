@@ -91,6 +91,12 @@ paths, client identity, or secrets. A task snapshot is returned only when the
 runtime task port is wired; otherwise the tool fails closed with
 `CAPABILITY_UNAVAILABLE`.
 
+`workspace_changes` provides a bounded snapshot/diff feed from an active
+workspace watcher. Events contain only a monotonic sequence, a normalized
+relative path, an event kind, and an observation timestamp. The feed never
+returns file contents or absolute roots, is limited to 200 retained events,
+and reports `WATCHER_NOT_RUNNING` instead of starting a watcher implicitly.
+
 `support_bundle` creates a confirmation-gated, redacted diagnostic archive
 inside a registered workspace. Start with `dry_run` to obtain the exact member
 list and `previewHash`; creation is capped at 2 MiB uncompressed and in the

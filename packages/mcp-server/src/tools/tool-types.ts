@@ -16,6 +16,7 @@ import type {
   SearchService,
   TargetCatalogService,
   WorkspaceIndexService,
+  WorkspaceChangesService,
   WorkspaceQueryService,
   WriteFileRequest,
 } from '@baitonghub-linux-mcp/application';
@@ -59,6 +60,7 @@ export interface McpApplicationServices {
   readonly file?: Pick<FileService, 'readFile' | 'readFiles' | 'writeFile' | 'applyPatch' | 'moveFile' | 'copyFile' | 'deleteFile' | 'restoreDeletedFile'>;
   readonly search?: Pick<SearchService, 'searchFiles' | 'searchText'>;
   readonly workspaceIndex?: Pick<WorkspaceIndexService, 'indexWorkspace' | 'status' | 'startWatch' | 'stopWatch'>;
+  readonly workspaceChanges?: Pick<WorkspaceChangesService, 'snapshot' | 'diff'>;
   readonly git?: Pick<GitService, 'status' | 'diff' | 'log' | 'run'>;
   readonly process?: Pick<ProcessService, 'start' | 'list' | 'status' | 'logs' | 'stop' | 'startProjectCommand'>;
   readonly codex?: Pick<CodexService, 'status' | 'run' | 'list' | 'taskStatus' | 'taskLogs' | 'stop'>;

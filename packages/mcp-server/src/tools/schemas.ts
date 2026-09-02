@@ -142,6 +142,10 @@ export const workspaceIndexWatchSchema = z.object({
   concurrency: z.number().int().min(1).max(32).optional(),
 }).strict();
 export const workspaceIndexStopSchema = workspaceInfoSchema;
+export const workspaceChangesSchema = z.discriminatedUnion('operation', [
+  z.object({ operation: z.literal('snapshot'), workspaceId: workspaceIdSchema, maxEvents: z.number().int().min(1).max(200).default(50) }).strict(),
+  z.object({ operation: z.literal('diff'), workspaceId: workspaceIdSchema, afterSequence: z.number().int().min(0), maxEvents: z.number().int().min(1).max(200).default(50) }).strict(),
+]);
 
 const capabilityMetadataSchema = z.record(z.string(), z.unknown());
 const capabilityParametersSchema = z.record(z.string(), z.unknown());

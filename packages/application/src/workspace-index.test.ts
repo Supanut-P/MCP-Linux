@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -51,5 +51,52 @@ describe('WorkspaceIndexService', () => {
     expect(explicit.ok).toBe(true);
     if (!explicit.ok) return;
     expect(explicit.value.entries.map((entry) => entry.relativePath)).toEqual(expect.arrayContaining(['node_modules', 'node_modules/fixture/index.js']));
+  });
+
+  it('captures bounded relative change events while a watcher is active', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'baitonghub-linux-mcp-watch-'));
+    const workspace: Workspace = { id: 'workspace-watch', displayName: 'watch', rootPath: root, realRootPath: root, createdAt: new Date().toISOString() };
+    const service = new WorkspaceIndexService(fixtureRepository(workspace), new JsonWorkspaceIndexStore(path.join(root, 'index-store')));
+    try {
+      const started = await service.startWatch(workspace.id, { debounceMs: 5, concurrency: 1 });
+      expect(started.ok).toBe(true);
+      await writeFile(path.join(root, 'observed.txt'), 'hello\n');
+      let changes = await service.changes(workspace.id, 0, 20);
+      for (let attempt = 0; attempt < 20 && changes.ok && changes.value.events.length === 0; attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 25));
+        changes = await service.changes(workspace.id, 0, 20);
+      }
+      expect(changes.ok).toBe(true);
+      if (changes.ok) {
+        expect(changes.value.events.some((event) => event.relativePath === 'observed.txt')).toBe(true);
+        expect(changes.value.events.every((event) => !path.isAbsolute(event.relativePath) && !('content' in event))).toBe(true);
+      }
+      await expect(service.stopWatch(workspace.id)).resolves.toMatchObject({ ok: true });
+      await expect(service.changes(workspace.id)).resolves.toMatchObject({ ok: false, error: { code: 'WATCHER_NOT_RUNNING' } });
+    } finally {
+      await service.close();
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('does not follow a symlinked directory while incrementally indexing', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'baitonghub-linux-mcp-link-'));
+    const outside = await mkdtemp(path.join(os.tmpdir(), 'baitonghub-linux-mcp-outside-'));
+    const workspace: Workspace = { id: 'workspace-link', displayName: 'link', rootPath: root, realRootPath: root, createdAt: new Date().toISOString() };
+    const service = new WorkspaceIndexService(fixtureRepository(workspace), new JsonWorkspaceIndexStore(path.join(root, 'index-store')));
+    try {
+      await writeFile(path.join(outside, 'secret.txt'), 'outside-secret\n');
+      try { await symlink(outside, path.join(root, 'linked')); } catch { return; }
+      const result = await service.indexPath(workspace.id, 'linked');
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.entries.find((entry) => entry.relativePath === 'linked')?.kind).toBe('symlink');
+        expect(result.value.entries.some((entry) => entry.relativePath.includes('secret.txt'))).toBe(false);
+      }
+    } finally {
+      await service.close();
+      await rm(root, { recursive: true, force: true });
+      await rm(outside, { recursive: true, force: true });
+    }
   });
 });

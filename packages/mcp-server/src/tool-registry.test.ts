@@ -30,7 +30,7 @@ describe('MCP tool registry', () => {
       'workspace_context', 'workspace_context_continue', 'workspace_full_scan', 'workspace_full_scan_continue',
       'workspace_snapshot', 'search_all', 'read_many_files',
       'read_file_page', 'read_file_page_continue',
-      'workspace_index', 'workspace_index_status', 'workspace_index_watch', 'workspace_index_stop',
+      'workspace_index', 'workspace_index_status', 'workspace_index_watch', 'workspace_index_stop', 'workspace_changes',
       'session_handoff', 'verify_incremental',
       ...UPGRADE_TOOL_CATALOG.filter((entry) => !['db_inspect', 'db_query', 'remote_fleet', 'remote_rollout', 'remote_rollout_resume', 'support_bundle'].includes(entry.name)).map((entry) => entry.name),
       'tool_batch',
@@ -84,6 +84,20 @@ describe('MCP tool registry', () => {
     const registry = new ToolRegistry({ supportBundle: { execute: async (): Promise<Result<unknown>> => ok({ dry_run: true }) } }, actor);
     expect(registry.list().map((tool) => tool.name)).toContain('support_bundle');
     expect(registry.list().find((tool) => tool.name === 'support_bundle')?.parse({ workspaceId: 'workspace-1', destination: 'support.tar.gz', include: ['health'] })).toMatchObject({ ok: true });
+  });
+
+  it('dispatches bounded workspace change snapshots and diffs', async () => {
+    const calls: string[] = [];
+    const registry = new ToolRegistry({
+      workspaceChanges: {
+        snapshot: async (workspaceId, maxEvents): Promise<Result<unknown>> => { calls.push(`snapshot:${workspaceId}:${maxEvents}`); return ok({ workspaceId, events: [], latestSequence: 4, truncated: false }); },
+        diff: async (workspaceId, afterSequence, maxEvents): Promise<Result<unknown>> => { calls.push(`diff:${workspaceId}:${afterSequence}:${maxEvents}`); return ok({ workspaceId, events: [], latestSequence: 4, truncated: false }); },
+      },
+    }, actor);
+    expect(registry.list().find((tool) => tool.name === 'workspace_changes')?.parse({ operation: 'diff', workspaceId: 'workspace-1', afterSequence: 3 })).toMatchObject({ ok: true });
+    await registry.invoke('workspace_changes', { operation: 'snapshot', workspaceId: 'workspace-1' });
+    await registry.invoke('workspace_changes', { operation: 'diff', workspaceId: 'workspace-1', afterSequence: 3, maxEvents: 10 });
+    expect(calls).toEqual(['snapshot:workspace-1:50', 'diff:workspace-1:3:10']);
   });
 
   it('records a stable approval receipt for denied and confirmed dangerous calls', async () => {

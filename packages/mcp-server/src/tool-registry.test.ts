@@ -128,6 +128,20 @@ describe('MCP tool registry', () => {
     });
   });
 
+  it('advertises and dispatches bounded task_events only when the event service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'task_events')).toBe(false);
+    const registry = new ToolRegistry({
+      taskEvents: {
+        execute: async (_actor, input): Promise<Result<unknown>> => ok({ taskId: input.taskId, state: 'completed', events: [], count: 0, truncated: false }),
+      },
+    }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('task_events');
+    expect(registry.list().find((tool) => tool.name === 'task_events')?.parse({ taskId: 'task-1', limit: 10 })).toMatchObject({ ok: true });
+    await expect(registry.invoke('task_events', { taskId: 'task-1', limit: 10 })).resolves.toMatchObject({
+      structuredContent: { taskId: 'task-1', state: 'completed', events: [], count: 0, truncated: false },
+    });
+  });
+
   it('advertises support_bundle only when the redaction service is wired', () => {
     expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'support_bundle')).toBe(false);
     const registry = new ToolRegistry({ supportBundle: { execute: async (): Promise<Result<unknown>> => ok({ dry_run: true }) } }, actor);

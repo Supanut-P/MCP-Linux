@@ -168,6 +168,13 @@ export const auditQuerySchema = z.object({
   cursor: z.string().trim().min(8).max(512).optional(),
 }).strict();
 
+export const taskEventsSchema = z.object({
+  taskId: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/),
+  cursor: z.string().trim().min(8).max(512).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  waitMs: z.number().int().min(0).max(30_000).optional(),
+}).strict();
+
 const capabilityMetadataSchema = z.record(z.string(), z.unknown());
 const capabilityParametersSchema = z.record(z.string(), z.unknown());
 const capabilityApprovalSchema = z.enum(['use_policy', 'always_ask', 'skip']).default('use_policy');

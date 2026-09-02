@@ -117,6 +117,14 @@ and an opaque owner-bound `cursor`; it never follows symlinks, rejects escapes
 and special files, and caps serialized output at 256 KiB. Files larger than the
 bounded hash budget are returned without a hash rather than read without limit.
 
+`task_events` is a bounded, reconnect-safe lifecycle projection for an owned
+durable shell task or remote rollout. It returns monotonic sequence numbers,
+timestamps, state, sanitized phases/attempts, and terminal result codes. The
+cursor is bound to the authenticated client/session and task ID. Command
+lines, paths, output, environments, host keys, and secrets are never included;
+the stream is derived from the durable task stores and supports a bounded
+`waitMs` for reconnect polling.
+
 `workspace_changes` provides a bounded snapshot/diff feed from an active
 workspace watcher. Events contain only a monotonic sequence, a normalized
 relative path, an event kind, and an observation timestamp. The feed never

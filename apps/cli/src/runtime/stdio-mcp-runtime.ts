@@ -30,7 +30,7 @@ import {
   createLocalExtensionsService,
   type ExtensionsService,
 } from '@baitonghub-linux-mcp/extensions';
-import { ActivityTracker, AuditQueryService, DatabaseRuntimeService, RemoteRolloutRuntime, SharedActivitySnapshotLease, WorkspaceSnapshotService, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type AuditQueryEvent, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices, type RemoteFleetAuditEvent, type RuntimeTaskSnapshot, type RuntimeTaskState, type ServerProfileName, type WorkspaceSnapshotRootInfo } from '@baitonghub-linux-mcp/mcp-server';
+import { ActivityTracker, AuditQueryService, DatabaseRuntimeService, RemoteRolloutRuntime, SharedActivitySnapshotLease, TaskEventsService, WorkspaceSnapshotService, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type AuditQueryEvent, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices, type RemoteFleetAuditEvent, type RuntimeTaskSnapshot, type RuntimeTaskState, type ServerProfileName, type WorkspaceSnapshotRootInfo } from '@baitonghub-linux-mcp/mcp-server';
 import { permissionProfiles, type PermissionProfile, type PermissionProfileName } from '@baitonghub-linux-mcp/permissions';
 import {
   AesGcmCheckpointCipher,
@@ -177,6 +177,10 @@ export function createStdioMcpRuntime(
     }),
   });
   const remoteRolloutReady = remoteRollouts.reconcile();
+  const taskEvents = new TaskEventsService({
+    capabilities: capabilityService,
+    remoteRolloutTasks: remoteRollouts,
+  });
   const supportBundle = new SupportBundleService({
     workspaceRepository,
     pathGuard,
@@ -270,6 +274,7 @@ export function createStdioMcpRuntime(
     workspaceIndex,
     workspaceChanges,
     workspaceSnapshot,
+    taskEvents,
     git: gitService,
     process: processService,
     codex: codexService,

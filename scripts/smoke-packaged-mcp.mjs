@@ -103,6 +103,16 @@ try {
     throw new Error(`shell wait did not complete successfully: ${JSON.stringify({ state: final.state, exit_code: final.exit_code, stdout: final.stdout })}`);
   }
 
+  const taskEvents = await callTool(client, 'task_events', { taskId, limit: 10 });
+  const taskEventsValue = readObject(taskEvents);
+  if (taskEventsValue.taskId !== taskId
+    || taskEventsValue.state !== 'completed'
+    || !Array.isArray(taskEventsValue.events)
+    || typeof taskEventsValue.count !== 'number'
+    || typeof taskEventsValue.truncated !== 'boolean') {
+    throw new Error('task_events did not return bounded lifecycle metadata');
+  }
+
   const audit = await callTool(client, 'audit_query', { limit: 10 });
   const auditValue = readObject(audit);
   if (!Array.isArray(auditValue.entries)
@@ -133,6 +143,7 @@ try {
     registeredWorkspaceId: workspaceId,
     parentKind: listedMachineRoot ? 'machine_root' : 'project_compatibility_fallback',
     taskId,
+    taskEventCount: taskEventsValue.count,
     auditCount: auditValue.count,
     auditTruncated: auditValue.truncated,
     snapshotCount: snapshotValue.count,

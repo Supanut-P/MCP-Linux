@@ -11,6 +11,14 @@ export BAITONGHUB_LINUX_MCP_CHECKPOINT_KEY_BASE64='<32-byte base64 key>'
 ./apps/cli/build-headless/baitonghub-linux-mcp mcp --stdio
 ```
 
+The advertised headless surface defaults to `full`. For a smaller explicit
+surface, use `--server-profile core|operator|fleet|full` or set
+`BAITONGHUB_LINUX_MCP_PROFILE`. This filters only `tools/list` and dispatch;
+the separate permission profile (`--profile safe|balanced|full|custom`),
+confirmation, registered-root, ownership, Secret Service, audit, and
+redaction boundaries remain unchanged. Invalid server-profile values fail
+closed. See [`docs/linux/SERVER_PROFILES.md`](docs/linux/SERVER_PROFILES.md).
+
 For a loopback HTTP MCP endpoint:
 
 ```sh

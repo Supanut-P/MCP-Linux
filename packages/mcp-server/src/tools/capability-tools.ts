@@ -147,9 +147,15 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
       permission: 'READ',
       annotations: { readOnlyHint: true, destructiveHint: false },
       inputSchema: healthCapabilitySchema,
-      handler: async (input, signal) => input.operation === 'check_tool' && input.tool === 'runtime_metrics'
-        ? ok({ tool: 'runtime_metrics', ...runtimeMetrics.health() })
-        : execute('health', input, signal),
+      handler: async (input, signal) => {
+        const result = input.operation === 'check_tool' && input.tool === 'runtime_metrics'
+          ? ok({ tool: 'runtime_metrics', ...runtimeMetrics.health() })
+          : await execute('health', input, signal);
+        if (!result.ok || context.serverProfile === undefined) return result;
+        return isRecord(result.value)
+          ? ok({ ...result.value, serverProfile: context.serverProfile })
+          : result;
+      },
     }),
     defineTool({
       name: 'system_info',
@@ -340,4 +346,8 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
       handler: async (input, signal) => execute('backup', input, signal),
     }),
   ];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

@@ -20,15 +20,18 @@ function readArgs(flag: string): readonly string[] {
 export async function main(): Promise<void> {
   const workspaceReference = readArg('--workspace');
   const profile = readArg('--profile');
+  const serverProfile = readArg('--server-profile');
   const runtime = await createHeadlessRuntime({
     ...(workspaceReference === undefined ? {} : { workspaceReference }),
     ...(profile === undefined ? {} : { profile }),
+    ...(serverProfile === undefined ? {} : { serverProfile }),
     strictRoots: process.argv.includes('--strict-roots'),
     allowedRoots: readArgs('--allowed-root'),
     resetWorkspaces: process.argv.includes('--reset-workspaces'),
   });
   process.stderr.write(
-    `baitonghub-linux-mcp MCP stdio ready primary=${runtime.workspace.id} root=${runtime.workspace.realRootPath} profile=${runtime.profile}`
+    `baitonghub-linux-mcp MCP stdio ready primary=${runtime.workspace.id} root=${runtime.workspace.realRootPath}`
+      + ` permission_profile=${runtime.profile} server_profile=${runtime.serverProfile}`
       + (runtime.strictAllowedRoots === undefined ? '' : ` strict_roots=${runtime.strictAllowedRoots.length}`) + '\n',
   );
 
@@ -47,6 +50,7 @@ export async function main(): Promise<void> {
     activityTracker: runtime.runtime.activityTracker,
     codexToolsEnabled: runtime.runtime.codexToolsEnabled,
     profileProvider: runtime.runtime.profileProvider,
+    serverProfileProvider: (): import('@baitonghub-linux-mcp/mcp-server').ServerProfileName => runtime.serverProfile,
     allowAiDeleteProvider: runtime.runtime.allowAiDeleteProvider,
     destructivePolicyProvider: runtime.runtime.destructivePolicyProvider,
     onError: (error): void => {

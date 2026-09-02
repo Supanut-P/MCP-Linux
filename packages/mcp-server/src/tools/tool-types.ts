@@ -26,6 +26,7 @@ import type { DatabaseRuntimeService } from '../database-runtime.js';
 import type { RemoteRolloutRuntime, RemoteRolloutTaskPort } from '../remote-rollout-runtime.js';
 import type { RuntimeTaskSnapshot } from '../runtime-metrics-service.js';
 import type { SupportBundleService } from '@baitonghub-linux-mcp/application';
+import type { ServerProfileName } from '../server-profile.js';
 
 export interface WorkspaceInfoPort {
   info(actor: FileActor, workspaceId: string): Promise<Result<unknown>>;
@@ -95,6 +96,7 @@ export interface McpToolContext {
   readonly services: McpApplicationServices;
   readonly contextEconomy: ContextEconomyRuntime;
   readonly activity?: import('../activity-tracker.js').ActivityTracker;
+  readonly serverProfile?: ServerProfileName;
 }
 
 export interface ToolConfig<T extends z.ZodType> {

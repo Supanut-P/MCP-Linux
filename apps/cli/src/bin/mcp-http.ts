@@ -42,9 +42,11 @@ export async function main(): Promise<void> {
   const configuredOrigins = envList('BAITONGHUB_LINUX_MCP_HTTP_ALLOWED_ORIGINS');
   const workspaceReference = readArg('--workspace');
   const profile = readArg('--profile');
+  const serverProfile = readArg('--server-profile');
   const runtime = await createHeadlessRuntime({
     ...(workspaceReference === undefined ? {} : { workspaceReference }),
     ...(profile === undefined ? {} : { profile }),
+    ...(serverProfile === undefined ? {} : { serverProfile }),
     strictRoots: process.argv.includes('--strict-roots'),
     allowedRoots: readArgs('--allowed-root'),
     resetWorkspaces: process.argv.includes('--reset-workspaces'),
@@ -60,12 +62,14 @@ export async function main(): Promise<void> {
     activityTracker: runtime.runtime.activityTracker,
     codexToolsEnabled: runtime.runtime.codexToolsEnabled,
     profileProvider: runtime.runtime.profileProvider,
+    serverProfileProvider: (): import('@baitonghub-linux-mcp/mcp-server').ServerProfileName => runtime.serverProfile,
     allowAiDeleteProvider: runtime.runtime.allowAiDeleteProvider,
     destructivePolicyProvider: runtime.runtime.destructivePolicyProvider,
   });
   process.stderr.write(
     `baitonghub-linux-mcp MCP HTTP ready endpoint=${handle.endpoint.toString()} bind=${handle.address.host}:${handle.address.port}`
-      + ` workspace=${runtime.workspace.id} profile=${runtime.profile}${authToken === undefined ? ' auth=loopback-only' : ' auth=bearer'}\n`,
+      + ` workspace=${runtime.workspace.id} permission_profile=${runtime.profile} server_profile=${runtime.serverProfile}`
+      + `${authToken === undefined ? ' auth=loopback-only' : ' auth=bearer'}\n`,
   );
 
   let shuttingDown = false;

@@ -11,6 +11,7 @@ import { TaskCreationAdapter, type TaskAugmentedCallRequest } from './task-creat
 import type { McpToolResponse } from './result-mapper.js';
 import { ToolRegistry, type ActiveProjectScope, type McpApplicationServices, type WorkspaceScope } from './tool-registry.js';
 import { actorForRequestScope, type McpRequestScope } from './request-scope.js';
+import type { ServerProfileName } from './server-profile.js';
 
 export interface McpServerOptions {
   readonly services: McpApplicationServices;
@@ -20,6 +21,8 @@ export interface McpServerOptions {
   readonly activity?: ActivitySink;
   readonly activityTracker?: ActivityTracker;
   readonly profileProvider?: () => PermissionProfile;
+  /** Filters the advertised/dispatchable MCP surface without changing authority. */
+  readonly serverProfileProvider?: () => ServerProfileName;
   readonly allowAiDeleteProvider?: () => boolean;
   readonly destructivePolicyProvider?: () => DestructiveAutoApprovalPolicy;
   readonly workspaceScopeResolver?: (workspaceId: string) => WorkspaceScope | null | Promise<WorkspaceScope | null>;
@@ -41,6 +44,7 @@ export function createMcpServer(options: McpServerOptions): McpServer {
     ...(options.activityTracker === undefined ? {} : { activityTracker: options.activityTracker }),
     ...(options.requestScope === undefined ? {} : { sessionId: options.requestScope.sessionId }),
     ...(options.profileProvider === undefined ? {} : { profileProvider: options.profileProvider }),
+    ...(options.serverProfileProvider === undefined ? {} : { serverProfileProvider: options.serverProfileProvider }),
     ...(options.allowAiDeleteProvider === undefined ? {} : { allowAiDeleteProvider: options.allowAiDeleteProvider }),
     ...(options.destructivePolicyProvider === undefined ? {} : { destructivePolicyProvider: options.destructivePolicyProvider }),
     ...(options.workspaceScopeResolver === undefined ? {} : { workspaceScopeResolver: options.workspaceScopeResolver }),

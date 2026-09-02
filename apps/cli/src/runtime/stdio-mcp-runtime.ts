@@ -30,7 +30,7 @@ import {
   createLocalExtensionsService,
   type ExtensionsService,
 } from '@baitonghub-linux-mcp/extensions';
-import { ActivityTracker, DatabaseRuntimeService, RemoteRolloutRuntime, SharedActivitySnapshotLease, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices, type RemoteFleetAuditEvent, type RuntimeTaskSnapshot, type RuntimeTaskState } from '@baitonghub-linux-mcp/mcp-server';
+import { ActivityTracker, DatabaseRuntimeService, RemoteRolloutRuntime, SharedActivitySnapshotLease, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices, type RemoteFleetAuditEvent, type RuntimeTaskSnapshot, type RuntimeTaskState, type ServerProfileName } from '@baitonghub-linux-mcp/mcp-server';
 import { permissionProfiles, type PermissionProfile, type PermissionProfileName } from '@baitonghub-linux-mcp/permissions';
 import {
   AesGcmCheckpointCipher,
@@ -54,6 +54,7 @@ export interface StdioMcpRuntime {
   readonly activityReady: Promise<void>;
   readonly remoteRolloutReady: Promise<void>;
   readonly profileProvider: () => PermissionProfile;
+  readonly serverProfile: ServerProfileName;
   readonly allowAiDeleteProvider: () => boolean;
   readonly destructivePolicyProvider: () => DestructiveAutoApprovalPolicy;
   readonly codexToolsEnabled: boolean;
@@ -63,6 +64,7 @@ export interface StdioMcpRuntime {
 /** Builds Linux STDIO/HTTP MCP services within registered workspace roots. */
 export interface StdioMcpRuntimeOptions {
   readonly permissionProfile?: PermissionProfileName;
+  readonly serverProfile?: ServerProfileName;
   readonly strictAllowedRoots?: readonly string[];
 }
 
@@ -100,6 +102,7 @@ export function createStdioMcpRuntime(
   const profileName = options.permissionProfile ?? 'full';
   const activeProfile = profileName === 'custom' ? customPermissionProfile(settingsRepository) : permissionProfiles[profileName];
   const profileProvider = (): PermissionProfile => activeProfile;
+  const serverProfile = options.serverProfile ?? 'full';
   const destructivePolicyProvider = (): DestructiveAutoApprovalPolicy => parseDestructiveAutoApprovalPolicy(
     settingsRepository.get(DESTRUCTIVE_AUTO_APPROVAL_SETTING_KEY),
     parseBooleanSetting(settingsRepository.get(ALLOW_AI_DELETE_SETTING_KEY), false),
@@ -285,6 +288,7 @@ export function createStdioMcpRuntime(
     activityReady,
     remoteRolloutReady,
     profileProvider,
+    serverProfile,
     allowAiDeleteProvider,
     destructivePolicyProvider,
     codexToolsEnabled: parseBooleanSetting(settingsRepository.get(USER_SETTING_KEYS.codexToolsEnabled), DEFAULT_CODEX_TOOLS_ENABLED),

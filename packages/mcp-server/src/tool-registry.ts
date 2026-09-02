@@ -32,6 +32,7 @@ import { supportBundleTools } from './tools/support-bundle-tools.js';
 import { skillTools } from './tools/skill-tools.js';
 import { workspaceTools } from './tools/workspace-tools.js';
 import type { McpApplicationServices, McpToolContext, McpToolDefinition } from './tools/tool-types.js';
+import { filterServerProfileTools, type ServerProfileName } from './server-profile.js';
 
 export type { McpApplicationServices } from './tools/tool-types.js';
 export type { ActiveProjectScope, WorkspaceScope } from './destructive-scope.js';
@@ -42,6 +43,8 @@ export interface ToolRegistryOptions {
   readonly activityTracker?: ActivityTracker;
   readonly sessionId?: string;
   readonly profileProvider?: () => PermissionProfile;
+  /** Explicit server surface profile; this filters advertisement and dispatch only. */
+  readonly serverProfileProvider?: () => ServerProfileName;
   /** Legacy compatibility. New callers should supply destructivePolicyProvider. */
   readonly allowAiDeleteProvider?: () => boolean;
   /** Fine-grained local destructive auto-approval policy. */
@@ -71,6 +74,7 @@ export class ToolRegistry {
   private readonly sessionId: string | undefined;
   private readonly permissionEngine = new DefaultPermissionEngine();
   private readonly profileProvider: () => PermissionProfile;
+  private readonly serverProfileProvider: () => ServerProfileName;
   private readonly destructivePolicyProvider: () => DestructiveAutoApprovalPolicy;
   private readonly workspaceScopeResolver: (workspaceId: string) => Promise<WorkspaceScope | null>;
   private readonly activityWorkspaceResolver: (cwd: string) => Promise<string | undefined>;
@@ -84,12 +88,14 @@ export class ToolRegistry {
     this.activity = options.activityTracker ?? new ActivityTracker(options.activity);
     this.sessionId = options.sessionId;
     this.profileProvider = options.profileProvider ?? ((): PermissionProfile => permissionProfiles.full);
+    this.serverProfileProvider = options.serverProfileProvider ?? ((): ServerProfileName => 'full');
     this.destructivePolicyProvider = options.destructivePolicyProvider ?? ((): DestructiveAutoApprovalPolicy => legacyDeletePolicy(options.allowAiDeleteProvider?.() === true));
     this.workspaceScopeResolver = normalizeWorkspaceScopeResolver(services, actor, options);
     this.activityWorkspaceResolver = normalizeActivityWorkspaceResolver(services, actor);
     this.maxToolDurationMs = normalizeToolResponseBudget(options.maxToolDurationMs);
     const contextEconomy = new ContextEconomyRuntime();
-    const context: McpToolContext = { services, actor, contextEconomy, activity: this.activity };
+    const serverProfile = this.serverProfileProvider();
+    const context: McpToolContext = { services, actor, contextEconomy, activity: this.activity, serverProfile };
     const contextEngine = new ContextEngine(services, actor, contextEconomy);
     const filePageEngine = new FilePageEngine(services, actor);
     const incrementalVerifier = options.incrementalVerifier ?? new IncrementalVerifier();
@@ -115,13 +121,13 @@ export class ToolRegistry {
       ...sessionTools(context, incrementalVerifier),
       ...upgradeTools(context),
     ];
-    this.tools = [
-      ...baseTools,
-      ...batchTools({
-        invoke: (name, input, signal) => this.invoke(name, input, undefined, signal),
-        describe: (name) => baseTools.find((tool) => tool.name === name),
-      }),
-    ];
+    const visibleBaseTools = filterServerProfileTools(baseTools, serverProfile);
+    const visibleNames = new Set(visibleBaseTools.map((tool) => tool.name));
+    const visibleBatchTools = filterServerProfileTools(batchTools({
+      invoke: (name, input, signal) => this.invoke(name, input, undefined, signal),
+      describe: (name) => visibleBaseTools.find((tool) => tool.name === name),
+    }), serverProfile).filter((tool) => visibleNames.has(tool.name) || tool.name === 'tool_batch');
+    this.tools = [...visibleBaseTools, ...visibleBatchTools];
     this.schemaRegistry = new ToolSchemaRegistry();
     for (const tool of this.tools) this.schemaRegistry.register(tool);
   }

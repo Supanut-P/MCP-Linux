@@ -46,6 +46,27 @@ describe('MCP tool registry', () => {
     expect(enabled.list()).toHaveLength(hidden.list().length + CODEX_TOOL_NAMES.length);
   });
 
+  it('filters the advertised and dispatchable surface by explicit server profile', async () => {
+    const core = new ToolRegistry({ capabilities: { listTools: (): readonly string[] => ['health', 'runtime_metrics', 'remote_host', 'service'], execute: async (): Promise<ReturnType<typeof ok>> => ok({}) } }, actor, {
+      serverProfileProvider: (): 'core' => 'core',
+    });
+    const coreNames = new Set(core.list().map((tool) => tool.name));
+    expect(coreNames.has('workspace_list')).toBe(true);
+    expect(coreNames.has('health')).toBe(true);
+    expect(coreNames.has('service')).toBe(false);
+    expect(coreNames.has('remote_host')).toBe(false);
+    await expect(core.invoke('service', { operation: 'status' })).resolves.toMatchObject({ isError: true, structuredContent: { error: { code: 'INVALID_INPUT' } } });
+    await expect(core.invoke('health', { operation: 'check_tool', tool: 'runtime_metrics' })).resolves.toMatchObject({ structuredContent: { serverProfile: 'core' } });
+
+    const fleet = new ToolRegistry({ capabilities: { listTools: (): readonly string[] => ['remote_host'], execute: async (): Promise<ReturnType<typeof ok>> => ok({}) } }, actor, {
+      serverProfileProvider: (): 'fleet' => 'fleet',
+    });
+    const fleetNames = new Set(fleet.list().map((tool) => tool.name));
+    expect(fleetNames.has('remote_host')).toBe(true);
+    expect(fleetNames.has('remote_fleet')).toBe(true);
+    expect(fleetNames.has('service')).toBe(false);
+  });
+
   it('advertises and dispatches the sanitized target catalog only when the registry is wired', async () => {
     const registry = new ToolRegistry({
       targetCatalog: {

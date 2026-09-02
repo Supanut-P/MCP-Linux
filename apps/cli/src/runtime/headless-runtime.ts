@@ -13,11 +13,13 @@ import {
 import { applyPendingSqliteRestoreSync, SqliteDatabase, SqliteSettingsRepository, SqliteWorkspaceRepository } from '@baitonghub-linux-mcp/storage';
 import { normalizeWorkspaceRoot, WorkspaceService, type Workspace } from '@baitonghub-linux-mcp/workspace';
 import { createStdioMcpRuntime, type StdioMcpRuntime } from './stdio-mcp-runtime.js';
+import { parseServerProfile, type ServerProfileName } from '@baitonghub-linux-mcp/mcp-server';
 import { StrictWorkspaceRepository, canonicalizeAllowedRoots, requestedPathInsideAllowedRoot } from './strict-workspace-repository.js';
 
 export interface HeadlessRuntimeOptions {
   readonly workspaceReference?: string;
   readonly profile?: string;
+  readonly serverProfile?: string;
   readonly strictRoots?: boolean;
   readonly allowedRoots?: readonly string[];
   readonly resetWorkspaces?: boolean;
@@ -28,6 +30,7 @@ export interface HeadlessRuntime {
   readonly workspace: Workspace;
   readonly runtime: StdioMcpRuntime;
   readonly profile: StdioPermissionProfileName;
+  readonly serverProfile: ServerProfileName;
   readonly strictAllowedRoots?: readonly string[];
   readonly unrestricted: false;
 }
@@ -52,6 +55,9 @@ export async function createHeadlessRuntime(options: HeadlessRuntimeOptions = {}
       options.profile ?? process.env.BAITONGHUB_LINUX_MCP_STDIO_PROFILE ?? settingsRepository.get(STDIO_PERMISSION_PROFILE_SETTING_KEY),
       'full',
     );
+    const serverProfileResult = parseServerProfile(options.serverProfile ?? process.env.BAITONGHUB_LINUX_MCP_PROFILE);
+    if (!serverProfileResult.ok) throw new Error(serverProfileResult.error.message);
+    const serverProfile = serverProfileResult.value;
     const strictRootsEnabled = options.strictRoots === true
       || parseBooleanSetting(process.env.BAITONGHUB_LINUX_MCP_STRICT_ROOTS ?? settingsRepository.get(STDIO_STRICT_ROOTS_SETTING_KEY), false);
     const configuredAllowedRoots = options.allowedRoots !== undefined && options.allowedRoots.length > 0
@@ -111,11 +117,12 @@ export async function createHeadlessRuntime(options: HeadlessRuntimeOptions = {}
     databaseClosed = true;
     const runtime = createStdioMcpRuntime(dataPath, workspace, false, {
       permissionProfile: profile,
+      serverProfile,
       ...(strictAllowedRoots === undefined ? {} : { strictAllowedRoots }),
     });
     await runtime.activityReady;
     await runtime.remoteRolloutReady;
-    return { dataPath, workspace, runtime, profile, ...(strictAllowedRoots === undefined ? {} : { strictAllowedRoots }), unrestricted: false };
+    return { dataPath, workspace, runtime, profile, serverProfile, ...(strictAllowedRoots === undefined ? {} : { strictAllowedRoots }), unrestricted: false };
   } catch (error) {
     // Avoid masking the original startup error with a second close() failure.
     if (!databaseClosed) database.close();

@@ -24,7 +24,7 @@ Baitonghub-Linux-mcp lets an MCP client work with a Linux machine through a
 controlled local runtime. It is intended for repository maintenance, coding,
 testing, Git workflows, command execution, and long-running development tasks.
 
-The v1.15.0 release is **headless**. It does not require Electron, a desktop
+The v1.16.0 release is **headless**. It does not require Electron, a desktop
 session, Chrome, Wayland, X11, or a system-installed Node.js runtime.
 
 ### What it can do
@@ -104,7 +104,7 @@ They are redacted from stdout, application logs, audit records, and diagnostics.
 
 ## v1 stable contract
 
-The v1.15.0 MCP names, schemas, permission annotations, and compatibility rules
+The v1.16.0 MCP names, schemas, permission annotations, and compatibility rules
 are frozen in [`docs/mcp/STABLE_TOOL_CONTRACT_V1.md`](docs/mcp/STABLE_TOOL_CONTRACT_V1.md)
 and checked against the canonical fixture in CI. The live `tools/list` response
 is provider-filtered for the headless Linux environment, so its observed count
@@ -116,7 +116,7 @@ seven-day run unless one was actually completed.
 
 ## Supported platform
 
-| Item | v1.15 support |
+| Item | v1.16 support |
 | --- | --- |
 | Operating system | Ubuntu 24.04 LTS |
 | Architecture | x86_64 / amd64 |
@@ -126,13 +126,13 @@ seven-day run unless one was actually completed.
 | Packages | DEB, Linux x64 tarball (no AppImage) |
 
 ARM64, RPM, GUI automation, Windows migration, and unrestricted root access are
-outside the v1.15 release contract.
+outside the v1.16 release contract.
 
 ## Install
 
 Download the latest package from
 [GitHub Releases](https://github.com/Supanut-P/MCP-Linux/releases/latest).
-The v1.15.0 links below become downloadable when the Ubuntu package gate and
+The v1.16.0 links below become downloadable when the Ubuntu package gate and
 release approval are complete.
 
 The v1 administration tools add bounded, explicitly confirmed mutations. They
@@ -152,17 +152,17 @@ bounded soak run; it does not claim that a seven-day run has completed.
 ### Ubuntu DEB
 
 ```sh
- curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.15.0/Baitonghub-Linux-mcp-1.15.0-amd64.deb
- curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.15.0/Baitonghub-Linux-mcp-1.15.0-SHA256SUMS
- sha256sum --check --ignore-missing Baitonghub-Linux-mcp-1.15.0-SHA256SUMS
- sudo apt install ./Baitonghub-Linux-mcp-1.15.0-amd64.deb
+ curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.16.0/Baitonghub-Linux-mcp-1.16.0-amd64.deb
+ curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.16.0/Baitonghub-Linux-mcp-1.16.0-SHA256SUMS
+ sha256sum --check --ignore-missing Baitonghub-Linux-mcp-1.16.0-SHA256SUMS
+ sudo apt install ./Baitonghub-Linux-mcp-1.16.0-amd64.deb
 ```
 
 ### Linux x64 tarball
 
 ```sh
- curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.15.0/Baitonghub-Linux-mcp-1.15.0-linux-x64.tar.gz
- tar -xzf Baitonghub-Linux-mcp-1.15.0-linux-x64.tar.gz
+ curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.16.0/Baitonghub-Linux-mcp-1.16.0-linux-x64.tar.gz
+ tar -xzf Baitonghub-Linux-mcp-1.16.0-linux-x64.tar.gz
 ```
 
 ## Quick start: local STDIO
@@ -177,6 +177,13 @@ export BAITONGHUB_LINUX_MCP_CHECKPOINT_KEY_BASE64="$(openssl rand -base64 32)"
 
 baitonghub-linux-mcp mcp --stdio
 ```
+
+The default server surface is `full`. To expose a smaller headless surface, add
+`--server-profile core`, `--server-profile operator`, or
+`--server-profile fleet` (or set `BAITONGHUB_LINUX_MCP_PROFILE`). This is only
+an advertisement/dispatch filter; the independent permission profile remains
+controlled by `--profile` and all root, confirmation, ownership, secret, and
+audit checks still apply. See [`docs/linux/SERVER_PROFILES.md`](docs/linux/SERVER_PROFILES.md).
 
 The CLI writes MCP protocol messages to stdout. Operational output is kept away
 from the protocol stream.

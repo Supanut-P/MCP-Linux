@@ -130,6 +130,14 @@ try {
     throw new Error('audit_query did not return bounded structured summaries');
   }
 
+  const diagnostics = await callTool(client, 'diagnostics_snapshot', {});
+  const diagnosticsValue = readObject(diagnostics);
+  if (!['ready', 'degraded', 'unavailable'].includes(diagnosticsValue.status)
+    || !diagnosticsValue.health || !diagnosticsValue.runtime
+    || !diagnosticsValue.audit || !diagnosticsValue.dependencies) {
+    throw new Error('diagnostics_snapshot did not return fixed redacted sections');
+  }
+
   const snapshot = await callTool(client, 'workspace_snapshot', {
     workspaceId,
     operation: 'manifest',
@@ -156,6 +164,7 @@ try {
     taskHistoryCount: taskHistoryValue.count,
     auditCount: auditValue.count,
     auditTruncated: auditValue.truncated,
+    diagnosticsStatus: diagnosticsValue.status,
     snapshotCount: snapshotValue.count,
     snapshotTruncated: snapshotValue.truncated,
   }) + '\n');

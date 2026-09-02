@@ -185,6 +185,8 @@ export const taskHistorySchema = z.object({
   cursor: z.string().trim().min(8).max(512).optional(),
 }).strict();
 
+export const diagnosticsSnapshotSchema = z.object({}).strict();
+
 export const policyExplainSchema = z.object({
   tool: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/),
   operation: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/).optional(),

@@ -157,6 +157,14 @@ describe('MCP tool registry', () => {
     });
   });
 
+  it('advertises and dispatches diagnostics_snapshot only when the diagnostics service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'diagnostics_snapshot')).toBe(false);
+    const registry = new ToolRegistry({ diagnosticsSnapshot: { execute: async (): Promise<Result<unknown>> => ok({ status: 'ready' }) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('diagnostics_snapshot');
+    expect(registry.list().find((tool) => tool.name === 'diagnostics_snapshot')?.parse({})).toMatchObject({ ok: true });
+    await expect(registry.invoke('diagnostics_snapshot', {})).resolves.toMatchObject({ structuredContent: { status: 'ready' } });
+  });
+
   it('explains active profile and registered-root policy without dispatching the target tool', async () => {
     let called = false;
     const registry = new ToolRegistry({

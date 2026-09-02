@@ -175,6 +175,12 @@ export const taskEventsSchema = z.object({
   waitMs: z.number().int().min(0).max(30_000).optional(),
 }).strict();
 
+export const policyExplainSchema = z.object({
+  tool: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/),
+  operation: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/).optional(),
+  workspaceId: optionalWorkspaceIdSchema,
+}).strict();
+
 const capabilityMetadataSchema = z.record(z.string(), z.unknown());
 const capabilityParametersSchema = z.record(z.string(), z.unknown());
 const capabilityApprovalSchema = z.enum(['use_policy', 'always_ask', 'skip']).default('use_policy');

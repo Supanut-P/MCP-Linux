@@ -196,6 +196,14 @@ tunnel YAML, command line, logs, or audit records.
 disk formatting, mounting, workspace-root deletion, symlink escapes, and
 termination of unowned processes remain blocked by the runtime policy.
 
+`policy_explain` is available on the core/full headless surfaces as a read-only
+advisory. Pass a visible tool name, optional operation, and (for workspace
+tools) `workspaceId` to receive the active server/permission profile, required
+profile, capability readiness, registered-root requirement, and confirmation
+reason. It never executes the named tool and cannot approve or bypass policy.
+Unknown or profile-hidden names return a generic `TOOL_NOT_AVAILABLE` result
+without revealing hidden tool metadata.
+
 Create the tunnel in OpenAI Platform, associate it with the intended personal
 Platform organization and ChatGPT workspace, then add it from
 `https://chatgpt.com/plugins`. The tunnel ID is required before profile init.

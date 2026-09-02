@@ -31,6 +31,7 @@ import { targetCatalogTools } from './tools/target-catalog-tools.js';
 import { supportBundleTools } from './tools/support-bundle-tools.js';
 import { auditTools } from './tools/audit-tools.js';
 import { taskEventsTools } from './tools/task-events-tools.js';
+import { policyExplainTools } from './tools/policy-explain-tools.js';
 import { skillTools } from './tools/skill-tools.js';
 import { workspaceTools } from './tools/workspace-tools.js';
 import type { McpApplicationServices, McpToolContext, McpToolDefinition } from './tools/tool-types.js';
@@ -126,12 +127,13 @@ export class ToolRegistry {
       ...upgradeTools(context),
     ];
     const visibleBaseTools = filterServerProfileTools(baseTools, serverProfile);
-    const visibleNames = new Set(visibleBaseTools.map((tool) => tool.name));
+    const policyTools = filterServerProfileTools(policyExplainTools(context, () => this.tools, this.profileProvider), serverProfile);
+    const visibleNames = new Set([...visibleBaseTools, ...policyTools].map((tool) => tool.name));
     const visibleBatchTools = filterServerProfileTools(batchTools({
       invoke: (name, input, signal) => this.invoke(name, input, undefined, signal),
       describe: (name) => visibleBaseTools.find((tool) => tool.name === name),
     }), serverProfile).filter((tool) => visibleNames.has(tool.name) || tool.name === 'tool_batch');
-    this.tools = [...visibleBaseTools, ...visibleBatchTools];
+    this.tools = [...visibleBaseTools, ...policyTools, ...visibleBatchTools];
     this.schemaRegistry = new ToolSchemaRegistry();
     for (const tool of this.tools) this.schemaRegistry.register(tool);
   }

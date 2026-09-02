@@ -18,7 +18,7 @@ verified by `packages/mcp-server/src/tool-registry.test.ts`.
 <!-- BEGIN GENERATED TOOL REGISTRY -->
 ## Generated live ToolRegistry index
 
-This block is generated from the built `ToolRegistry`. Current count: **219 tools**.
+This block is generated from the built `ToolRegistry`. Current count: **220 tools**.
 Run `pnpm docs:tools` after intentionally changing the registry; CI runs `pnpm docs:tools:check` and fails on drift.
 
 | # | Tool | Permission | Read-only | Destructive |
@@ -241,7 +241,8 @@ Run `pnpm docs:tools` after intentionally changing the registry; CI runs `pnpm d
 | 216 | `self_heal_apply` | DANGEROUS | no | yes |
 | 217 | `skills_import` | WRITE | no | no |
 | 218 | `agent_swarm_run` | EXECUTE | no | no |
-| 219 | `tool_batch` | DANGEROUS | no | yes |
+| 219 | `policy_explain` | READ | yes | no |
+| 220 | `tool_batch` | DANGEROUS | no | yes |
 <!-- END GENERATED TOOL REGISTRY -->
 
 ## v1.2 bounded operator probes

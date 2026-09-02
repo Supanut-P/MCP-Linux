@@ -33,6 +33,7 @@ describe('MCP tool registry', () => {
       'workspace_index', 'workspace_index_status', 'workspace_index_watch', 'workspace_index_stop', 'workspace_changes',
       'session_handoff', 'verify_incremental',
       ...UPGRADE_TOOL_CATALOG.filter((entry) => !['db_inspect', 'db_query', 'remote_fleet', 'remote_rollout', 'remote_rollout_resume', 'support_bundle'].includes(entry.name)).map((entry) => entry.name),
+      'policy_explain',
       'tool_batch',
     ]);
   });
@@ -139,6 +140,23 @@ describe('MCP tool registry', () => {
     expect(registry.list().find((tool) => tool.name === 'task_events')?.parse({ taskId: 'task-1', limit: 10 })).toMatchObject({ ok: true });
     await expect(registry.invoke('task_events', { taskId: 'task-1', limit: 10 })).resolves.toMatchObject({
       structuredContent: { taskId: 'task-1', state: 'completed', events: [], count: 0, truncated: false },
+    });
+  });
+
+  it('explains active profile and registered-root policy without dispatching the target tool', async () => {
+    let called = false;
+    const registry = new ToolRegistry({
+      capabilities: {
+        listTools: (): readonly string[] => ['shell', 'health'],
+        execute: async (): Promise<Result<unknown>> => { called = true; return ok({}); },
+      },
+    }, actor, { profileProvider: (): typeof permissionProfiles.balanced => permissionProfiles.balanced, serverProfileProvider: (): 'core' => 'core' });
+    await expect(registry.invoke('policy_explain', { tool: 'shell', workspaceId: 'workspace-1', operation: 'run' })).resolves.toMatchObject({
+      structuredContent: { tool: 'shell', allowed: true, reasonCode: 'OK', registeredRootRequired: true, requiresConsent: false },
+    });
+    expect(called).toBe(false);
+    await expect(registry.invoke('policy_explain', { tool: 'shell' })).resolves.toMatchObject({
+      structuredContent: { allowed: false, reasonCode: 'REGISTERED_ROOT_REQUIRED' },
     });
   });
 

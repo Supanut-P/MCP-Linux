@@ -28,4 +28,5 @@ export * from './approval-receipt.js';
 export * from './tools/support-bundle-tools.js';
 export * from './tools/audit-tools.js';
 export * from './tools/task-events-tools.js';
+export * from './tools/policy-explain-tools.js';
 export * from './task-creation.js';

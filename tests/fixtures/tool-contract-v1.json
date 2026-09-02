@@ -3485,6 +3485,12 @@
             "minItems": 1,
             "type": "array"
           },
+          "maxParallel": {
+            "default": 4,
+            "maximum": 4,
+            "minimum": 1,
+            "type": "integer"
+          },
           "metadata": {
             "additionalProperties": {},
             "propertyNames": {
@@ -3496,7 +3502,8 @@
             "enum": [
               "health",
               "inventory",
-              "service-status"
+              "service-status",
+              "snapshot"
             ],
             "type": "string"
           },
@@ -3521,6 +3528,7 @@
         "required": [
           "hostIds",
           "operation",
+          "maxParallel",
           "dry_run"
         ],
         "type": "object"

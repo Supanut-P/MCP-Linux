@@ -70,7 +70,7 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
     return context.services.capabilities.execute(tool, owned, signal);
   };
   const setOfMarks = new SetOfMarksService(context.services.capabilities);
-  const remoteFleet = new RemoteFleetRuntime(context.services.capabilities);
+  const remoteFleet = new RemoteFleetRuntime(context.services.capabilities, context.services.remoteFleetAudit);
   const runtimeMetrics = new RuntimeMetricsService({
     ...(context.activity === undefined ? {} : { activity: context.activity }),
     ...(context.services.runtimeTaskSnapshot === undefined ? {} : { taskSnapshot: context.services.runtimeTaskSnapshot }),

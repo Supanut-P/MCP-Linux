@@ -30,7 +30,7 @@ import {
   createLocalExtensionsService,
   type ExtensionsService,
 } from '@baitonghub-linux-mcp/extensions';
-import { ActivityTracker, DatabaseRuntimeService, RemoteRolloutRuntime, SharedActivitySnapshotLease, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices, type RuntimeTaskSnapshot, type RuntimeTaskState } from '@baitonghub-linux-mcp/mcp-server';
+import { ActivityTracker, DatabaseRuntimeService, RemoteRolloutRuntime, SharedActivitySnapshotLease, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices, type RemoteFleetAuditEvent, type RuntimeTaskSnapshot, type RuntimeTaskState } from '@baitonghub-linux-mcp/mcp-server';
 import { permissionProfiles, type PermissionProfile, type PermissionProfileName } from '@baitonghub-linux-mcp/permissions';
 import {
   AesGcmCheckpointCipher,
@@ -265,6 +265,15 @@ export function createStdioMcpRuntime(
     remoteRollout: remoteRollouts,
     remoteRolloutResume: remoteRollouts,
     remoteRolloutTasks: remoteRollouts,
+    remoteFleetAudit: async (event: RemoteFleetAuditEvent): Promise<void> => auditService.record({
+      actorId: actor.clientId,
+      actorName: actor.clientName,
+      action: 'remote_fleet_host',
+      targetSummary: `host:${event.hostId}`,
+      resultCode: event.resultCode,
+      durationMs: event.durationMs,
+      metadata: { operation: event.operation, ...(event.truncated === true ? { truncated: true } : {}) },
+    }),
     supportBundle,
   };
 

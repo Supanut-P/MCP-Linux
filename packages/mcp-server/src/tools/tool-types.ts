@@ -69,6 +69,7 @@ export interface McpApplicationServices {
   readonly remoteRollout?: Pick<RemoteRolloutRuntime, 'execute'>;
   readonly remoteRolloutResume?: Pick<RemoteRolloutRuntime, 'resume'>;
   readonly remoteRolloutTasks?: RemoteRolloutTaskPort;
+  readonly remoteFleetAudit?: (event: import('../remote-fleet-runtime.js').RemoteFleetAuditEvent) => Promise<void>;
   readonly supportBundle?: Pick<SupportBundleService, 'execute'>;
 }
 

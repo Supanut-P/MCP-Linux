@@ -155,6 +155,7 @@ describe('MCP tool registry', () => {
     expect(byName.get('schedule')?.parse({ operation: 'list' })).toMatchObject({ ok: true });
     expect(byName.get('remote_host')?.parse({ hostId: 'vm103', operation: 'system_info' })).toMatchObject({ ok: true });
     expect(byName.get('remote_fleet')?.parse({ hostIds: ['vm103'], operation: 'health' })).toMatchObject({ ok: true });
+    expect(byName.get('remote_fleet')?.parse({ hostIds: ['vm103'], operation: 'snapshot', maxParallel: 2 })).toMatchObject({ ok: true });
     expect(byName.get('artifact_verify')?.parse({ workspaceId: 'workspace-1', path: 'dist/app.js' })).toMatchObject({ ok: true });
     expect(byName.get('http_probe')?.parse({ url: 'https://example.com', method: 'HEAD' })).toMatchObject({ ok: true });
     expect(byName.get('storage_usage')?.parse({ workspaceId: 'workspace-1', path: '.', operation: 'largest_files' })).toMatchObject({ ok: true });

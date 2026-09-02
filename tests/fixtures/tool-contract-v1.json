@@ -1874,6 +1874,7 @@
               "window",
               "health",
               "system_info",
+              "runtime_metrics",
               "journal",
               "service_logs",
               "network",

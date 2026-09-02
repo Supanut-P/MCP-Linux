@@ -109,7 +109,7 @@ describe('MCP tool registry', () => {
     expect(registration?.description).not.toContain('E:\\');
   });
 
-  it('exposes the Khai-Hub-compatible local capability contract', () => {
+  it('exposes the Khai-Hub-compatible local capability contract', async () => {
     const registry = new ToolRegistry({}, actor);
     const byName = new Map(registry.list().map((tool) => [tool.name, tool]));
 
@@ -121,10 +121,14 @@ describe('MCP tool registry', () => {
     expect(byName.get('window')?.parse({ operation: 'list' })).toMatchObject({ ok: true });
     expect(byName.get('window')?.parse({ operation: 'set_window_frame', parameters: { x: 0, y: 0, width: 800, height: 600 } })).toMatchObject({ ok: true });
     expect(byName.get('health')?.parse({ operation: 'check_all' })).toMatchObject({ ok: true });
+    expect(byName.get('health')?.parse({ operation: 'check_tool', tool: 'runtime_metrics' })).toMatchObject({ ok: true });
     expect(byName.get('health')?.parse({ operation: 'check_tool', tool: 'service_logs' })).toMatchObject({ ok: true });
     expect(byName.get('system_info')?.parse({ operation: 'disk', path: '/' })).toMatchObject({ ok: true });
     expect(byName.get('runtime_metrics')?.parse({ operation: 'snapshot', scopes: ['host', 'runtime'] })).toMatchObject({ ok: true });
     expect(byName.get('runtime_metrics')?.parse({ operation: 'snapshot', scopes: ['host', 'unknown'] })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    await expect(new ToolRegistry({}, actor).invoke('health', { operation: 'check_tool', tool: 'runtime_metrics' })).resolves.toMatchObject({
+      structuredContent: { tool: 'runtime_metrics', provider: 'node:os+activity', available: true, ready: true },
+    });
     expect(byName.get('journal')?.parse({ unit: 'caddy.service', lines: 100 })).toMatchObject({ ok: true });
     expect(byName.get('journal')?.parse({ unit: '../../etc/passwd.service' })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
     expect(byName.get('service_logs')?.parse({ operation: 'tail', unit: 'caddy.service', lines: 50 })).toMatchObject({ ok: true });

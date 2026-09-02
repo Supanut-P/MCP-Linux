@@ -1,6 +1,7 @@
 # baitonghub-linux-mcp Tool Contract
 
-Status: God-Tier Wave 0–8 additive contract snapshot for `v4.0.0`.
+Status: Baitonghub-Linux-mcp v1.13.0 additive contract snapshot for the Linux
+headless runtime.
 
 This is the compatibility contract for the current MCP surface. The runtime
 advertises the JSON Schema for every input through `tools/list`; the TypeScript
@@ -8,7 +9,9 @@ Zod schemas in `packages/mcp-server/src/tools/` are the implementation source
 of truth. The existing human-oriented catalog remains useful for field details,
 while this document records the primitive/core contract, preserves the earlier
 compatibility baseline, and records policy class, annotations, and schema source.
-The full configurable v4 registry contains 214 tools; the default runtime advertises 208 because the six `codex_*` delegation tools are opt-in. The additive v4 entries are defined
+The full configurable v1.13 registry contains 216 tools; the default headless
+runtime advertises 210 because the six `codex_*` delegation tools are opt-in.
+The additive entries are defined
 in `packages/mcp-server/src/upgrade-catalog.ts` and the exact runtime order is
 verified by `packages/mcp-server/src/tool-registry.test.ts`.
 
@@ -292,7 +295,7 @@ Destructive operations still require explicit chat confirmation by default. The 
 
 ## Core primitive runtime catalog
 
-The table below records the core primitive layer. The full **214-tool** configurable runtime
+The table below records the core primitive layer. The full **216-tool** configurable runtime
 index is generated from `ToolRegistry` in the project README so it cannot be
 mistaken for this smaller primitive table. The `schema` column identifies the
 authoritative implementation file and the number of top-level input properties

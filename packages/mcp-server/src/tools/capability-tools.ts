@@ -1,5 +1,5 @@
 import { defineTool, missingService, type McpToolContext, type McpToolDefinition } from './tool-types.js';
-import type { Result } from '@baitonghub-linux-mcp/domain';
+import { ok, type Result } from '@baitonghub-linux-mcp/domain';
 import { DEFAULT_MCP_POLL_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS } from '@baitonghub-linux-mcp/shared';
 import { SetOfMarksService } from '../set-of-marks-service.js';
 import { withCapabilityOwnerMetadata } from '../request-scope.js';
@@ -147,7 +147,9 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
       permission: 'READ',
       annotations: { readOnlyHint: true, destructiveHint: false },
       inputSchema: healthCapabilitySchema,
-      handler: async (input, signal) => execute('health', input, signal),
+      handler: async (input, signal) => input.operation === 'check_tool' && input.tool === 'runtime_metrics'
+        ? ok({ tool: 'runtime_metrics', ...runtimeMetrics.health() })
+        : execute('health', input, signal),
     }),
     defineTool({
       name: 'system_info',

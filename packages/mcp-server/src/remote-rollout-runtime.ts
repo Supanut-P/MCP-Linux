@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
 import type { CapabilityService } from '@baitonghub-linux-mcp/capabilities';
+import type { FileActor } from '@baitonghub-linux-mcp/application';
 
 export type RemoteRolloutState = 'planned' | 'running' | 'completed' | 'failed' | 'cancelled' | 'expired';
 
@@ -24,6 +25,35 @@ export interface RemoteRolloutResumePreview {
   readonly expiresAt: string;
 }
 
+export interface RemoteRolloutEvent {
+  readonly hostId: string;
+  readonly phase: string;
+  readonly attempt: number;
+  readonly status: string;
+  readonly resultCode?: string;
+  readonly timestamp: string;
+}
+
+export interface RemoteRolloutTaskSnapshot {
+  readonly taskId: string;
+  readonly status: 'working' | 'completed' | 'failed' | 'cancelled';
+  readonly createdAt: string;
+  readonly lastUpdatedAt: string;
+  readonly workspaceId: string;
+  readonly events: readonly RemoteRolloutEvent[];
+  readonly result?: unknown;
+}
+
+/** Minimal port consumed by the MCP Tasks bridge; keeps transport concerns out of rollout execution. */
+export interface RemoteRolloutTaskPort {
+  createTask(input: unknown, actor: FileActor): Promise<Result<RemoteRolloutTaskSnapshot>>;
+  startTask(taskId: string, run: () => Promise<unknown>): void;
+  getTask(taskId: string, actor: FileActor): Promise<RemoteRolloutTaskSnapshot | null>;
+  listTasks(actor: FileActor): Promise<readonly RemoteRolloutTaskSnapshot[]>;
+  cancelTask(taskId: string, actor: FileActor): Promise<RemoteRolloutTaskSnapshot | null>;
+  resultTask(taskId: string, actor: FileActor): Promise<RemoteRolloutTaskSnapshot | null>;
+}
+
 export interface RemoteRolloutPlan {
   readonly id: string;
   readonly workspaceId: string;
@@ -40,6 +70,9 @@ export interface RemoteRolloutPlan {
   readonly results?: readonly RemoteRolloutHostResult[];
   readonly cancelRequested?: boolean;
   readonly resumePreview?: RemoteRolloutResumePreview | null;
+  readonly taskOwnerId?: string | null;
+  readonly taskState?: RemoteRolloutTaskSnapshot['status'] | null;
+  readonly events?: readonly RemoteRolloutEvent[];
 }
 
 export interface RemoteRolloutRepository {
@@ -48,6 +81,8 @@ export interface RemoteRolloutRepository {
   list?(state?: RemoteRolloutState): Promise<readonly RemoteRolloutPlan[]>;
   claim(id: string, state: 'planned'): Promise<boolean>;
   claimResume?(id: string): Promise<boolean>;
+  bindTaskOwner?(id: string, ownerId: string): Promise<boolean>;
+  appendEvent?(id: string, event: RemoteRolloutEvent): Promise<void>;
   update(id: string, patch: Partial<RemoteRolloutPlan>): Promise<void>;
 }
 
@@ -104,7 +139,7 @@ export class RemoteRolloutRuntime {
         if (recorded.has(hostId)) continue;
         results.push({ hostId, status: 'error', error: { code: 'CAPABILITY_UNAVAILABLE', message: 'execution_interrupted', recoverable: true } });
       }
-      await this.options.repository.update(plan.id, { state: 'failed', results, updatedAt: this.now().toISOString() });
+      await this.options.repository.update(plan.id, { state: 'failed', results, ...taskStatePatch(plan, 'failed'), updatedAt: this.now().toISOString() });
     }
   }
 
@@ -126,6 +161,71 @@ export class RemoteRolloutRuntime {
     const value = asRecord(input);
     const operation = value?.operation === 'preview' ? 'resume_preview' : value?.operation === 'execute' ? 'resume_execute' : undefined;
     return operation === undefined ? err(appError('INVALID_INPUT', 'remote_rollout_resume operation is invalid', false)) : this.execute({ ...value, operation }, signal);
+  }
+
+  /** Create a standard MCP Task handle for one already-previewed rollout. */
+  public async createTask(input: unknown, actor: FileActor): Promise<Result<RemoteRolloutTaskSnapshot>> {
+    const value = asRecord(input);
+    const parsed = parseRequest({ ...(value ?? {}), operation: 'execute' }, this.now());
+    if (!parsed.ok || parsed.value.operation !== 'execute') return err(appError('INVALID_INPUT', 'remote_rollout task requires an execute request', false));
+    const plan = await this.options.repository.get(parsed.value.rolloutId);
+    if (plan === null) return err(appError('INVALID_INPUT', 'Remote rollout was not found', false));
+    if (plan.state !== 'planned') return err(appError('PERMISSION_REQUIRED', 'Remote rollout is no longer executable', true));
+    if (this.now().getTime() >= Date.parse(plan.expiresAt)) return err(appError('PERMISSION_REQUIRED', 'Remote rollout preview has expired', true));
+    if (parsed.value.workspaceId !== plan.workspaceId || parsed.value.previewHash !== plan.previewHash) return err(appError('PERMISSION_REQUIRED', 'Remote rollout task preview does not match the stored plan', true));
+    if (this.options.repository.bindTaskOwner === undefined) return err(appError('CAPABILITY_UNAVAILABLE', 'Remote rollout task storage is unavailable', true));
+    const ownerId = taskOwnerId(actor);
+    const bound = await this.options.repository.bindTaskOwner(plan.id, ownerId);
+    if (!bound) return err(appError('PERMISSION_REQUIRED', 'Remote rollout already has an owner or is no longer executable', true));
+    const current = await this.options.repository.get(plan.id) ?? { ...plan, taskOwnerId: ownerId, taskState: 'working' as const };
+    return ok(taskSnapshot(current, 'working'));
+  }
+
+  /** Starts the registry-authorized background operation after a task handle is returned. */
+  public startTask(taskId: string, run: () => Promise<unknown>): void {
+    void run().then(async (response) => {
+      const plan = await this.options.repository.get(taskId);
+      if (plan === null || plan.taskOwnerId === undefined || plan.taskOwnerId === null) return;
+      const failedBeforeClaim = asRecord(response)?.isError === true && plan.state === 'planned';
+      const nextState = failedBeforeClaim ? 'failed' : taskStateFor(plan.state);
+      await this.options.repository.update(taskId, { taskState: nextState, updatedAt: this.now().toISOString() });
+    }, async () => {
+      const plan = await this.options.repository.get(taskId);
+      if (plan !== null && plan.taskOwnerId !== undefined && plan.taskOwnerId !== null) await this.options.repository.update(taskId, { taskState: 'failed', updatedAt: this.now().toISOString() });
+    });
+  }
+
+  public async getTask(taskId: string, actor: FileActor): Promise<RemoteRolloutTaskSnapshot | null> {
+    const plan = await this.options.repository.get(taskId);
+    if (plan === null || plan.taskOwnerId !== taskOwnerId(actor)) return null;
+    return taskSnapshot(plan);
+  }
+
+  public async listTasks(actor: FileActor): Promise<readonly RemoteRolloutTaskSnapshot[]> {
+    if (this.options.repository.list === undefined) return [];
+    const ownerId = taskOwnerId(actor);
+    const plans = await this.options.repository.list();
+    return plans.filter((plan) => plan.taskOwnerId === ownerId).map((plan) => taskSnapshot(plan));
+  }
+
+  public async cancelTask(taskId: string, actor: FileActor): Promise<RemoteRolloutTaskSnapshot | null> {
+    const plan = await this.options.repository.get(taskId);
+    if (plan === null || plan.taskOwnerId !== taskOwnerId(actor)) return null;
+    if (plan.state === 'planned') {
+      await this.options.repository.update(taskId, { state: 'cancelled', taskState: 'cancelled', updatedAt: this.now().toISOString() });
+    } else if (plan.state === 'running') {
+      await this.cancel(taskId, plan.workspaceId);
+      const current = await this.options.repository.get(taskId);
+      if (current !== null && current.state === 'running') await this.options.repository.update(taskId, { taskState: 'cancelled', updatedAt: this.now().toISOString() });
+    }
+    const current = await this.options.repository.get(taskId);
+    return current === null ? null : taskSnapshot(current);
+  }
+
+  public async resultTask(taskId: string, actor: FileActor): Promise<RemoteRolloutTaskSnapshot | null> {
+    const plan = await this.options.repository.get(taskId);
+    if (plan === null || plan.taskOwnerId !== taskOwnerId(actor)) return null;
+    return taskSnapshot(plan);
   }
 
   private async plan(request: PlanRequest, signal?: AbortSignal): Promise<Result<unknown>> {
@@ -195,12 +295,12 @@ export class RemoteRolloutRuntime {
       const canary = await this.runHosts(plan, plan.hostIds.slice(0, plan.canaryCount), 'canary', controller.signal, results);
       if (canary.failed || controller.signal.aborted) {
         const state: RemoteRolloutState = controller.signal.aborted ? 'cancelled' : 'failed';
-        await this.options.repository.update(plan.id, { state, results, updatedAt: this.now().toISOString() });
+        await this.options.repository.update(plan.id, { state, results, ...taskStatePatch(plan, state), updatedAt: this.now().toISOString() });
         return ok(publicExecution(plan, state, results));
       }
       await this.runHosts(plan, plan.hostIds.slice(plan.canaryCount), 'batch', controller.signal, results);
       const state: RemoteRolloutState = controller.signal.aborted ? 'cancelled' : hasFailure(results) ? 'failed' : 'completed';
-      await this.options.repository.update(plan.id, { state, results, updatedAt: this.now().toISOString() });
+      await this.options.repository.update(plan.id, { state, results, ...taskStatePatch(plan, state), updatedAt: this.now().toISOString() });
       return ok(publicExecution(plan, state, results));
     } finally {
       this.active.delete(plan.id);
@@ -219,6 +319,7 @@ export class RemoteRolloutRuntime {
         const hostPlan = hostPlans.find((entry) => entry.hostId === hostId);
         if (hostPlan === undefined) return;
         const started = Date.now();
+        await this.recordEvent(plan.id, { hostId, phase, attempt: attempts[hostId] ?? 1, status: 'started', timestamp: this.now().toISOString() });
         try {
           if (this.options.capabilities === undefined) throw new Error('missing capability');
           const response = await this.options.capabilities.execute('remote_host', {
@@ -231,17 +332,20 @@ export class RemoteRolloutRuntime {
           }, signal);
           if (response.ok) {
             results.push({ hostId, status: 'ok', attempt: attempts[hostId] ?? 1 });
+            await this.recordEvent(plan.id, { hostId, phase, attempt: attempts[hostId] ?? 1, status: 'ok', resultCode: 'SUCCESS', timestamp: this.now().toISOString() });
             await this.recordAudit({ rolloutId: plan.id, hostId, workspaceId: plan.workspaceId, unit: plan.unit, phase, resultCode: 'SUCCESS', durationMs: Date.now() - started });
           } else {
             failed = true;
             const error = safeError(response.error);
             results.push({ hostId, status: ambiguous(error.code) ? 'unverified' : 'error', attempt: attempts[hostId] ?? 1, error });
+            await this.recordEvent(plan.id, { hostId, phase, attempt: attempts[hostId] ?? 1, status: ambiguous(error.code) ? 'unverified' : 'error', resultCode: error.code, timestamp: this.now().toISOString() });
             await this.recordAudit({ rolloutId: plan.id, hostId, workspaceId: plan.workspaceId, unit: plan.unit, phase, resultCode: response.error.code, durationMs: Date.now() - started });
           }
         } catch {
           failed = true;
           const error = { code: signal.aborted ? 'PROCESS_TIMEOUT' : 'CAPABILITY_UNAVAILABLE', message: signal.aborted ? 'Remote restart was cancelled before its outcome was verified' : 'Remote restart outcome was not verified', recoverable: true };
           results.push({ hostId, status: 'unverified', attempt: attempts[hostId] ?? 1, error });
+          await this.recordEvent(plan.id, { hostId, phase, attempt: attempts[hostId] ?? 1, status: 'unverified', resultCode: error.code, timestamp: this.now().toISOString() });
           await this.recordAudit({ rolloutId: plan.id, hostId, workspaceId: plan.workspaceId, unit: plan.unit, phase, resultCode: error.code, durationMs: Date.now() - started });
         }
       }
@@ -334,7 +438,7 @@ export class RemoteRolloutRuntime {
       const run = await this.runHosts(plan, plan.resumePreview.hostIds, 'resume', controller.signal, results, plan.resumePreview.hostPlans, attempts);
       const latest = latestResults(results);
       const state: RemoteRolloutState = controller.signal.aborted ? 'cancelled' : run.failed || hasFailure([...latest.values()]) ? 'failed' : 'completed';
-      await this.options.repository.update(plan.id, { state, results: [...latest.values()], resumePreview: null, updatedAt: this.now().toISOString() });
+      await this.options.repository.update(plan.id, { state, results: [...latest.values()], ...taskStatePatch(plan, state), resumePreview: null, updatedAt: this.now().toISOString() });
       return ok({ operation: 'resume', rolloutId: plan.id, state, previewHash: request.previewHash, results: [...latest.values()], summary: summarize(plan.hostIds, [...latest.values()]) });
     } finally { this.active.delete(plan.id); parentSignal?.removeEventListener('abort', onAbort); }
   }
@@ -342,6 +446,11 @@ export class RemoteRolloutRuntime {
   private async recordAudit(event: RemoteRolloutAuditEvent): Promise<void> {
     if (this.options.audit === undefined) return;
     await this.options.audit(event).catch(() => undefined);
+  }
+
+  private async recordEvent(planId: string, event: RemoteRolloutEvent): Promise<void> {
+    if (this.options.repository.appendEvent === undefined) return;
+    await this.options.repository.appendEvent(planId, event).catch(() => undefined);
   }
 }
 
@@ -419,6 +528,24 @@ function latestResults(results: readonly RemoteRolloutHostResult[] | undefined):
 function hasFailure(results: readonly RemoteRolloutHostResult[]): boolean { return results.some((entry) => entry.status === 'error' || entry.status === 'unverified'); }
 
 function ambiguous(code: string): boolean { return code === 'CAPABILITY_UNAVAILABLE' || code === 'PROCESS_TIMEOUT'; }
+
+function taskOwnerId(actor: FileActor): string { return createHash('sha256').update(`${actor.clientId}:${actor.sessionId?.trim() || actor.clientId}`).digest('hex'); }
+
+function taskStatePatch(plan: RemoteRolloutPlan, state: RemoteRolloutState): Partial<RemoteRolloutPlan> {
+  return plan.taskOwnerId === undefined || plan.taskOwnerId === null ? {} : { taskState: taskStateFor(state) };
+}
+
+function taskStateFor(state: RemoteRolloutState): RemoteRolloutTaskSnapshot['status'] {
+  if (state === 'completed') return 'completed';
+  if (state === 'cancelled') return 'cancelled';
+  if (state === 'failed' || state === 'expired') return 'failed';
+  return 'working';
+}
+
+function taskSnapshot(plan: RemoteRolloutPlan, override?: RemoteRolloutTaskSnapshot['status']): RemoteRolloutTaskSnapshot {
+  const status = override ?? plan.taskState ?? taskStateFor(plan.state);
+  return { taskId: plan.id, status, createdAt: plan.createdAt, lastUpdatedAt: plan.updatedAt, workspaceId: plan.workspaceId, events: (plan.events ?? []).slice(-200), ...(plan.state === 'completed' || plan.state === 'failed' || plan.state === 'cancelled' ? { result: publicPlan(plan) } : {}) };
+}
 
 function canonicalHash(value: unknown): string { return createHash('sha256').update(JSON.stringify(value)).digest('hex'); }
 

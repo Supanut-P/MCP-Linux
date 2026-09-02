@@ -2,6 +2,7 @@
 
 > สถานะ: experimental (ตามสเปก MCP Tasks รุ่น 2025-11-25)
 > v1.7.0 เพิ่มการสร้าง task ผ่าน `tools/call` แบบมาตรฐาน
+> v1.11.0 เพิ่ม task-augmented `remote_rollout` พร้อม reconnectable progress
 
 baitonghub-linux-mcp เปิดดู durable background tasks ผ่านเมธอดระดับโปรโตคอลของ MCP Tasks
 เพื่อให้ client ที่รองรับสเปกเรียกดู/เก็บผล/ยกเลิกงานยาวได้โดยไม่ต้องรู้จัก
@@ -9,12 +10,13 @@ baitonghub-linux-mcp เปิดดู durable background tasks ผ่านเ
 
 ## ขอบเขต
 
-- **ครอบคลุม**: durable background tasks ของ `shell`
-  (ใช้ task store ที่รอดการ restart runtime ด้วย task ID)
+- **ครอบคลุม**: durable background tasks ของ `shell` และ task-augmented
+  `remote_rollout` (ใช้ task store ที่รอดการ restart runtime ด้วย task ID)
 - **ไม่รวม**: `process_start` (in-memory ไม่ durable — เป็น legacy path)
 - **การสร้างแบบ legacy** ยังทำผ่าน tool เดิมได้: `shell { execution: "background" }`
 - **การสร้างแบบมาตรฐาน** รองรับ `tools/call` ที่แนบ `task: { ttl }` สำหรับ `shell`
-  operation `run` เท่านั้น และคืน `CreateTaskResult` โดยไม่ส่ง `resume_token`
+  operation `run` และ `remote_rollout` operation `execute` และคืน `CreateTaskResult`
+  โดยไม่ส่ง `resume_token`
 - `process_start` และ tool อื่นไม่รองรับ task-augmented call
 - **ไม่ส่ง `notifications/tasks/status`** (optional ตามสเปก) — client ต้อง poll `tasks/get`
 
@@ -30,7 +32,8 @@ baitonghub-linux-mcp เปิดดู durable background tasks ผ่านเ
 Capability ที่ประกาศตอน initialize: `{ tasks: { list: {}, cancel: {}, requests: { tools: { call: {} } } } }`
 
 `tools/list` ใน wire รุ่น 2025-11-25 จะระบุ `shell.execution.taskSupport = "required"`
-เฉพาะ shell; รุ่น 2026-07-28 จะตัดฟิลด์ deprecated นี้ตาม codec ของ SDK
+และ `remote_rollout.execution.taskSupport = "optional"` เมื่อ remote rollout task
+storage ถูกเปิดใช้; รุ่น 2026-07-28 จะตัดฟิลด์ deprecated นี้ตาม codec ของ SDK
 
 ## การแม็ปสถานะ
 
@@ -77,7 +80,7 @@ Capability ที่ประกาศตอน initialize: `{ tasks: { list: {}
 - Integration (client จริงผ่าน HTTP loopback, ยุค 2025):
   `packages/mcp-server/src/tasks-protocol.integration.test.ts`
 
-## Task-augmented `tools/call` (v1.7.0)
+## Task-augmented `tools/call` (v1.7.0 / v1.11.0)
 
 client ที่รองรับ MCP Tasks ส่งตัวอย่างนี้ได้:
 
@@ -93,3 +96,26 @@ server จะบังคับ `operation=run` และ `execution=background`
 ผูก owner/permission/audit เดิม และคืนเฉพาะ `taskId`, status, TTL, timestamps และ
 poll interval จาก task snapshot. `tasks/get`, `tasks/result`, `tasks/list` และ
 `tasks/cancel` ใช้ต่อได้หลัง reconnect หรือ runtime restart.
+
+สำหรับ remote rollout ให้ส่ง `operation=execute`, `rolloutId`, `workspaceId`,
+`previewHash` และ `userConfirmed: true` หลังจากสร้าง preview แล้ว:
+
+```json
+{
+  "name": "remote_rollout",
+  "arguments": {
+    "operation": "execute",
+    "rolloutId": "<stored-rollout-id>",
+    "workspaceId": "workspace-1",
+    "previewHash": "<aggregate-sha256>",
+    "userConfirmed": true
+  },
+  "task": {}
+}
+```
+
+task ID จะเท่ากับ rollout ID และผูกกับ `clientId + sessionId` แบบ hash ภายใน
+เท่านั้น actor เดิมจึง reconnect แล้วอ่าน/ยกเลิก/รับผลได้ ส่วน actor อื่นจะได้
+not-found โดยไม่เห็นรายละเอียดแผน. `tasks/get` จะคืน `events` ล่าสุดไม่เกิน 200
+รายการ โดยแต่ละรายการมีเพียง host alias, phase, attempt, status/result code และ
+timestamp; ไม่มี address, credential, key path หรือ raw provider message.

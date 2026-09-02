@@ -259,6 +259,7 @@ export function createStdioMcpRuntime(
     targetCatalog,
     remoteRollout: remoteRollouts,
     remoteRolloutResume: remoteRollouts,
+    remoteRolloutTasks: remoteRollouts,
     supportBundle,
   };
 

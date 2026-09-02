@@ -65,4 +65,22 @@ describe('SqliteRemoteRolloutRepository', () => {
       expect(serialized).not.toMatch(/password|secret|private[_-]?key|192\.168\./i);
     } finally { database.close(); }
   });
+
+  it('binds one task owner and retains only bounded sanitized progress events', async () => {
+    const database = new SqliteDatabase(':memory:');
+    try {
+      const repository = new SqliteRemoteRolloutRepository(database);
+      const value = plan();
+      await repository.create(value);
+      await expect(repository.bindTaskOwner(value.id, 'owner-a')).resolves.toBe(true);
+      await expect(repository.bindTaskOwner(value.id, 'owner-b')).resolves.toBe(false);
+      for (let index = 0; index < 205; index += 1) {
+        await repository.appendEvent(value.id, { hostId: 'vm-a', phase: 'batch', attempt: 1, status: `status-${index}`, resultCode: 'SUCCESS', timestamp: new Date().toISOString() });
+      }
+      const current = await repository.get(value.id);
+      expect(current).toMatchObject({ taskOwnerId: 'owner-a', taskState: 'working' });
+      expect(current?.events).toHaveLength(200);
+      expect(current?.events?.[0]?.status).toBe('status-5');
+    } finally { database.close(); }
+  });
 });

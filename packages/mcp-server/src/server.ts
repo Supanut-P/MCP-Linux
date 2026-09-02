@@ -50,8 +50,8 @@ export function createMcpServer(options: McpServerOptions): McpServer {
   });
   const runBudgetGuard = options.runBudgetGuard ?? new RunBudgetGuard();
   // MCP Tasks exposes existing durable shell work and the standard
-  // task-augmented tools/call creation path. Only shell advertises task
-  // support; all other tools continue through the ordinary dispatcher.
+  // task-augmented tools/call creation path. Shell and remote_rollout expose
+  // durable task handles; all other tools continue through the ordinary dispatcher.
   const server = new McpServer({ name: APP_NAME, version: APP_VERSION }, {
     capabilities: {
       tools: {},
@@ -74,11 +74,14 @@ export function createMcpServer(options: McpServerOptions): McpServer {
       annotations: tool.annotations,
     }, async (input: unknown, context): Promise<CallToolResult> => invokeTool(tool.name, input, context) as unknown as CallToolResult);
     if (tool.name === 'shell') registeredTool.execution = { taskSupport: 'required' };
+    if (tool.name === 'remote_rollout' && options.services.remoteRolloutTasks !== undefined) registeredTool.execution = { taskSupport: 'optional' };
   }
   const taskCreation = new TaskCreationAdapter({
     tasks: tasksProtocol,
     invoke: invokeTool,
     isKnownTool: (name: string): boolean => registry.list().some((tool) => tool.name === name),
+    ...(options.services.remoteRolloutTasks === undefined ? {} : { remoteRolloutTasks: options.services.remoteRolloutTasks }),
+    actor,
   });
   server.server.removeRequestHandler('tools/call');
   server.server.setRequestHandler('tools/call', async (request, context): Promise<CallToolResult> => (

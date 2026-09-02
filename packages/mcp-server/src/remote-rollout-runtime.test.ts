@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { RemoteRolloutRuntime, type RemoteRollout, type RemoteRolloutRepository, type RemoteRolloutState } from './remote-rollout-runtime.js';
+import { RemoteRolloutRuntime, type RemoteRollout, type RemoteRolloutEvent, type RemoteRolloutRepository, type RemoteRolloutState } from './remote-rollout-runtime.js';
 import { ok } from '@baitonghub-linux-mcp/domain';
 
 function repository(): RemoteRolloutRepository & { readonly plans: Map<string, RemoteRollout> } {
@@ -20,6 +20,16 @@ function repository(): RemoteRolloutRepository & { readonly plans: Map<string, R
       if (plan === undefined || (plan.state !== 'failed' && plan.state !== 'cancelled') || plan.resumePreview === undefined || plan.resumePreview === null) return false;
       plans.set(id, { ...plan, state: 'running' });
       return true;
+    }),
+    bindTaskOwner: vi.fn(async (id: string, ownerId: string): Promise<boolean> => {
+      const plan = plans.get(id);
+      if (plan === undefined || plan.state !== 'planned' || plan.taskOwnerId !== undefined && plan.taskOwnerId !== null) return false;
+      plans.set(id, { ...plan, taskOwnerId: ownerId, taskState: 'working' });
+      return true;
+    }),
+    appendEvent: vi.fn(async (id: string, event: RemoteRolloutEvent): Promise<void> => {
+      const plan = plans.get(id);
+      if (plan !== undefined) plans.set(id, { ...plan, events: [...(plan.events ?? []), event].slice(-200) });
     }),
     update: vi.fn(async (id: string, patch: Partial<RemoteRollout>): Promise<void> => { const plan = plans.get(id); if (plan) plans.set(id, { ...plan, ...patch, updatedAt: patch.updatedAt ?? plan.updatedAt }); }),
   };
@@ -247,5 +257,41 @@ describe('RemoteRolloutRuntime', () => {
     await runtime.resume({ operation: 'execute', rolloutId: String(planned.value.rolloutId), workspaceId: 'w', previewHash: String(preview.value.previewHash), userConfirmed: true });
     await expect(runtime.resume({ operation: 'preview', rolloutId: String(planned.value.rolloutId), workspaceId: 'w' })).resolves.toMatchObject({ ok: false, error: { code: 'PERMISSION_REQUIRED' } });
     expect(execute).toHaveBeenCalledTimes(4);
+  });
+
+  it('binds a remote rollout task to one actor and exposes reconnectable progress', async () => {
+    const repo = repository();
+    const execute = vi.fn()
+      .mockResolvedValueOnce(ok({ operation: 'service-restart', hostId: 'a', previewHash: 'a'.repeat(64), preview: {}, dry_run: true }))
+      .mockResolvedValueOnce(ok({ operation: 'service-restart', hostId: 'a', output: '' }));
+    const runtime = new RemoteRolloutRuntime({ capabilities: { execute }, repository: repo });
+    const planned = await runtime.execute({ operation: 'plan', workspaceId: 'w', hostIds: ['a'], unit: 'app.service', canaryCount: 1, maxParallel: 1 });
+    if (!planned.ok) throw new Error('plan failed');
+    const actor = { clientId: 'client-1', clientName: 'test', sessionId: 'session-a' };
+    const created = await runtime.createTask({ operation: 'execute', rolloutId: String(planned.value.rolloutId), workspaceId: 'w', previewHash: String(planned.value.previewHash), userConfirmed: true }, actor);
+    expect(created).toMatchObject({ ok: true, value: { status: 'working', taskId: planned.value.rolloutId } });
+    expect(await runtime.getTask(String(planned.value.rolloutId), { clientId: 'other', clientName: 'other', sessionId: 'session-a' })).toBeNull();
+    runtime.startTask(String(planned.value.rolloutId), () => runtime.execute({ operation: 'execute', rolloutId: String(planned.value.rolloutId), workspaceId: 'w', previewHash: String(planned.value.previewHash), userConfirmed: true }));
+    for (let index = 0; index < 20; index += 1) {
+      const snapshot = await runtime.getTask(String(planned.value.rolloutId), actor);
+      if (snapshot?.status === 'completed') break;
+      await new Promise<void>((resolve) => setTimeout(resolve, 5));
+    }
+    const finished = await runtime.resultTask(String(planned.value.rolloutId), actor);
+    expect(finished?.status).toBe('completed');
+    expect(finished?.events.some((event) => event.hostId === 'a' && event.status === 'ok')).toBe(true);
+  });
+
+  it('bounds persisted rollout progress events to the newest 200 entries', async () => {
+    const repo = repository();
+    const plan: RemoteRollout = {
+      id: '00000000-0000-4000-8000-000000000002', workspaceId: 'w', hostIds: ['a'], unit: 'app.service', canaryCount: 1, maxParallel: 1,
+      hostPlans: [{ hostId: 'a', previewHash: 'a'.repeat(64) }], previewHash: 'b'.repeat(64), expiresAt: '2026-01-01T01:00:00.000Z', state: 'planned', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z',
+    };
+    await repo.create(plan);
+    for (let index = 1; index <= 205; index += 1) await repo.appendEvent?.(plan.id, { hostId: 'a', phase: 'batch', attempt: 1, status: `event-${index}`, timestamp: `2026-01-01T00:00:${String(index % 60).padStart(2, '0')}.000Z` });
+    const current = await repo.get(plan.id);
+    expect(current?.events).toHaveLength(200);
+    expect(current?.events?.[0]?.status).toBe('event-6');
   });
 });

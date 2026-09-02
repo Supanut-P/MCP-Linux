@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { TaskCreationAdapter, normalizeTaskTtl } from './task-creation.js';
 import type { TasksProtocol } from './tasks-protocol.js';
+import type { RemoteRolloutTaskPort } from './remote-rollout-runtime.js';
 
 const task = {
   taskId: 'task-1',
@@ -52,5 +53,29 @@ describe('TaskCreationAdapter', () => {
     const response = { isError: true, content: [{ type: 'text' as const, text: 'PERMISSION_REQUIRED' }] };
     const result = await adapter(async () => response).handle({ params: { name: 'shell', task: { ttl: 60_000 }, arguments: {} } }, {});
     expect(result).toBe(response);
+  });
+
+  it('creates and starts a task-augmented remote rollout without executing inline', async () => {
+    const invoke = vi.fn(async () => ({ content: [{ type: 'text' as const, text: 'started' }] }));
+    const snapshot = { taskId: 'rollout-1', status: 'working' as const, createdAt: '2026-09-01T00:00:00.000Z', lastUpdatedAt: '2026-09-01T00:00:00.000Z', workspaceId: 'w', events: [] };
+    const remoteRolloutTasks: RemoteRolloutTaskPort = {
+      createTask: vi.fn(async () => ({ ok: true as const, value: snapshot })),
+      startTask: vi.fn(),
+      getTask: vi.fn(async () => snapshot),
+      listTasks: vi.fn(async () => [snapshot]),
+      cancelTask: vi.fn(async () => snapshot),
+      resultTask: vi.fn(async () => snapshot),
+    };
+    const result = await new TaskCreationAdapter({
+      tasks: { taskFromSnapshot: () => task, taskFromRemoteSnapshot: () => task } as unknown as TasksProtocol,
+      invoke: async (name: string, input: unknown, context: unknown): Promise<never> => invoke(name, input, context) as never,
+      isKnownTool: (name: string): boolean => name === 'remote_rollout',
+      remoteRolloutTasks,
+      actor: { clientId: 'client-1', clientName: 'test', sessionId: 'session-a' },
+    }).handle({ params: { name: 'remote_rollout', task: {}, arguments: { operation: 'execute', rolloutId: 'r', workspaceId: 'w', previewHash: 'a'.repeat(64), userConfirmed: true } } }, { requestId: 'r' });
+    expect(result).toEqual({ content: [], task });
+    expect(remoteRolloutTasks.createTask).toHaveBeenCalledOnce();
+    expect(remoteRolloutTasks.startTask).toHaveBeenCalledOnce();
+    expect(invoke).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,8 @@
 import { ProtocolError, ProtocolErrorCode } from '@modelcontextprotocol/server';
+import type { FileActor } from '@baitonghub-linux-mcp/application';
 import type { ProtocolTask, ShellSnapshot, TasksProtocol } from './tasks-protocol.js';
-import type { McpToolResponse } from './result-mapper.js';
+import { mapError, type McpToolResponse } from './result-mapper.js';
+import type { RemoteRolloutTaskPort } from './remote-rollout-runtime.js';
 
 const MIN_TASK_TTL_MS = 100;
 const MAX_TASK_TTL_MS = 604_800_000;
@@ -19,6 +21,8 @@ export interface TaskCreationAdapterOptions {
   readonly tasks: TasksProtocol;
   readonly invoke: TaskToolInvoker;
   readonly isKnownTool: (name: string) => boolean;
+  readonly remoteRolloutTasks?: RemoteRolloutTaskPort;
+  readonly actor?: FileActor;
 }
 
 /**
@@ -34,7 +38,9 @@ export class TaskCreationAdapter {
     const params = request.params;
     if (!this.options.isKnownTool(params.name)) throw invalidParams(`Tool ${params.name} not found`);
     if (params.task === undefined) return this.options.invoke(params.name, params.arguments ?? {}, context);
-    if (params.name !== 'shell') throw invalidParams('MCP task creation is supported only for the shell tool');
+    if (params.task.ttl !== undefined) normalizeTaskTtl(params.task.ttl);
+    if (params.name === 'remote_rollout') return this.handleRemoteRollout(request, context);
+    if (params.name !== 'shell') throw invalidParams('MCP task creation is supported only for the shell and remote_rollout tools');
 
     const input = params.arguments ?? {};
     if (input.operation !== undefined && typeof input.operation !== 'string') {
@@ -63,6 +69,18 @@ export class TaskCreationAdapter {
     const task = snapshot === undefined ? undefined : this.options.tasks.taskFromSnapshot(snapshot);
     if (task === undefined) throw new ProtocolError(ProtocolErrorCode.InternalError, 'Shell task creation did not return a durable task');
     return { content: [], task };
+  }
+
+  private async handleRemoteRollout(request: TaskAugmentedCallRequest, context: unknown): Promise<McpToolResponse | CreateTaskResult> {
+    const tasks = this.options.remoteRolloutTasks;
+    if (tasks === undefined) throw invalidParams('Remote rollout task support is unavailable');
+    const input = request.params.arguments ?? {};
+    if (input.operation !== 'execute') throw invalidParams('MCP task creation for remote_rollout requires operation execute');
+    const actor = this.options.actor ?? { clientId: 'legacy', clientName: 'legacy' };
+    const created = await tasks.createTask(input, actor);
+    if (!created.ok) return mapError(created.error);
+    tasks.startTask(created.value.taskId, () => this.options.invoke('remote_rollout', input, context));
+    return { content: [], task: this.options.tasks.taskFromRemoteSnapshot(created.value) };
   }
 }
 

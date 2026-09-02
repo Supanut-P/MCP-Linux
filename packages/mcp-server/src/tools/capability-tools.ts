@@ -32,6 +32,7 @@ import {
   storageUsageCapabilitySchema,
   backupCapabilitySchema,
   remoteFleetCapabilitySchema,
+  remoteRolloutCapabilitySchema,
 } from './schemas.js';
 import { RemoteFleetRuntime } from '../remote-fleet-runtime.js';
 
@@ -259,6 +260,16 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
       annotations: { readOnlyHint: true, destructiveHint: false },
       inputSchema: remoteFleetCapabilitySchema,
       handler: async (input, signal) => remoteFleet.execute(input, signal),
+    }),
+    defineTool({
+      name: 'remote_rollout',
+      description: 'Plan, execute, inspect, or cancel a canary-first restart of one fixed systemd service across registered SSH hosts. Execution requires an unexpired preview hash and explicit confirmation; no arbitrary remote shell is accepted.',
+      permission: 'DANGEROUS',
+      annotations: { readOnlyHint: false, destructiveHint: true },
+      inputSchema: remoteRolloutCapabilitySchema,
+      handler: async (input, signal) => context.services.remoteRollout === undefined
+        ? missingService()
+        : context.services.remoteRollout.execute(input, signal),
     }),
     defineTool({
       name: 'artifact_verify',

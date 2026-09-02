@@ -22,6 +22,7 @@ import type {
 import type { z } from 'zod';
 import type { ContextEconomyRuntime } from '../context-economy.js';
 import type { DatabaseRuntimeService } from '../database-runtime.js';
+import type { RemoteRolloutRuntime } from '../remote-rollout-runtime.js';
 
 export interface WorkspaceInfoPort {
   info(actor: FileActor, workspaceId: string): Promise<Result<unknown>>;
@@ -59,6 +60,7 @@ export interface McpApplicationServices {
   readonly codex?: Pick<CodexService, 'status' | 'run' | 'list' | 'taskStatus' | 'taskLogs' | 'stop'>;
   readonly database?: Pick<DatabaseRuntimeService, 'inspect' | 'query'>;
   readonly targetCatalog?: Pick<TargetCatalogService, 'list' | 'describe'>;
+  readonly remoteRollout?: Pick<RemoteRolloutRuntime, 'execute'>;
 }
 
 export interface McpToolAnnotations {

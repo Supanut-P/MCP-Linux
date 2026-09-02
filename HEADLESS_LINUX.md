@@ -65,6 +65,12 @@ value or private key on the command line. `remote_fleet` can fan out
 read-only `health`, bounded `inventory`, or `service-status` checks to 1–20
 registered hosts, with at most four SSH sessions in flight.
 
+`remote_rollout` is optional and requires the durable local rollout store in
+addition to `remote_host`. It plans and executes one fixed `.service` restart
+with an expiring aggregate preview hash, canary-first batches, explicit
+confirmation, cancellation, and sanitized per-host audit evidence. It never
+accepts arbitrary remote shell input.
+
 The packaged systemd template reads the per-user environment file from
 `/home/<user>/.config/baitonghub-linux-mcp/server.env`; create it with mode
 `600` before enabling `baitonghub-linux-mcp@<user>`. A system service must not

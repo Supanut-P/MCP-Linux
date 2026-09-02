@@ -301,10 +301,11 @@ export class ToolRegistry {
 function advertisedCapabilityTools(context: McpToolContext): readonly McpToolDefinition[] {
   const definitions = capabilityTools(context);
   const advertised = context.services.capabilities?.listTools?.();
-  if (advertised === undefined) return definitions;
+  if (advertised === undefined) return definitions.filter((tool) => tool.name !== 'remote_rollout' || context.services.remoteRollout !== undefined);
   const allowed = new Set<string>(advertised);
   return definitions.filter((tool) => {
     if (tool.name === 'remote_fleet') return allowed.has('remote_host');
+    if (tool.name === 'remote_rollout') return allowed.has('remote_host') && context.services.remoteRollout !== undefined;
     if (tool.name === 'vision_annotated_capture') return allowed.has('vision');
     if (tool.name === 'ui_target_action') return allowed.has('input_event') && allowed.has('accessibility');
     return allowed.has(tool.name);

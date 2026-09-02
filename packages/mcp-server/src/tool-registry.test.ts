@@ -32,7 +32,7 @@ describe('MCP tool registry', () => {
       'read_file_page', 'read_file_page_continue',
       'workspace_index', 'workspace_index_status', 'workspace_index_watch', 'workspace_index_stop',
       'session_handoff', 'verify_incremental',
-      ...UPGRADE_TOOL_CATALOG.filter((entry) => !['db_inspect', 'db_query', 'remote_fleet'].includes(entry.name)).map((entry) => entry.name),
+      ...UPGRADE_TOOL_CATALOG.filter((entry) => !['db_inspect', 'db_query', 'remote_fleet', 'remote_rollout'].includes(entry.name)).map((entry) => entry.name),
       'tool_batch',
     ]);
   });
@@ -61,6 +61,15 @@ describe('MCP tool registry', () => {
     await expect(registry.invoke('target_catalog', { operation: 'list', kind: 'remote-host' })).resolves.toMatchObject({
       structuredContent: { value: [{ id: 'vm103', kind: 'remote-host' }] },
     });
+  });
+
+  it('advertises remote_rollout only when the durable rollout service is wired', () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'remote_rollout')).toBe(false);
+    const registry = new ToolRegistry({ remoteRollout: { execute: async (): Promise<Result<unknown>> => ok({}) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('remote_rollout');
+    expect(registry.list().find((tool) => tool.name === 'remote_rollout')?.parse({
+      operation: 'plan', workspaceId: 'workspace-1', hostIds: ['vm103'], unit: 'baitonghub-linux-mcp.service', canaryCount: 1,
+    })).toMatchObject({ ok: true });
   });
 
   it('does not advertise a fixed drive letter in workspace registration metadata', () => {

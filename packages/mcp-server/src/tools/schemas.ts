@@ -457,6 +457,23 @@ export const remoteFleetCapabilitySchema = z.object({
   ...capabilityRequestSchema,
 }).strict();
 
+const rolloutIdSchema = z.string().trim().uuid();
+const rolloutWorkspaceSchema = z.string().trim().min(1).max(256);
+export const remoteRolloutCapabilitySchema = z.discriminatedUnion('operation', [
+  z.object({
+    operation: z.literal('plan'),
+    workspaceId: rolloutWorkspaceSchema,
+    hostIds: z.array(remoteHostIdSchema).min(1).max(20).refine((ids) => new Set(ids).size === ids.length, 'hostIds must not contain duplicates'),
+    unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,256}\.service$/),
+    canaryCount: z.number().int().min(1),
+    maxParallel: z.number().int().min(1).max(4).default(2),
+    expiresAt: z.string().datetime({ offset: true }).optional(),
+  }).strict(),
+  z.object({ operation: z.literal('execute'), rolloutId: rolloutIdSchema, workspaceId: rolloutWorkspaceSchema, previewHash: z.string().regex(/^[a-f0-9]{64}$/), userConfirmed: z.literal(true) }).strict(),
+  z.object({ operation: z.literal('status'), rolloutId: rolloutIdSchema }).strict(),
+  z.object({ operation: z.literal('cancel'), rolloutId: rolloutIdSchema, workspaceId: rolloutWorkspaceSchema, userConfirmed: z.literal(true) }).strict(),
+]);
+
 const databaseTargetFields = {
   workspaceId: optionalWorkspaceIdSchema,
   targetId: z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/).optional(),

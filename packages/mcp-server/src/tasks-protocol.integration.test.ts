@@ -3,6 +3,7 @@ import { ok } from '@baitonghub-linux-mcp/domain';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { startMcpHttp, type McpHttpServerHandle } from './http.js';
+import { CAPABILITY_TASK_OWNER_METADATA_KEY } from '@baitonghub-linux-mcp/capabilities';
 
 const completedTask = {
   task_id: 'task-done',
@@ -27,10 +28,12 @@ describe('MCP tasks protocol over localhost HTTP', () => {
   let handle: McpHttpServerHandle;
   let createdTask: typeof completedTask | undefined;
   let creationRequest: Record<string, unknown> | undefined;
+  let taskOwner: { clientId: string; sessionId: string } | undefined;
 
   beforeEach(async () => {
     createdTask = undefined;
     creationRequest = undefined;
+    taskOwner = undefined;
     handle = await startMcpHttp({
       port: 0,
       services: {
@@ -50,10 +53,20 @@ describe('MCP tasks protocol over localhost HTTP', () => {
                 deadline_at: new Date(Date.parse(startedAt) + timeoutSeconds * 1_000).toISOString(),
               };
               creationRequest = { ...request };
+              const owner = readOwner(request);
+              taskOwner = owner;
               return ok(createdTask);
             }
             if (request.operation === 'list') return ok({ tasks: [completedTask] });
-            if (request.task_id === 'task-created' && createdTask !== undefined) return ok(createdTask);
+            if (request.operation === 'cancel' && request.task_id === 'task-created' && createdTask !== undefined) {
+              if (!sameOwner(request, taskOwner)) return { ok: false, error: { code: 'PERMISSION_DENIED', message: 'Task is not owned by this client', recoverable: true } } as const;
+              createdTask = { ...createdTask, state: 'cancelled', finished_at: '2026-09-01T00:00:01.000Z' };
+              return ok(createdTask);
+            }
+            if (request.task_id === 'task-created' && createdTask !== undefined) {
+              if (!sameOwner(request, taskOwner)) return { ok: false, error: { code: 'PERMISSION_DENIED', message: 'Task is not owned by this client', recoverable: true } } as const;
+              return ok(createdTask);
+            }
             if (request.task_id === 'task-done') return ok(completedTask);
             return { ok: false, error: { code: 'PROCESS_NOT_FOUND', message: 'Task was not found' } } as const;
           },
@@ -126,6 +139,24 @@ describe('MCP tasks protocol over localhost HTTP', () => {
       expect(creationRequest?.metadata).toMatchObject({
         'baitonghub-linux-mcp.taskOwner.v1': { clientId: 'tasks-http-test', sessionId: expect.any(String) },
       });
+      const taskId = String((result as { task?: { taskId?: string } }).task?.taskId);
+      const otherClient = new Client(
+        { name: 'other-task-actor', version: '0.1.0' },
+        { versionNegotiation: { mode: 'legacy' } },
+      );
+      const otherTransport = new StreamableHTTPClientTransport(handle.endpoint);
+      try {
+        await otherClient.connect(otherTransport);
+        await expect(otherClient.request({ method: 'tasks/get', params: { taskId } }, taskResultSchema)).rejects.toMatchObject({ code: -32603 });
+      } finally {
+        await otherClient.close();
+      }
+      await expect(client.request({ method: 'tasks/get', params: { taskId } }, taskResultSchema))
+        .resolves.toMatchObject({ taskId, status: 'working' });
+      await expect(client.request({ method: 'tasks/cancel', params: { taskId } }, taskResultSchema))
+        .resolves.toMatchObject({ taskId, status: 'cancelled' });
+      await expect(client.request({ method: 'tasks/result', params: { taskId } }, z.looseObject({ content: z.array(z.looseObject({ type: z.string(), text: z.string() })), isError: z.boolean(), _meta: z.looseObject({}) })))
+        .resolves.toMatchObject({ isError: false });
     } finally {
       await client.close();
     }
@@ -166,3 +197,17 @@ describe('MCP tasks protocol over localhost HTTP', () => {
     }
   });
 });
+
+function readOwner(request: Record<string, unknown>): { clientId: string; sessionId: string } | undefined {
+  const metadata = request.metadata;
+  if (typeof metadata !== 'object' || metadata === null || Array.isArray(metadata)) return undefined;
+  const value = (metadata as Record<string, unknown>)[CAPABILITY_TASK_OWNER_METADATA_KEY];
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined;
+  const owner = value as Record<string, unknown>;
+  return typeof owner.clientId === 'string' && typeof owner.sessionId === 'string' ? { clientId: owner.clientId, sessionId: owner.sessionId } : undefined;
+}
+
+function sameOwner(request: Record<string, unknown>, expected: { clientId: string; sessionId: string } | undefined): boolean {
+  const owner = readOwner(request);
+  return owner !== undefined && expected !== undefined && owner.clientId === expected.clientId && owner.sessionId === expected.sessionId;
+}

@@ -15,7 +15,8 @@ const registry = new ToolRegistry({
   targetCatalog: {
     list: async () => ({ ok: true, value: [] }),
     describe: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Not available in catalog generation', recoverable: false } }),
-  },
+    },
+  remoteRollout: { execute: async () => ({ ok: true, value: {} }) },
 }, { clientId: 'catalog-generator', clientName: 'catalog-generator' }, { codexToolsEnabled: true });
 const tools = registry.list();
 const current = await readFile(contractPath, 'utf8');

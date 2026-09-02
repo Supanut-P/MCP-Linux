@@ -26,7 +26,7 @@ import {
   createLocalExtensionsService,
   type ExtensionsService,
 } from '@baitonghub-linux-mcp/extensions';
-import { ActivityTracker, DatabaseRuntimeService, SharedActivitySnapshotLease, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices } from '@baitonghub-linux-mcp/mcp-server';
+import { ActivityTracker, DatabaseRuntimeService, RemoteRolloutRuntime, SharedActivitySnapshotLease, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices } from '@baitonghub-linux-mcp/mcp-server';
 import { permissionProfiles, type PermissionProfile, type PermissionProfileName } from '@baitonghub-linux-mcp/permissions';
 import {
   AesGcmCheckpointCipher,
@@ -37,6 +37,7 @@ import {
   SqliteWorkspaceRepository,
   SqliteDatabaseTargetRepository,
   SqliteRemoteHostRepository,
+  SqliteRemoteRolloutRepository,
 } from '@baitonghub-linux-mcp/storage';
 import { SecretPolicy, WorkspacePathGuard, WorkspaceService, type Workspace } from '@baitonghub-linux-mcp/workspace';
 import { StrictWorkspaceRepository } from './strict-workspace-repository.js';
@@ -142,6 +143,20 @@ export function createStdioMcpRuntime(
   () => parseIntegerSetting(settingsRepository.get(USER_SETTING_KEYS.shellSynchronousWaitSeconds), DEFAULT_SHELL_SYNCHRONOUS_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS), remoteHosts, secretStore,
   async (workspaceId: string): Promise<string | null> => (await workspaceRepository.get(workspaceId))?.realRootPath ?? null);
   const databaseRuntime = new DatabaseRuntimeService({ workspaceInfo: workspaceInfoService }, actor, { targetRegistry: databaseTargets, secrets: secretStore });
+  const remoteRollouts = new RemoteRolloutRuntime({
+    capabilities: capabilityService,
+    repository: new SqliteRemoteRolloutRepository(database),
+    audit: async (event): Promise<void> => auditService.record({
+      actorId: actor.clientId,
+      actorName: actor.clientName,
+      workspaceId: event.workspaceId,
+      action: 'remote_rollout_host',
+      targetSummary: `host:${event.hostId} service:${event.unit}`,
+      resultCode: event.resultCode,
+      durationMs: event.durationMs,
+      metadata: { rolloutId: event.rolloutId, phase: event.phase },
+    }),
+  });
   const sharedActivityLease = createSharedActivityLease(process.env.TUNNEL_CLIENT_PROFILE_DIR);
   const activityReady = sharedActivityLease.then(async (lease) => lease?.initialize());
   const sharedActivitySink: ActivitySink = {
@@ -209,6 +224,7 @@ export function createStdioMcpRuntime(
     codex: codexService,
     database: databaseRuntime,
     targetCatalog,
+    remoteRollout: remoteRollouts,
   };
 
   return {

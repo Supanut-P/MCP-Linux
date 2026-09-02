@@ -89,7 +89,7 @@ export class ToolRegistry {
     this.activityWorkspaceResolver = normalizeActivityWorkspaceResolver(services, actor);
     this.maxToolDurationMs = normalizeToolResponseBudget(options.maxToolDurationMs);
     const contextEconomy = new ContextEconomyRuntime();
-    const context: McpToolContext = { services, actor, contextEconomy };
+    const context: McpToolContext = { services, actor, contextEconomy, activity: this.activity };
     const contextEngine = new ContextEngine(services, actor, contextEconomy);
     const filePageEngine = new FilePageEngine(services, actor);
     const incrementalVerifier = options.incrementalVerifier ?? new IncrementalVerifier();
@@ -337,6 +337,7 @@ function advertisedCapabilityTools(context: McpToolContext): readonly McpToolDef
   if (advertised === undefined) return definitions.filter((tool) => (tool.name !== 'remote_rollout' || context.services.remoteRollout !== undefined) && (tool.name !== 'remote_rollout_resume' || context.services.remoteRolloutResume !== undefined));
   const allowed = new Set<string>(advertised);
   return definitions.filter((tool) => {
+    if (tool.name === 'runtime_metrics') return true;
     if (tool.name === 'remote_fleet') return allowed.has('remote_host');
     if (tool.name === 'remote_rollout') return allowed.has('remote_host') && context.services.remoteRollout !== undefined;
     if (tool.name === 'remote_rollout_resume') return allowed.has('remote_host') && context.services.remoteRolloutResume !== undefined;

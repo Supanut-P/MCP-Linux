@@ -40,9 +40,16 @@ export interface InFlightToolCall {
   readonly traceParent?: string;
 }
 
+export interface ActivitySnapshot {
+  readonly requestTotal: number;
+  readonly activeCount: number;
+  readonly revision: number;
+}
+
 export class ActivityTracker {
   private readonly inflight = new Map<string, InFlightToolCall>();
   private activityRevision = 0;
+  private requestTotal = 0;
 
   public constructor(
     private readonly sink?: ActivitySink,
@@ -55,6 +62,15 @@ export class ActivityTracker {
 
   public revision(): number {
     return this.activityRevision;
+  }
+
+  /** Returns aggregate counters only; request identifiers and target metadata stay private. */
+  public snapshot(): ActivitySnapshot {
+    return {
+      requestTotal: this.requestTotal,
+      activeCount: this.inflight.size,
+      revision: this.activityRevision,
+    };
   }
 
   public async begin(toolName: string, input: unknown, traceContext?: TraceContext): Promise<string> {
@@ -74,6 +90,7 @@ export class ActivityTracker {
       ...(trace.traceParent === undefined ? {} : { traceParent: trace.traceParent }),
     };
     this.inflight.set(callId, entry);
+    this.requestTotal += 1;
     this.activityRevision += 1;
     await this.safeRecord({
       callId,

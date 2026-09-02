@@ -279,6 +279,11 @@ export const systemInfoCapabilitySchema = z.object({
   ...capabilityRequestSchema,
 }).strict();
 
+export const runtimeMetricsSchema = z.object({
+  operation: z.literal('snapshot').default('snapshot'),
+  scopes: z.array(z.enum(['host', 'runtime', 'tasks'])).min(1).max(3).default(['host', 'runtime', 'tasks']),
+}).strict();
+
 export const journalCapabilitySchema = z.object({
   operation: z.enum(['read', 'tail']).default('read'),
   unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/).optional(),

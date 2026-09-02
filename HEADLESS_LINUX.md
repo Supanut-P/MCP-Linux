@@ -84,6 +84,13 @@ arguments, redacts credential-shaped fields, and returns
 `CAPABILITY_UNAVAILABLE` when the provider is missing; it never accepts a raw
 journal query or shell fragment.
 
+`runtime_metrics` is a bounded read-only snapshot for headless operations. It
+reports numeric host load, memory, uptime, MCP request counters, and aggregate
+owned-task states without returning hostname, command line, environment,
+paths, client identity, or secrets. A task snapshot is returned only when the
+runtime task port is wired; otherwise the tool fails closed with
+`CAPABILITY_UNAVAILABLE`.
+
 `support_bundle` creates a confirmation-gated, redacted diagnostic archive
 inside a registered workspace. Start with `dry_run` to obtain the exact member
 list and `previewHash`; creation is capped at 2 MiB uncompressed and in the

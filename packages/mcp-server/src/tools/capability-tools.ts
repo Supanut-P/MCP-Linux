@@ -11,6 +11,7 @@ import {
   healthCapabilitySchema,
   journalCapabilitySchema,
   serviceLogsCapabilitySchema,
+  runtimeMetricsSchema,
   networkCapabilitySchema,
   packageCapabilitySchema,
   scheduleCapabilitySchema,
@@ -37,6 +38,7 @@ import {
   remoteRolloutResumeCapabilitySchema,
 } from './schemas.js';
 import { RemoteFleetRuntime } from '../remote-fleet-runtime.js';
+import { RuntimeMetricsService } from '../runtime-metrics-service.js';
 
 function currentMcpPollWaitSeconds(context: McpToolContext): number {
   const configured = context.services.runtimeTiming?.().mcpPollWaitSeconds ?? DEFAULT_MCP_POLL_WAIT_SECONDS;
@@ -69,6 +71,10 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
   };
   const setOfMarks = new SetOfMarksService(context.services.capabilities);
   const remoteFleet = new RemoteFleetRuntime(context.services.capabilities);
+  const runtimeMetrics = new RuntimeMetricsService({
+    ...(context.activity === undefined ? {} : { activity: context.activity }),
+    ...(context.services.runtimeTaskSnapshot === undefined ? {} : { taskSnapshot: context.services.runtimeTaskSnapshot }),
+  });
 
   return [
     defineTool({
@@ -150,6 +156,14 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
       annotations: { readOnlyHint: true, destructiveHint: false },
       inputSchema: systemInfoCapabilitySchema,
       handler: async (input, signal) => execute('system_info', input, signal),
+    }),
+    defineTool({
+      name: 'runtime_metrics',
+      description: 'Read-only bounded host, MCP runtime, and owned-task counters. It never returns hostname, command line, environment, paths, client identity, or secrets.',
+      permission: 'READ',
+      annotations: { readOnlyHint: true, destructiveHint: false },
+      inputSchema: runtimeMetricsSchema,
+      handler: async (input, signal) => runtimeMetrics.execute(input, signal),
     }),
     defineTool({
       name: 'journal',

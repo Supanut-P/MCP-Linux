@@ -3966,6 +3966,48 @@
       }
     },
     {
+      "name": "runtime_metrics",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "operation": {
+            "const": "snapshot",
+            "default": "snapshot",
+            "type": "string"
+          },
+          "scopes": {
+            "default": [
+              "host",
+              "runtime",
+              "tasks"
+            ],
+            "items": {
+              "enum": [
+                "host",
+                "runtime",
+                "tasks"
+              ],
+              "type": "string"
+            },
+            "maxItems": 3,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "operation",
+          "scopes"
+        ],
+        "type": "object"
+      }
+    },
+    {
       "name": "schedule",
       "permission": "DANGEROUS",
       "annotations": {

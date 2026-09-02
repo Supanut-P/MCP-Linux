@@ -29,7 +29,7 @@ import {
   createLocalExtensionsService,
   type ExtensionsService,
 } from '@baitonghub-linux-mcp/extensions';
-import { ActivityTracker, DatabaseRuntimeService, RemoteRolloutRuntime, SharedActivitySnapshotLease, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices } from '@baitonghub-linux-mcp/mcp-server';
+import { ActivityTracker, DatabaseRuntimeService, RemoteRolloutRuntime, SharedActivitySnapshotLease, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices, type RuntimeTaskSnapshot, type RuntimeTaskState } from '@baitonghub-linux-mcp/mcp-server';
 import { permissionProfiles, type PermissionProfile, type PermissionProfileName } from '@baitonghub-linux-mcp/permissions';
 import {
   AesGcmCheckpointCipher,
@@ -229,11 +229,13 @@ export function createStdioMcpRuntime(
         : [durableActivitySink, sharedActivitySink]).record(event);
     },
   });
+  const runtimeTaskSnapshot = createRuntimeTaskSnapshotProvider(workspaceRepository, processService, remoteRollouts, actor);
   const services: McpApplicationServices = {
     runtimeStatePath: path.join(dataPath, 'upgrade-runtime.json'),
     runtimeTiming: () => ({
       mcpPollWaitSeconds: parseIntegerSetting(settingsRepository.get(USER_SETTING_KEYS.mcpPollWaitSeconds), DEFAULT_MCP_POLL_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS),
     }),
+    runtimeTaskSnapshot,
     localProviders: () => ({
       ...(settingsRepository.get(USER_SETTING_KEYS.pdfProviderPath)?.trim() ? { pdfProvider: settingsRepository.get(USER_SETTING_KEYS.pdfProviderPath)!.trim() } : {}),
       lspCommands: parseStringRecordSetting(settingsRepository.get(USER_SETTING_KEYS.lspCommands)),
@@ -289,6 +291,42 @@ function customPermissionProfile(settingsRepository: SqliteSettingsRepository): 
     name: 'custom',
     defaults: { READ: custom.read, WRITE: custom.write, EXECUTE: custom.execute, DANGEROUS: custom.dangerous },
     allowedProjectExecutables: [...new Set([...permissionProfiles.custom.allowedProjectExecutables, ...custom.allowedExecutables])],
+  };
+}
+
+function createRuntimeTaskSnapshotProvider(
+  workspaceRepository: { list(): Promise<readonly { readonly id: string }[]> },
+  processService: Pick<ProcessService, 'list'>,
+  remoteRollouts: Pick<RemoteRolloutRuntime, 'listTasks'>,
+  actor: FileActor,
+): () => Promise<RuntimeTaskSnapshot> {
+  return async (): Promise<RuntimeTaskSnapshot> => {
+    const byState: Partial<Record<RuntimeTaskState, number>> = {};
+    const add = (state: RuntimeTaskState): void => {
+      byState[state] = (byState[state] ?? 0) + 1;
+    };
+    for (const workspace of await workspaceRepository.list()) {
+      const processes = await processService.list(actor, workspace.id);
+      if (!processes.ok) continue;
+      for (const process of processes.value) {
+        switch (process.state) {
+          case 'starting': add('queued'); break;
+          case 'running': add('running'); break;
+          case 'exited': add('completed'); break;
+          case 'failed': add('failed'); break;
+          case 'stopped': add('cancelled'); break;
+          case 'timed_out': add('timed_out'); break;
+          case 'termination_unverified': add('termination_unverified'); break;
+        }
+      }
+    }
+    for (const task of await remoteRollouts.listTasks(actor)) {
+      if (task.status === 'working') add('running');
+      else if (task.status === 'completed') add('completed');
+      else if (task.status === 'failed') add('failed');
+      else add('cancelled');
+    }
+    return { byState };
   };
 }
 

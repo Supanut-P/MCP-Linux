@@ -23,6 +23,7 @@ import type { z } from 'zod';
 import type { ContextEconomyRuntime } from '../context-economy.js';
 import type { DatabaseRuntimeService } from '../database-runtime.js';
 import type { RemoteRolloutRuntime, RemoteRolloutTaskPort } from '../remote-rollout-runtime.js';
+import type { RuntimeTaskSnapshot } from '../runtime-metrics-service.js';
 import type { SupportBundleService } from '@baitonghub-linux-mcp/application';
 
 export interface WorkspaceInfoPort {
@@ -46,6 +47,8 @@ export interface McpRuntimeTiming {
 export interface McpApplicationServices {
   readonly runtimeStatePath?: string;
   readonly runtimeTiming?: () => McpRuntimeTiming;
+  /** Returns aggregate owned-task counts only; implementations must not expose task IDs or command metadata. */
+  readonly runtimeTaskSnapshot?: () => RuntimeTaskSnapshot | Promise<RuntimeTaskSnapshot>;
   readonly localProviders?: () => { readonly pdfProvider?: string; readonly lspCommands?: Readonly<Record<string, string>> };
   readonly capabilities?: CapabilityService;
   readonly extensions?: ExtensionsService;
@@ -88,6 +91,7 @@ export interface McpToolContext {
   readonly actor: FileActor;
   readonly services: McpApplicationServices;
   readonly contextEconomy: ContextEconomyRuntime;
+  readonly activity?: import('../activity-tracker.js').ActivityTracker;
 }
 
 export interface ToolConfig<T extends z.ZodType> {

@@ -114,6 +114,7 @@ try {
   const snapshot = await callTool(client, 'workspace_snapshot', {
     workspaceId,
     operation: 'manifest',
+    path: 'scripts',
     maxEntries: 10,
     hashMode: 'none',
   });

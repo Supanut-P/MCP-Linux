@@ -30,9 +30,10 @@ const tools = registry.list().map((tool) => ({
   inputSchema: canonicalize(z.toJSONSchema(tool.inputSchema, { target: 'draft-7' })),
 })).sort((a, b) => a.name.localeCompare(b.name));
 const expected = JSON.stringify({ contractVersion: '1.0.0', descriptions: 'non-contractual', tools }, null, 2) + '\n';
+const normalizeLineEndings = (value) => value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 if (checkOnly) {
   const current = await readFile(output, 'utf8').catch(() => '');
-  if (current !== expected) { process.stderr.write(`v1 tool contract drift detected for ${tools.length} tools. Run: corepack pnpm@10.15.0 contract:v1\n`); process.exitCode = 1; }
+  if (normalizeLineEndings(current) !== normalizeLineEndings(expected)) { process.stderr.write(`v1 tool contract drift detected for ${tools.length} tools. Run: corepack pnpm@10.15.0 contract:v1\n`); process.exitCode = 1; }
   else process.stdout.write(`v1 tool contract is synchronized with ${tools.length} tools.\n`);
 } else {
   await writeFile(output, expected, 'utf8');

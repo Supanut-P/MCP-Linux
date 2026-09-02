@@ -49,4 +49,20 @@ describe('SqliteRemoteRolloutRepository', () => {
       expect(serialized).not.toMatch(/password|secret|private[_-]?key|192\.168\./i);
     } finally { database.close(); }
   });
+
+  it('persists and atomically claims a sanitized resume preview', async () => {
+    const database = new SqliteDatabase(':memory:');
+    try {
+      const repository = new SqliteRemoteRolloutRepository(database);
+      const value = plan();
+      await repository.create({ ...value, state: 'failed', results: [{ hostId: 'vm-a', status: 'ok', attempt: 1 }] });
+      const preview = { hostIds: ['vm-b'], hostPlans: [{ hostId: 'vm-b', previewHash: 'd'.repeat(64) }], retryCounts: { 'vm-b': 1 }, previewHash: 'e'.repeat(64), expiresAt: new Date(Date.now() + 60_000).toISOString() };
+      await repository.update(value.id, { resumePreview: preview });
+      await expect(repository.get(value.id)).resolves.toMatchObject({ resumePreview: preview });
+      await expect(repository.claimResume(value.id)).resolves.toBe(true);
+      await expect(repository.claimResume(value.id)).resolves.toBe(false);
+      const serialized = JSON.stringify(await repository.get(value.id));
+      expect(serialized).not.toMatch(/password|secret|private[_-]?key|192\.168\./i);
+    } finally { database.close(); }
+  });
 });

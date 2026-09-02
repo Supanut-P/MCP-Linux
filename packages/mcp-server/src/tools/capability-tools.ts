@@ -33,6 +33,7 @@ import {
   backupCapabilitySchema,
   remoteFleetCapabilitySchema,
   remoteRolloutCapabilitySchema,
+  remoteRolloutResumeCapabilitySchema,
 } from './schemas.js';
 import { RemoteFleetRuntime } from '../remote-fleet-runtime.js';
 
@@ -270,6 +271,16 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
       handler: async (input, signal) => context.services.remoteRollout === undefined
         ? missingService()
         : context.services.remoteRollout.execute(input, signal),
+    }),
+    defineTool({
+      name: 'remote_rollout_resume',
+      description: 'Preview and execute a bounded recovery of a failed remote rollout. Successful hosts are never restarted; a fresh preview hash and explicit confirmation are required, and unverified remote outcomes are not retried.',
+      permission: 'DANGEROUS',
+      annotations: { readOnlyHint: false, destructiveHint: true },
+      inputSchema: remoteRolloutResumeCapabilitySchema,
+      handler: async (input, signal) => context.services.remoteRolloutResume === undefined
+        ? missingService()
+        : context.services.remoteRolloutResume.resume(input, signal),
     }),
     defineTool({
       name: 'artifact_verify',

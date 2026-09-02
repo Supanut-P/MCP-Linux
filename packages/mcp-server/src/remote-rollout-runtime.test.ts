@@ -15,6 +15,12 @@ function repository(): RemoteRolloutRepository & { readonly plans: Map<string, R
       plans.set(id, { ...plan, state: 'running' });
       return true;
     }),
+    claimResume: vi.fn(async (id: string): Promise<boolean> => {
+      const plan = plans.get(id);
+      if (plan === undefined || (plan.state !== 'failed' && plan.state !== 'cancelled') || plan.resumePreview === undefined || plan.resumePreview === null) return false;
+      plans.set(id, { ...plan, state: 'running' });
+      return true;
+    }),
     update: vi.fn(async (id: string, patch: Partial<RemoteRollout>): Promise<void> => { const plan = plans.get(id); if (plan) plans.set(id, { ...plan, ...patch, updatedAt: patch.updatedAt ?? plan.updatedAt }); }),
   };
 }
@@ -187,5 +193,59 @@ describe('RemoteRolloutRuntime', () => {
       { hostId: 'a', status: 'error', error: { message: 'execution_interrupted' } },
       { hostId: 'b', status: 'error', error: { message: 'execution_interrupted' } },
     ] });
+  });
+
+  it('previews and resumes only the hosts that did not complete', async () => {
+    const repo = repository();
+    const parent = new AbortController();
+    const execute = vi.fn(async (_tool: string, input: unknown): Promise<ReturnType<typeof ok>> => {
+      const request = input as { hostId: string; dry_run?: boolean };
+      if (request.dry_run === true) return ok({ operation: 'service-restart', hostId: request.hostId, previewHash: request.hostId === 'pending' ? 'b'.repeat(64) : 'a'.repeat(64), preview: {}, dry_run: true });
+      if (request.hostId === 'ok') { parent.abort(); return ok({ operation: 'service-restart', hostId: request.hostId, output: '' }); }
+      return ok({ operation: 'service-restart', hostId: request.hostId, output: '' });
+    });
+    const runtime = new RemoteRolloutRuntime({ capabilities: { execute }, repository: repo, wait: async (): Promise<void> => undefined });
+    const planned = await runtime.execute({ operation: 'plan', workspaceId: 'w', hostIds: ['ok', 'pending'], unit: 'app.service', canaryCount: 1, maxParallel: 1 });
+    if (!planned.ok) throw new Error('plan failed');
+    await expect(runtime.execute({ operation: 'execute', rolloutId: String(planned.value.rolloutId), workspaceId: 'w', previewHash: String(planned.value.previewHash), userConfirmed: true }, parent.signal)).resolves.toMatchObject({ ok: true, value: { state: 'cancelled' } });
+
+    const preview = await runtime.resume({ operation: 'preview', rolloutId: String(planned.value.rolloutId), workspaceId: 'w' });
+    expect(preview).toMatchObject({ ok: true, value: { operation: 'preview', hostIds: ['pending'], retryCounts: { pending: 1 } } });
+    if (!preview.ok) return;
+    const previewHash = String(preview.value.previewHash);
+    const resumed = await runtime.resume({ operation: 'execute', rolloutId: String(planned.value.rolloutId), workspaceId: 'w', previewHash, userConfirmed: true });
+    expect(resumed).toMatchObject({ ok: true, value: { operation: 'resume', state: 'completed', summary: { completed: 2, failed: 0, unverified: 0 } } });
+    expect(execute.mock.calls.filter((call) => (call[1] as { hostId?: string; dry_run?: boolean }).hostId === 'ok' && (call[1] as { dry_run?: boolean }).dry_run !== true)).toHaveLength(1);
+  });
+
+  it('never previews an unverified remote outcome for automatic retry', async () => {
+    const repo = repository();
+    const execute = vi.fn()
+      .mockResolvedValueOnce(ok({ operation: 'service-restart', hostId: 'a', previewHash: 'a'.repeat(64), preview: {}, dry_run: true }))
+      .mockResolvedValueOnce({ ok: false, error: { code: 'CAPABILITY_UNAVAILABLE', message: 'connection lost', recoverable: true } });
+    const runtime = new RemoteRolloutRuntime({ capabilities: { execute }, repository: repo, wait: async (): Promise<void> => undefined });
+    const planned = await runtime.execute({ operation: 'plan', workspaceId: 'w', hostIds: ['a'], unit: 'app.service', canaryCount: 1, maxParallel: 1 });
+    if (!planned.ok) throw new Error('plan failed');
+    await runtime.execute({ operation: 'execute', rolloutId: String(planned.value.rolloutId), workspaceId: 'w', previewHash: String(planned.value.previewHash), userConfirmed: true });
+    await expect(runtime.resume({ operation: 'preview', rolloutId: String(planned.value.rolloutId), workspaceId: 'w' })).resolves.toMatchObject({ ok: false, error: { code: 'CAPABILITY_UNAVAILABLE' } });
+    expect(execute).toHaveBeenCalledTimes(2);
+  });
+
+  it('caps a known failed host at two total attempts', async () => {
+    const repo = repository();
+    const execute = vi.fn()
+      .mockResolvedValueOnce(ok({ operation: 'service-restart', hostId: 'a', previewHash: 'a'.repeat(64), preview: {}, dry_run: true }))
+      .mockResolvedValueOnce({ ok: false, error: { code: 'PERMISSION_DENIED', message: 'service policy denied', recoverable: false } })
+      .mockResolvedValueOnce(ok({ operation: 'service-restart', hostId: 'a', previewHash: 'b'.repeat(64), preview: {}, dry_run: true }))
+      .mockResolvedValueOnce({ ok: false, error: { code: 'PERMISSION_DENIED', message: 'service policy denied', recoverable: false } });
+    const runtime = new RemoteRolloutRuntime({ capabilities: { execute }, repository: repo, wait: async (): Promise<void> => undefined });
+    const planned = await runtime.execute({ operation: 'plan', workspaceId: 'w', hostIds: ['a'], unit: 'app.service', canaryCount: 1, maxParallel: 1 });
+    if (!planned.ok) throw new Error('plan failed');
+    await runtime.execute({ operation: 'execute', rolloutId: String(planned.value.rolloutId), workspaceId: 'w', previewHash: String(planned.value.previewHash), userConfirmed: true });
+    const preview = await runtime.resume({ operation: 'preview', rolloutId: String(planned.value.rolloutId), workspaceId: 'w' });
+    if (!preview.ok) throw new Error('resume preview failed');
+    await runtime.resume({ operation: 'execute', rolloutId: String(planned.value.rolloutId), workspaceId: 'w', previewHash: String(preview.value.previewHash), userConfirmed: true });
+    await expect(runtime.resume({ operation: 'preview', rolloutId: String(planned.value.rolloutId), workspaceId: 'w' })).resolves.toMatchObject({ ok: false, error: { code: 'PERMISSION_REQUIRED' } });
+    expect(execute).toHaveBeenCalledTimes(4);
   });
 });

@@ -62,6 +62,7 @@ export interface McpApplicationServices {
   readonly database?: Pick<DatabaseRuntimeService, 'inspect' | 'query'>;
   readonly targetCatalog?: Pick<TargetCatalogService, 'list' | 'describe'>;
   readonly remoteRollout?: Pick<RemoteRolloutRuntime, 'execute'>;
+  readonly remoteRolloutResume?: Pick<RemoteRolloutRuntime, 'resume'>;
   readonly supportBundle?: Pick<SupportBundleService, 'execute'>;
 }
 

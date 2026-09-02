@@ -7,6 +7,7 @@ import { CHECKPOINT_MIGRATION_SQL } from './migrations/checkpoint-migration.js';
 import { WORKSPACE_ARCHIVE_MIGRATION_SQL } from './migrations/workspace-archive-migration.js';
 import { DATA_REMOTE_HOSTS_MIGRATION_SQL } from './migrations/data-remote-hosts-migration.js';
 import { REMOTE_ROLLOUT_MIGRATION_SQL } from './migrations/remote-rollout-migration.js';
+import { REMOTE_ROLLOUT_RESUME_MIGRATION_SQL } from './migrations/remote-rollout-resume-migration.js';
 
 export interface SqliteDatabaseOptions {
   readonly backupDirectory?: string;
@@ -51,6 +52,7 @@ export class SqliteDatabase {
     this.applyMigration({ id: '005_workspace_archive', sql: WORKSPACE_ARCHIVE_MIGRATION_SQL });
     this.applyMigration({ id: '006_data_remote_hosts', sql: DATA_REMOTE_HOSTS_MIGRATION_SQL });
     this.applyMigration({ id: '007_remote_rollouts', sql: REMOTE_ROLLOUT_MIGRATION_SQL });
+    this.applyMigration({ id: '008_remote_rollout_resume', sql: REMOTE_ROLLOUT_RESUME_MIGRATION_SQL });
   }
 
   public applyMigration(migration: Migration): void {

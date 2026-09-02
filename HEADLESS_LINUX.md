@@ -71,6 +71,12 @@ with an expiring aggregate preview hash, canary-first batches, explicit
 confirmation, cancellation, and sanitized per-host audit evidence. It never
 accepts arbitrary remote shell input.
 
+`remote_rollout_resume` is the additive recovery path for a failed or cancelled
+rollout. Its preview selects only failed or unattempted registered hosts, never
+restarts hosts whose latest result is `ok`, expires after 15 minutes, and caps
+each host at two total attempts. Timeout or connection-loss results are
+`unverified` and are not retried automatically.
+
 `support_bundle` creates a confirmation-gated, redacted diagnostic archive
 inside a registered workspace. Start with `dry_run` to obtain the exact member
 list and `previewHash`; creation is capped at 2 MiB uncompressed and in the

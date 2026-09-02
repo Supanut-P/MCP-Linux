@@ -474,6 +474,11 @@ export const remoteRolloutCapabilitySchema = z.discriminatedUnion('operation', [
   z.object({ operation: z.literal('cancel'), rolloutId: rolloutIdSchema, workspaceId: rolloutWorkspaceSchema, userConfirmed: z.literal(true) }).strict(),
 ]);
 
+export const remoteRolloutResumeCapabilitySchema = z.discriminatedUnion('operation', [
+  z.object({ operation: z.literal('preview'), rolloutId: rolloutIdSchema, workspaceId: rolloutWorkspaceSchema }).strict(),
+  z.object({ operation: z.literal('execute'), rolloutId: rolloutIdSchema, workspaceId: rolloutWorkspaceSchema, previewHash: z.string().regex(/^[a-f0-9]{64}$/), userConfirmed: z.literal(true) }).strict(),
+]);
+
 export const supportBundleSchema = z.object({
   workspaceId: rolloutWorkspaceSchema,
   destination: pathSchema,

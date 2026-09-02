@@ -32,7 +32,7 @@ describe('MCP tool registry', () => {
       'read_file_page', 'read_file_page_continue',
       'workspace_index', 'workspace_index_status', 'workspace_index_watch', 'workspace_index_stop',
       'session_handoff', 'verify_incremental',
-      ...UPGRADE_TOOL_CATALOG.filter((entry) => !['db_inspect', 'db_query', 'remote_fleet', 'remote_rollout', 'support_bundle'].includes(entry.name)).map((entry) => entry.name),
+      ...UPGRADE_TOOL_CATALOG.filter((entry) => !['db_inspect', 'db_query', 'remote_fleet', 'remote_rollout', 'remote_rollout_resume', 'support_bundle'].includes(entry.name)).map((entry) => entry.name),
       'tool_batch',
     ]);
   });
@@ -70,6 +70,13 @@ describe('MCP tool registry', () => {
     expect(registry.list().find((tool) => tool.name === 'remote_rollout')?.parse({
       operation: 'plan', workspaceId: 'workspace-1', hostIds: ['vm103'], unit: 'baitonghub-linux-mcp.service', canaryCount: 1,
     })).toMatchObject({ ok: true });
+  });
+
+  it('advertises remote_rollout_resume only when the resume service is wired', () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'remote_rollout_resume')).toBe(false);
+    const registry = new ToolRegistry({ remoteRolloutResume: { resume: async (): Promise<Result<unknown>> => ok({}) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('remote_rollout_resume');
+    expect(registry.list().find((tool) => tool.name === 'remote_rollout_resume')?.parse({ operation: 'preview', rolloutId: '00000000-0000-4000-8000-000000000001', workspaceId: 'workspace-1' })).toMatchObject({ ok: true });
   });
 
   it('advertises support_bundle only when the redaction service is wired', () => {

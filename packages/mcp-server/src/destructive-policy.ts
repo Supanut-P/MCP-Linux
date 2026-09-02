@@ -70,6 +70,10 @@ export function inspectDestructiveOperation(toolName: string, input: unknown): D
       return ['execute', 'cancel'].includes(String(value.operation ?? ''))
         ? destructive('remote rollout can restart services on registered hosts and requires explicit confirmation')
         : { destructive: false };
+    case 'remote_rollout_resume':
+      return value.operation === 'execute'
+        ? destructive('resuming a remote rollout can restart previously failed services and requires explicit confirmation')
+        : { destructive: false };
     case 'support_bundle':
       return value.dry_run === false
         ? destructive('writing a support archive requires explicit confirmation')

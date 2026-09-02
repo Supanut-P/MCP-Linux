@@ -144,6 +144,14 @@ export function summarizeToolTarget(toolName: string, input: unknown): string | 
       return summarizeForLog(`host:${hostId} ${scope} ${action}${target}`);
     }
   }
+  if (toolName === 'remote_rollout_resume') {
+    const rolloutId = firstString(input, ['rolloutId', 'rollout_id']);
+    const workspaceId = firstString(input, ['workspaceId', 'workspace_id']);
+    const operation = firstString(input, ['operation', 'action']) ?? 'unknown';
+    const hostIds = Array.isArray(input.hostIds) ? input.hostIds.filter((entry): entry is string => typeof entry === 'string') : [];
+    const retryCounts = isRecord(input.retryCounts) ? Object.keys(input.retryCounts) : [];
+    return summarizeForLog(`rollout:${rolloutId ?? 'unknown'} workspace:${workspaceId ?? 'unscoped'} operation:${operation} hosts:${hostIds.length || retryCounts.length}`);
+  }
   const pathValue = firstString(input, ['path', 'relativePath', 'filePath', 'targetPath', 'sourcePath', 'destinationPath']);
   if (pathValue !== undefined) return summarizeForLog(pathValue);
   const query = firstString(input, ['query', 'pattern']);

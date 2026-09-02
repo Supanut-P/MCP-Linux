@@ -10,6 +10,7 @@ import {
   fileDialogCapabilitySchema,
   healthCapabilitySchema,
   journalCapabilitySchema,
+  serviceLogsCapabilitySchema,
   networkCapabilitySchema,
   packageCapabilitySchema,
   scheduleCapabilitySchema,
@@ -157,6 +158,14 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
       annotations: { readOnlyHint: true, destructiveHint: false },
       inputSchema: journalCapabilitySchema,
       handler: async (input, signal) => execute('journal', input, signal),
+    }),
+    defineTool({
+      name: 'service_logs',
+      description: 'Read or continue a bounded, sanitized systemd service log stream on Linux. The unit and opaque cursor are validated; no arbitrary journal query or provider stderr is returned.',
+      permission: 'READ',
+      annotations: { readOnlyHint: true, destructiveHint: false },
+      inputSchema: serviceLogsCapabilitySchema,
+      handler: async (input, signal) => execute('service_logs', input, signal),
     }),
     defineTool({
       name: 'network',

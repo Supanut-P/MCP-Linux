@@ -1875,6 +1875,7 @@
               "health",
               "system_info",
               "journal",
+              "service_logs",
               "network",
               "service",
               "package",
@@ -4300,6 +4301,55 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "additionalProperties": {},
         "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "service_logs",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "pattern": "^[A-Za-z0-9_-]{1,512}$",
+            "type": "string"
+          },
+          "lines": {
+            "default": 100,
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "maxBytes": {
+            "default": 262144,
+            "maximum": 262144,
+            "minimum": 1024,
+            "type": "integer"
+          },
+          "operation": {
+            "default": "read",
+            "enum": [
+              "read",
+              "tail"
+            ],
+            "type": "string"
+          },
+          "unit": {
+            "pattern": "^[A-Za-z0-9_.@:-]{1,256}\\.service$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "unit",
+          "lines",
+          "maxBytes"
+        ],
         "type": "object"
       }
     },

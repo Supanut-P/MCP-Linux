@@ -9,6 +9,7 @@ import { capabilityToolNamesForPlatform } from '../capability-descriptors.js';
 import type { CapabilityToolName } from '../capability-tool-names.js';
 import { HealthCapabilityBackend } from '../health-backend.js';
 import { LinuxObservabilityBackend } from '../linux-observability-backend.js';
+import { ServiceLogsBackend } from '../service-logs-backend.js';
 import { SystemdBackend } from '../systemd-backend.js';
 import { AptBackend } from '../apt-backend.js';
 import { ScheduleBackend } from '../schedule-backend.js';
@@ -108,6 +109,7 @@ function linuxRuntime(
   const window = new LinuxNativeCapabilityBackend('window', nativeOptions);
   const systemInfoObservability = new LinuxObservabilityBackend('system_info', nativeOptions);
   const journal = new LinuxObservabilityBackend('journal', nativeOptions);
+  const serviceLogs = new ServiceLogsBackend(nativeOptions);
   const network = new LinuxObservabilityBackend('network', nativeOptions);
   const adminOptions = {
     ...nativeOptions,
@@ -148,6 +150,7 @@ function linuxRuntime(
     window,
     system_info: systemInfoObservability,
     journal,
+    service_logs: serviceLogs,
     network,
     service: systemdAdmin,
     package: packageManager,
@@ -175,6 +178,7 @@ function linuxRuntime(
     health,
     systemInfo: systemInfoObservability,
     journal,
+    serviceLogs,
     network,
     service: systemdAdmin,
     package: packageManager,

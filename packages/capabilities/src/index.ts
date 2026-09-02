@@ -18,6 +18,7 @@ export { DependencyAuditBackend, LinuxDependencyAuditBackend, type DependencyAud
 export { RemoteHostBackend, LinuxRemoteHostBackend, type RemoteHostBackendOptions, type RemoteHostOperation, type RegisteredRemoteHost, type RemoteHostRegistry, type RemoteCommandResult, type RemoteCommandRunner } from './remote-host-backend.js';
 export { LinuxCommandRunner as BoundedLinuxCommandRunner, type LinuxCommandResult as BoundedLinuxCommandResult, type LinuxCommandRunnerOptions, type LinuxSpawn, type LinuxSpawnOptions } from './linux-command-runner.js';
 export { LinuxObservabilityBackend, type LinuxObservabilityBackendOptions, type LinuxObservabilityCapabilityName } from './linux-observability-backend.js';
+export { ServiceLogsBackend, type ServiceLogsBackendOptions } from './service-logs-backend.js';
 export { SystemdBackend, LinuxSystemdBackend, type SystemdBackendOptions, type SystemdOperation } from './systemd-backend.js';
 export { AptBackend, LinuxAptBackend, type AptBackendOptions, type AptOperation } from './apt-backend.js';
 export { ScheduleBackend, LinuxScheduleBackend, type ScheduleBackendOptions, type ScheduleOperation } from './schedule-backend.js';

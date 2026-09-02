@@ -267,7 +267,7 @@ export const windowCapabilitySchema = z.object({
 
 export const healthCapabilitySchema = z.object({
   operation: z.enum(['check_all', 'check_tool']).default('check_all'),
-  tool: z.enum(['shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window', 'health', 'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit', 'remote_host', 'artifact_verify', 'http_probe', 'storage_usage']).optional(),
+  tool: z.enum(['shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window', 'health', 'system_info', 'journal', 'service_logs', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit', 'remote_host', 'artifact_verify', 'http_probe', 'storage_usage']).optional(),
   request_id: z.string().trim().min(1).max(128).optional(),
 }).strict();
 
@@ -286,6 +286,14 @@ export const journalCapabilitySchema = z.object({
   since: z.string().trim().min(1).max(128).optional(),
   lines: z.number().int().min(1).max(1_000).default(100),
   ...capabilityRequestSchema,
+}).strict();
+
+export const serviceLogsCapabilitySchema = z.object({
+  operation: z.enum(['read', 'tail']).default('read'),
+  unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,256}\.service$/),
+  cursor: z.string().regex(/^[A-Za-z0-9_-]{1,512}$/).optional(),
+  lines: z.number().int().min(1).max(500).default(100),
+  maxBytes: z.number().int().min(1_024).max(256 * 1024).default(256 * 1024),
 }).strict();
 
 export const networkCapabilitySchema = z.object({

@@ -15,6 +15,7 @@ export interface LocalCapabilityBackends {
   readonly health: CapabilityBackend;
   readonly systemInfo?: CapabilityBackend;
   readonly journal?: CapabilityBackend;
+  readonly serviceLogs?: CapabilityBackend;
   readonly network?: CapabilityBackend;
   readonly service?: CapabilityBackend;
   readonly package?: CapabilityBackend;
@@ -64,6 +65,7 @@ export class LocalCapabilityService implements CapabilityService {
       case 'health': return this.backends.health;
       case 'system_info': return this.backends.systemInfo;
       case 'journal': return this.backends.journal;
+      case 'service_logs': return this.backends.serviceLogs;
       case 'network': return this.backends.network;
       case 'service': return this.backends.service;
       case 'package': return this.backends.package;

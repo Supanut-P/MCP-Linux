@@ -77,6 +77,13 @@ restarts hosts whose latest result is `ok`, expires after 15 minutes, and caps
 each host at two total attempts. Timeout or connection-loss results are
 `unverified` and are not retried automatically.
 
+`service_logs` is the read-only continuation-friendly service log view. It
+accepts only a validated `.service` unit, a bounded line/byte limit, and an
+opaque cursor issued for that same unit. It invokes `journalctl` with argv-only
+arguments, redacts credential-shaped fields, and returns
+`CAPABILITY_UNAVAILABLE` when the provider is missing; it never accepts a raw
+journal query or shell fragment.
+
 `support_bundle` creates a confirmation-gated, redacted diagnostic archive
 inside a registered workspace. Start with `dry_run` to obtain the exact member
 list and `previewHash`; creation is capped at 2 MiB uncompressed and in the

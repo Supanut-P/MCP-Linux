@@ -23,6 +23,7 @@ import type { z } from 'zod';
 import type { ContextEconomyRuntime } from '../context-economy.js';
 import type { DatabaseRuntimeService } from '../database-runtime.js';
 import type { RemoteRolloutRuntime } from '../remote-rollout-runtime.js';
+import type { SupportBundleService } from '@baitonghub-linux-mcp/application';
 
 export interface WorkspaceInfoPort {
   info(actor: FileActor, workspaceId: string): Promise<Result<unknown>>;
@@ -61,6 +62,7 @@ export interface McpApplicationServices {
   readonly database?: Pick<DatabaseRuntimeService, 'inspect' | 'query'>;
   readonly targetCatalog?: Pick<TargetCatalogService, 'list' | 'describe'>;
   readonly remoteRollout?: Pick<RemoteRolloutRuntime, 'execute'>;
+  readonly supportBundle?: Pick<SupportBundleService, 'execute'>;
 }
 
 export interface McpToolAnnotations {

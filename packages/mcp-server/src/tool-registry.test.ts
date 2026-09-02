@@ -32,7 +32,7 @@ describe('MCP tool registry', () => {
       'read_file_page', 'read_file_page_continue',
       'workspace_index', 'workspace_index_status', 'workspace_index_watch', 'workspace_index_stop',
       'session_handoff', 'verify_incremental',
-      ...UPGRADE_TOOL_CATALOG.filter((entry) => !['db_inspect', 'db_query', 'remote_fleet', 'remote_rollout'].includes(entry.name)).map((entry) => entry.name),
+      ...UPGRADE_TOOL_CATALOG.filter((entry) => !['db_inspect', 'db_query', 'remote_fleet', 'remote_rollout', 'support_bundle'].includes(entry.name)).map((entry) => entry.name),
       'tool_batch',
     ]);
   });
@@ -70,6 +70,30 @@ describe('MCP tool registry', () => {
     expect(registry.list().find((tool) => tool.name === 'remote_rollout')?.parse({
       operation: 'plan', workspaceId: 'workspace-1', hostIds: ['vm103'], unit: 'baitonghub-linux-mcp.service', canaryCount: 1,
     })).toMatchObject({ ok: true });
+  });
+
+  it('advertises support_bundle only when the redaction service is wired', () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'support_bundle')).toBe(false);
+    const registry = new ToolRegistry({ supportBundle: { execute: async (): Promise<Result<unknown>> => ok({ dry_run: true }) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('support_bundle');
+    expect(registry.list().find((tool) => tool.name === 'support_bundle')?.parse({ workspaceId: 'workspace-1', destination: 'support.tar.gz', include: ['health'] })).toMatchObject({ ok: true });
+  });
+
+  it('records a stable approval receipt for denied and confirmed dangerous calls', async () => {
+    const events: ActivitySinkEvent[] = [];
+    const registry = new ToolRegistry({
+      capabilities: { listTools: (): readonly string[] => ['service'], execute: async (): Promise<Result<unknown>> => ok({ restarted: true }) },
+      supportBundle: { execute: async (input): Promise<Result<unknown>> => ok({ receiptId: (input as Record<string, unknown>)._approvalReceiptId }) },
+    }, actor, { activity: { async record(event): Promise<void> { events.push(event); } } });
+
+    await registry.invoke('service', { operation: 'restart', unit: 'app.service' });
+    await registry.invoke('support_bundle', { workspaceId: 'workspace-1', destination: 'support.tar.gz', include: ['health'], dry_run: true });
+
+    const denied = events.find((event) => event.toolName === 'service' && event.phase === 'completed');
+    const preview = events.find((event) => event.toolName === 'support_bundle' && event.phase === 'completed');
+    expect(denied?.approvalReceipt).toMatchObject({ toolName: 'service', actorId: 'client-1', decision: 'CONFIRMATION_REQUIRED', targetSummaryHash: expect.stringMatching(/^[a-f0-9]{64}$/) });
+    expect(preview?.approvalReceipt).toMatchObject({ toolName: 'support_bundle', actorId: 'client-1', decision: 'ALLOW' });
+    expect(events.some((event) => event.approvalReceipt?.targetSummaryHash === 'app.service')).toBe(false);
   });
 
   it('does not advertise a fixed drive letter in workspace registration metadata', () => {

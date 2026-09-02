@@ -4607,6 +4607,66 @@
       }
     },
     {
+      "name": "support_bundle",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "destination": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "dry_run": {
+            "default": true,
+            "type": "boolean"
+          },
+          "include": {
+            "items": {
+              "enum": [
+                "doctor",
+                "health",
+                "runtime",
+                "audit-summary",
+                "recent-errors",
+                "package-files"
+              ],
+              "type": "string"
+            },
+            "maxItems": 6,
+            "minItems": 1,
+            "type": "array"
+          },
+          "previewHash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "userConfirmed": {
+            "default": false,
+            "type": "boolean"
+          },
+          "workspaceId": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "destination",
+          "include",
+          "dry_run",
+          "userConfirmed"
+        ],
+        "type": "object"
+      }
+    },
+    {
       "name": "symbol_context",
       "permission": "READ",
       "annotations": {

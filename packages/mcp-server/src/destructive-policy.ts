@@ -70,6 +70,10 @@ export function inspectDestructiveOperation(toolName: string, input: unknown): D
       return ['execute', 'cancel'].includes(String(value.operation ?? ''))
         ? destructive('remote rollout can restart services on registered hosts and requires explicit confirmation')
         : { destructive: false };
+    case 'support_bundle':
+      return value.dry_run === false
+        ? destructive('writing a support archive requires explicit confirmation')
+        : { destructive: false };
     case 'mcp_call':
       return destructive('child MCP side effects cannot be proven non-destructive at the gateway boundary');
     case 'window':

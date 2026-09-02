@@ -19,4 +19,6 @@ export * from './database-runtime.js';
 export * from './stable-contract.js';
 export * from './remote-fleet-runtime.js';
 export * from './remote-rollout-runtime.js';
+export * from './approval-receipt.js';
+export * from './tools/support-bundle-tools.js';
 export * from './task-creation.js';

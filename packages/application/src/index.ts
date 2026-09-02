@@ -16,3 +16,4 @@ export * from './workspace-index.js';
 export * from './lifecycle-hooks.js';
 export * from './runtime-cache.js';
 export * from './target-catalog-service.js';
+export * from './support-bundle-service.js';

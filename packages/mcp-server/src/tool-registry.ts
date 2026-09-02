@@ -3,7 +3,8 @@ import { appError } from '@baitonghub-linux-mcp/domain';
 import { sanitizeException, type DiagnosticLogger, type FileActor } from '@baitonghub-linux-mcp/application';
 import { DefaultPermissionEngine, permissionProfiles, type PermissionProfile } from '@baitonghub-linux-mcp/permissions';
 import { DEFAULT_DESTRUCTIVE_AUTO_APPROVAL_POLICY, type DestructiveAutoApprovalPolicy } from '@baitonghub-linux-mcp/shared';
-import { ActivityTracker, type ActivitySink, type TraceContext } from './activity-tracker.js';
+import { ActivityTracker, summarizeToolTarget, type ActivitySink, type TraceContext } from './activity-tracker.js';
+import { createApprovalReceipt, type ApprovalReceipt } from './approval-receipt.js';
 import { ContextEngine } from './context-engine.js';
 import { ContextEconomyRuntime } from './context-economy.js';
 import { hasExplicitUserConfirmation, inspectDestructiveOperation } from './destructive-policy.js';
@@ -27,6 +28,7 @@ import { processTools } from './tools/process-tools.js';
 import { sessionTools } from './tools/session-tools.js';
 import { searchTools } from './tools/search-tools.js';
 import { targetCatalogTools } from './tools/target-catalog-tools.js';
+import { supportBundleTools } from './tools/support-bundle-tools.js';
 import { skillTools } from './tools/skill-tools.js';
 import { workspaceTools } from './tools/workspace-tools.js';
 import type { McpApplicationServices, McpToolContext, McpToolDefinition } from './tools/tool-types.js';
@@ -74,8 +76,10 @@ export class ToolRegistry {
   private readonly activityWorkspaceResolver: (cwd: string) => Promise<string | undefined>;
   private readonly shellTaskWorkspaces = new Map<string, string>();
   private readonly maxToolDurationMs: number | null;
+  private readonly actorId: string;
 
   public constructor(services: McpApplicationServices, actor: FileActor, options: ToolRegistryOptions = {}) {
+    this.actorId = actor.clientId;
     this.diagnostic = options.diagnostic;
     this.activity = options.activityTracker ?? new ActivityTracker(options.activity);
     this.sessionId = options.sessionId;
@@ -102,6 +106,7 @@ export class ToolRegistry {
       ...advertisedCapabilityTools(context),
       ...databaseTools(context),
       ...targetCatalogTools(context),
+      ...supportBundleTools(context),
       ...skillTools(context),
       ...mcpBridgeTools(context),
       ...contextTools(context, contextEngine),
@@ -156,6 +161,7 @@ export class ToolRegistry {
         return response;
       }
       const destructiveDecision = inspectDestructiveOperation(tool.name, parsed.value);
+      const dangerousCall = tool.permission === 'DANGEROUS' || destructiveDecision.destructive;
       const policy = this.destructivePolicyProvider();
       const destructiveWorkspaceId = readExplicitWorkspaceId(parsed.value);
       const workspaceScope = destructiveDecision.destructive && destructiveWorkspaceId !== undefined
@@ -167,7 +173,8 @@ export class ToolRegistry {
       if (destructiveDecision.destructive && !hasExplicitUserConfirmation(parsed.value) && !policyAllowsScopedDestructive) {
         const message = `Destructive operation requires explicit user confirmation${destructiveDecision.reason === undefined ? '' : `: ${destructiveDecision.reason}`}. Ask the user in chat first, then retry with userConfirmed: true`;
         const response = mapError(appError('PERMISSION_REQUIRED', message, true));
-        await this.activity.end(callId, 'PERMISSION_REQUIRED', Date.now() - started, message);
+        const receipt = dangerousCall ? this.approvalReceipt(tool.name, parsed.value, 'CONFIRMATION_REQUIRED') : undefined;
+        await this.activity.end(callId, 'PERMISSION_REQUIRED', Date.now() - started, message, receipt === undefined ? undefined : { approvalReceipt: receipt });
         return response;
       }
       const permissionDecision = this.permissionEngine.decide(this.profileProvider(), {
@@ -183,10 +190,17 @@ export class ToolRegistry {
           ? 'MCP tool ' + tool.name + ' is denied by the active permission profile'
           : 'MCP tool ' + tool.name + ' requires permission approval';
         const response = mapError(appError(code, message, permissionDecision === 'ASK'));
-        await this.activity.end(callId, code, Date.now() - started, message);
+        const receipt = dangerousCall ? this.approvalReceipt(tool.name, parsed.value, permissionDecision) : undefined;
+        await this.activity.end(callId, code, Date.now() - started, message, receipt === undefined ? undefined : { approvalReceipt: receipt });
         return response;
       }
-      const executionInput = policyAllowsScopedDestructive ? withInternalUserConfirmation(parsed.value) : parsed.value;
+      const approvalReceipt = dangerousCall
+        ? this.approvalReceipt(tool.name, parsed.value, policyAllowsScopedDestructive ? 'AUTO_ALLOW' : 'ALLOW', hasExplicitUserConfirmation(parsed.value) || policyAllowsScopedDestructive)
+        : undefined;
+      const confirmedInput = policyAllowsScopedDestructive ? withInternalUserConfirmation(parsed.value) : parsed.value;
+      const executionInput = approvalReceipt === undefined || tool.name !== 'support_bundle'
+        ? confirmedInput
+        : withInternalApprovalReceipt(confirmedInput, approvalReceipt.id);
       const execution = await this.executeWithinResponseBudget(tool, executionInput, parentSignal);
       const response = execution.response;
       this.rememberShellTaskWorkspace(name, response, activityWorkspaceId);
@@ -200,9 +214,10 @@ export class ToolRegistry {
           resultCode,
           Date.now() - started,
           resultMessage,
+          approvalReceipt === undefined ? undefined : { approvalReceipt },
         ));
       } else {
-        await this.activity.end(callId, resultCode, Date.now() - started, resultMessage);
+        await this.activity.end(callId, resultCode, Date.now() - started, resultMessage, approvalReceipt === undefined ? undefined : { approvalReceipt });
       }
       return response;
     } catch (error: unknown) {
@@ -239,6 +254,24 @@ export class ToolRegistry {
       return null;
     }
   }
+
+  private approvalReceipt(toolName: string, input: unknown, decision: string, confirmed = false): ApprovalReceipt {
+    const profile = this.profileProvider();
+    const workspaceId = readWorkspaceId(input);
+    const targetSummary = summarizeToolTarget(toolName, input);
+    const previewHash = readPreviewHash(input);
+    return createApprovalReceipt({
+      toolName,
+      actorId: this.actorId,
+      ...(workspaceId === undefined ? {} : { workspaceId }),
+      ...(targetSummary === undefined ? {} : { targetSummary }),
+      ...(previewHash === undefined ? {} : { previewHash }),
+      profile: profile.name,
+      decision,
+      ...(confirmed ? { confirmedAt: new Date().toISOString() } : {}),
+    });
+  }
+
   private async executeWithinResponseBudget(tool: McpToolDefinition, input: unknown, parentSignal?: AbortSignal): Promise<BudgetedToolExecution> {
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -315,6 +348,17 @@ function advertisedCapabilityTools(context: McpToolContext): readonly McpToolDef
 function withInternalUserConfirmation(input: unknown): unknown {
   if (typeof input !== 'object' || input === null || Array.isArray(input)) return input;
   return { ...(input as Record<string, unknown>), userConfirmed: true };
+}
+
+function withInternalApprovalReceipt(input: unknown, receiptId: string): unknown {
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) return input;
+  return { ...(input as Record<string, unknown>), _approvalReceiptId: receiptId };
+}
+
+function readPreviewHash(input: unknown): string | undefined {
+  if (!isRecord(input)) return undefined;
+  const value = input.previewHash ?? input.preview_hash;
+  return typeof value === 'string' && /^[a-f0-9]{64}$/.test(value) ? value : undefined;
 }
 
 function legacyDeletePolicy(enabled: boolean): DestructiveAutoApprovalPolicy {

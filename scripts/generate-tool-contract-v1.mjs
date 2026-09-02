@@ -14,6 +14,7 @@ const registry = new ToolRegistry({
     describe: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Not available in contract generation', recoverable: false } }),
   },
   remoteRollout: { execute: async () => ({ ok: true, value: {} }) },
+  supportBundle: { execute: async () => ({ ok: true, value: {} }) },
 }, { clientId: 'contract-generator', clientName: 'contract-generator' }, { codexToolsEnabled: true });
 const canonicalize = (value) => Array.isArray(value)
   ? value.map(canonicalize)

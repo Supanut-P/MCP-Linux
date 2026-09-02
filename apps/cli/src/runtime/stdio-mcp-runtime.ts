@@ -1,4 +1,6 @@
 import path from 'node:path';
+import { stat } from 'node:fs/promises';
+import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
 import {
   CheckpointService,
   CodexService,
@@ -13,6 +15,7 @@ import {
   WorkspaceIndexService,
   WorkspaceQueryService,
   TargetCatalogService,
+  SupportBundleService,
   type FileActor,
 } from '@baitonghub-linux-mcp/application';
 import { AuditService } from '@baitonghub-linux-mcp/audit';
@@ -160,6 +163,32 @@ export function createStdioMcpRuntime(
     }),
   });
   const remoteRolloutReady = remoteRollouts.reconcile();
+  const supportBundle = new SupportBundleService({
+    workspaceRepository,
+    pathGuard,
+    sources: {
+      doctor: async (): Promise<unknown> => ({ status: 'ok', platform: process.platform, node: process.version }),
+      health: async (): Promise<unknown> => {
+        const result = await capabilityService.execute('health', { operation: 'check_all' });
+        return result.ok ? result.value : { available: false, reason: result.error.code };
+      },
+      runtime: async (): Promise<unknown> => ({ product: 'Baitonghub-Linux-mcp', platform: process.platform, arch: process.arch, node: process.version }),
+      auditSummary: async (): Promise<unknown> => {
+        const events = await auditRepository.list(200);
+        const resultCodes = Object.fromEntries([...new Set(events.map((event) => event.resultCode))].map((code) => [code, events.filter((event) => event.resultCode === code).length]));
+        return { count: events.length, resultCodes, latestTimestamp: events[0]?.timestamp };
+      },
+      recentErrors: async (): Promise<unknown> => (await auditRepository.list(200)).filter((event) => !['SUCCESS', 'STARTED'].includes(event.resultCode)).slice(0, 200),
+      packageFiles: async (): Promise<unknown> => ['baitonghub-linux-mcp-node', 'mcp-stdio.cjs', 'mcp-http.cjs', 'package.json'],
+    },
+    archive: {
+      create: async (sourceDirectory: string, outputPath: string, signal?: AbortSignal): Promise<Result<{ readonly bytes: number }>> => {
+        const result = await capabilityService.execute('archive', { operation: 'create', source: sourceDirectory, output: outputPath, userConfirmed: true }, signal);
+        if (!result.ok) return result;
+        try { return ok({ bytes: (await stat(outputPath)).size }); } catch { return err(appError('CAPABILITY_UNAVAILABLE', 'Support archive output was not created', true)); }
+      },
+    },
+  });
   const sharedActivityLease = createSharedActivityLease(process.env.TUNNEL_CLIENT_PROFILE_DIR);
   const activityReady = sharedActivityLease.then(async (lease) => lease?.initialize());
   const sharedActivitySink: ActivitySink = {
@@ -184,6 +213,7 @@ export function createStdioMcpRuntime(
           ...(event.resultMessage === undefined ? {} : { resultMessage: event.resultMessage }),
           ...(event.traceId === undefined ? {} : { traceId: event.traceId }),
           ...(event.traceParent === undefined ? {} : { traceParent: event.traceParent }),
+          ...(event.approvalReceipt === undefined ? {} : { approvalReceipt: event.approvalReceipt }),
           durationMs: event.durationMs,
           timestamp: event.timestamp,
         });
@@ -228,6 +258,7 @@ export function createStdioMcpRuntime(
     database: databaseRuntime,
     targetCatalog,
     remoteRollout: remoteRollouts,
+    supportBundle,
   };
 
   return {

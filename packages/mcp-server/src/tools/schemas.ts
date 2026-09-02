@@ -474,6 +474,15 @@ export const remoteRolloutCapabilitySchema = z.discriminatedUnion('operation', [
   z.object({ operation: z.literal('cancel'), rolloutId: rolloutIdSchema, workspaceId: rolloutWorkspaceSchema, userConfirmed: z.literal(true) }).strict(),
 ]);
 
+export const supportBundleSchema = z.object({
+  workspaceId: rolloutWorkspaceSchema,
+  destination: pathSchema,
+  include: z.array(z.enum(['doctor', 'health', 'runtime', 'audit-summary', 'recent-errors', 'package-files'])).min(1).max(6).refine((sections) => new Set(sections).size === sections.length, 'include must not contain duplicates'),
+  dry_run: z.boolean().default(true),
+  previewHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  userConfirmed: z.boolean().default(false),
+}).strict();
+
 const databaseTargetFields = {
   workspaceId: optionalWorkspaceIdSchema,
   targetId: z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/).optional(),

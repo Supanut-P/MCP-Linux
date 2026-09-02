@@ -71,6 +71,13 @@ with an expiring aggregate preview hash, canary-first batches, explicit
 confirmation, cancellation, and sanitized per-host audit evidence. It never
 accepts arbitrary remote shell input.
 
+`support_bundle` creates a confirmation-gated, redacted diagnostic archive
+inside a registered workspace. Start with `dry_run` to obtain the exact member
+list and `previewHash`; creation is capped at 2 MiB uncompressed and in the
+final archive, includes at most 200 recent error events, and returns only a
+registered relative path, SHA-256, size, member count, and approval receipt ID.
+See [`docs/linux/SUPPORT_BUNDLE.md`](docs/linux/SUPPORT_BUNDLE.md).
+
 The packaged systemd template reads the per-user environment file from
 `/home/<user>/.config/baitonghub-linux-mcp/server.env`; create it with mode
 `600` before enabling `baitonghub-linux-mcp@<user>`. A system service must not

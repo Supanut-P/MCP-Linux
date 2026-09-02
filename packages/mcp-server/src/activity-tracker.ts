@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import type { ApprovalReceipt } from './approval-receipt.js';
 
 export interface ActivitySinkEvent {
   readonly callId: string;
@@ -13,6 +14,7 @@ export interface ActivitySinkEvent {
   readonly timestamp: string;
   readonly traceId?: string;
   readonly traceParent?: string;
+  readonly approvalReceipt?: ApprovalReceipt;
 }
 
 export interface TraceContext {
@@ -89,7 +91,7 @@ export class ActivityTracker {
     return callId;
   }
 
-  public async end(callId: string, resultCode: string, durationMs: number, resultMessage?: string): Promise<void> {
+  public async end(callId: string, resultCode: string, durationMs: number, resultMessage?: string, options?: { readonly approvalReceipt?: ApprovalReceipt }): Promise<void> {
     const existing = this.inflight.get(callId);
     this.inflight.delete(callId);
     this.activityRevision += 1;
@@ -107,6 +109,7 @@ export class ActivityTracker {
       ...(existing?.traceId === undefined ? {} : { traceId: existing.traceId }),
       ...(existing?.traceParent === undefined ? {} : { traceParent: existing.traceParent }),
       ...(resultMessage === undefined || resultMessage.length === 0 ? {} : { resultMessage }),
+      ...(options?.approvalReceipt === undefined ? {} : { approvalReceipt: options.approvalReceipt }),
     });
   }
 

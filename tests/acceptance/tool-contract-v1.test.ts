@@ -17,6 +17,7 @@ describe('v1 stable MCP contract', () => {
       supportBundle: { execute: async (): Promise<Result<unknown>> => ({ ok: true, value: {} }) },
       auditQuery: { execute: async (): Promise<Result<unknown>> => ({ ok: true, value: { entries: [], count: 0, truncated: false } }) },
       taskEvents: { execute: async (): Promise<Result<unknown>> => ({ ok: true, value: { taskId: 'contract-task', state: 'completed', events: [], count: 0, truncated: false } }) },
+      taskHistory: { execute: async (): Promise<Result<unknown>> => ({ ok: true, value: { entries: [], count: 0, truncated: false } }) },
     }, { clientId: 'contract-test', clientName: 'contract-test' }, { codexToolsEnabled: true });
     expect({ contractVersion: '1.0.0', descriptions: 'non-contractual', tools: canonicalizeToolSchemas(registry.list()) }).toEqual(fixture);
   });

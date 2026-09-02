@@ -60,6 +60,8 @@ describe('headless Linux Secure MCP Tunnel packaging', () => {
     expect(smoke).toContain("'workspace_snapshot'");
     expect(smoke).toContain("operation: 'manifest'");
     expect(smoke).toContain("'task_events'");
+    expect(smoke).toContain("'task_history'");
+    expect(smoke).toContain('taskHistoryCount');
     expect(smoke).toContain("'/usr/bin/printf'");
   });
 

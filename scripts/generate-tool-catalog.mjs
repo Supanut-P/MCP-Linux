@@ -21,6 +21,7 @@ const registry = new ToolRegistry({
   supportBundle: { execute: async () => ({ ok: true, value: {} }) },
   auditQuery: { execute: async () => ({ ok: true, value: { entries: [], count: 0, truncated: false } }) },
   taskEvents: { execute: async () => ({ ok: true, value: { taskId: 'catalog-task', state: 'completed', events: [], count: 0, truncated: false } }) },
+  taskHistory: { execute: async () => ({ ok: true, value: { entries: [], count: 0, truncated: false } }) },
 }, { clientId: 'catalog-generator', clientName: 'catalog-generator' }, { codexToolsEnabled: true });
 const tools = registry.list();
 const current = await readFile(contractPath, 'utf8');

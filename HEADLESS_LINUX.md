@@ -125,6 +125,13 @@ lines, paths, output, environments, host keys, and secrets are never included;
 the stream is derived from the durable task stores and supports a bounded
 `waitMs` for reconnect polling.
 
+`task_history` is a bounded, read-only history projection for the same owned
+shell and remote-rollout tasks. Use `state`, `since`, `until`, and a redacted
+`workspaceHash` to filter, then continue with its owner- and filter-bound
+cursor. Entries contain only task ID, kind, state, timestamps, workspace hash,
+result code, and duration; commands, paths, output, environments, hosts, and
+secrets are excluded. Retention is capped at 500 entries and each page at 100.
+
 `workspace_changes` provides a bounded snapshot/diff feed from an active
 workspace watcher. Events contain only a monotonic sequence, a normalized
 relative path, an event kind, and an observation timestamp. The feed never

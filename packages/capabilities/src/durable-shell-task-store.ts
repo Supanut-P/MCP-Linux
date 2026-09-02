@@ -356,6 +356,7 @@ export class DurableShellTaskStore {
       started_at: metadata.started_at,
       ...(metadata.finished_at === undefined ? {} : { finished_at: metadata.finished_at }),
       deadline_at: metadata.deadline_at,
+      ...(metadata.owner_workspace_id === undefined ? {} : { workspace_hash: hashWorkspaceId(metadata.owner_workspace_id) }),
       durable: true,
       ...(metadata.worker_pid === undefined ? {} : { worker_pid: metadata.worker_pid }),
       ...(metadata.child_pid === undefined ? {} : { child_pid: metadata.child_pid }),
@@ -441,6 +442,10 @@ export class DurableShellTaskStore {
     }
     return workerPath;
   }
+}
+
+function hashWorkspaceId(value: string): string {
+  return createHash('sha256').update(value, 'utf8').digest('hex').slice(0, 32);
 }
 
 async function readPublishedPid(filename: string): Promise<number | undefined> {

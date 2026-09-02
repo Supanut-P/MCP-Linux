@@ -13,7 +13,7 @@ const CORE_TOOLS = new Set([
   'shell', 'health', 'runtime_metrics', 'audit_query', 'system_info', 'journal', 'service_logs', 'network',
   'artifact_verify', 'http_probe', 'storage_usage',
   'workspace_context', 'workspace_context_continue', 'workspace_full_scan', 'workspace_full_scan_continue',
-  'workspace_snapshot', 'task_events', 'policy_explain', 'workspace_index', 'workspace_index_status', 'workspace_index_watch', 'workspace_index_stop', 'workspace_changes',
+  'workspace_snapshot', 'task_events', 'task_history', 'policy_explain', 'workspace_index', 'workspace_index_status', 'workspace_index_watch', 'workspace_index_stop', 'workspace_changes',
   'session_handoff', 'session_context', 'session_resume', 'session_history', 'response_mode',
   'symbol_search', 'find_definition', 'find_references', 'find_implementations', 'call_hierarchy', 'import_graph',
   'dependency_graph', 'module_graph', 'type_search', 'trace_symbol', 'context_ranking', 'debug_context',

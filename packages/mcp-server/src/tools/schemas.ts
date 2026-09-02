@@ -175,6 +175,16 @@ export const taskEventsSchema = z.object({
   waitMs: z.number().int().min(0).max(30_000).optional(),
 }).strict();
 
+export const taskHistorySchema = z.object({
+  workspaceId: optionalWorkspaceIdSchema,
+  workspaceHash: z.string().trim().regex(/^[a-f0-9]{32}$/).optional(),
+  state: z.enum(['running', 'completed', 'failed', 'timed_out', 'cancelled', 'termination_unverified', 'expired']).optional(),
+  since: z.string().datetime({ offset: true }).optional(),
+  until: z.string().datetime({ offset: true }).optional(),
+  limit: z.number().int().min(1).max(100).default(50),
+  cursor: z.string().trim().min(8).max(512).optional(),
+}).strict();
+
 export const policyExplainSchema = z.object({
   tool: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/),
   operation: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/).optional(),

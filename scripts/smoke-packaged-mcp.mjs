@@ -113,6 +113,15 @@ try {
     throw new Error('task_events did not return bounded lifecycle metadata');
   }
 
+  const taskHistory = await callTool(client, 'task_history', { workspaceId, limit: 10 });
+  const taskHistoryValue = readObject(taskHistory);
+  if (!Array.isArray(taskHistoryValue.entries)
+    || typeof taskHistoryValue.count !== 'number'
+    || typeof taskHistoryValue.truncated !== 'boolean'
+    || taskHistoryValue.entries.some((entry) => entry.taskId !== taskId)) {
+    throw new Error('task_history did not return the bounded owned task summary');
+  }
+
   const audit = await callTool(client, 'audit_query', { limit: 10 });
   const auditValue = readObject(audit);
   if (!Array.isArray(auditValue.entries)
@@ -144,6 +153,7 @@ try {
     parentKind: listedMachineRoot ? 'machine_root' : 'project_compatibility_fallback',
     taskId,
     taskEventCount: taskEventsValue.count,
+    taskHistoryCount: taskHistoryValue.count,
     auditCount: auditValue.count,
     auditTruncated: auditValue.truncated,
     snapshotCount: snapshotValue.count,

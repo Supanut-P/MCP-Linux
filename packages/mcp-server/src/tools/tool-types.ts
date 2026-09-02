@@ -30,6 +30,7 @@ import type { ServerProfileName } from '../server-profile.js';
 import type { AuditQueryService } from '../audit-query-service.js';
 import type { WorkspaceSnapshotService } from '../workspace-snapshot-service.js';
 import type { TaskEventsService } from '../task-events-service.js';
+import type { TaskHistoryService } from '../task-history-service.js';
 
 export interface WorkspaceInfoPort {
   info(actor: FileActor, workspaceId: string): Promise<Result<unknown>>;
@@ -81,6 +82,8 @@ export interface McpApplicationServices {
   readonly workspaceSnapshot?: Pick<WorkspaceSnapshotService, 'execute'>;
   /** Bounded lifecycle projections for owned durable shell and rollout tasks. */
   readonly taskEvents?: Pick<TaskEventsService, 'execute'>;
+  /** Bounded, redacted history of owned durable shell and rollout tasks. */
+  readonly taskHistory?: Pick<TaskHistoryService, 'execute'>;
 }
 
 export interface McpToolAnnotations {

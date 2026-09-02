@@ -18,6 +18,7 @@ const registry = new ToolRegistry({
   supportBundle: { execute: async () => ({ ok: true, value: {} }) },
   auditQuery: { execute: async () => ({ ok: true, value: { entries: [], count: 0, truncated: false } }) },
   taskEvents: { execute: async () => ({ ok: true, value: { taskId: 'contract-task', state: 'completed', events: [], count: 0, truncated: false } }) },
+  taskHistory: { execute: async () => ({ ok: true, value: { entries: [], count: 0, truncated: false } }) },
 }, { clientId: 'contract-generator', clientName: 'contract-generator' }, { codexToolsEnabled: true });
 const canonicalize = (value) => Array.isArray(value)
   ? value.map(canonicalize)

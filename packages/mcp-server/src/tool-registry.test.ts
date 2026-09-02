@@ -143,6 +143,20 @@ describe('MCP tool registry', () => {
     });
   });
 
+  it('advertises and dispatches bounded task_history only when the history service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'task_history')).toBe(false);
+    const registry = new ToolRegistry({
+      taskHistory: {
+        execute: async (_actor, input): Promise<Result<unknown>> => ok({ entries: [], count: 0, truncated: false, limit: input.limit }),
+      },
+    }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('task_history');
+    expect(registry.list().find((tool) => tool.name === 'task_history')?.parse({ state: 'completed', limit: 10 })).toMatchObject({ ok: true });
+    await expect(registry.invoke('task_history', { state: 'completed', limit: 10 })).resolves.toMatchObject({
+      structuredContent: { entries: [], count: 0, truncated: false },
+    });
+  });
+
   it('explains active profile and registered-root policy without dispatching the target tool', async () => {
     let called = false;
     const registry = new ToolRegistry({

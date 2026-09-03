@@ -211,4 +211,38 @@ describe('WorkspaceCheckpointService', () => {
     await expect(service.execute(actorB, { operation: 'stats' } as WorkspaceCheckpointInput)).resolves.toMatchObject({ ok: true, value: { operation: 'stats', count: 1 } });
     expect(repository.records.some((record) => record.id === foreign.value.checkpoint.id)).toBe(true);
   });
+
+  it('reduces a current checkpoint diff to bounded numeric summary counters', async () => {
+    const repository = new MemoryRepository();
+    const checkpointManifest: WorkspaceCheckpointManifestProvider = {
+      execute: async (_actor, input) => input.operation === 'diff'
+        ? ok({
+          operation: 'diff' as const,
+          workspaceId: input.workspaceId,
+          path: input.path ?? '.',
+          hashMode: 'none' as const,
+          added: [{ path: 'src/new.ts', bytes: 2, mtimeMs: 1 }],
+          removed: [{ path: 'src/old.ts', bytes: 3, mtimeMs: 2 }, { path: 'README.md', bytes: 4, mtimeMs: 3 }],
+          changed: [
+            { path: 'src/app.ts', before: { path: 'src/app.ts', bytes: 10, mtimeMs: 1 }, after: { path: 'src/app.ts', bytes: 11, mtimeMs: 2 } },
+            { path: 'src/lib.ts', before: { path: 'src/lib.ts', bytes: 12, mtimeMs: 1 }, after: { path: 'src/lib.ts', bytes: 13, mtimeMs: 2 } },
+            { path: 'src/test.ts', before: { path: 'src/test.ts', bytes: 14, mtimeMs: 1 }, after: { path: 'src/test.ts', bytes: 15, mtimeMs: 2 } },
+          ],
+          unchanged: 4,
+          truncated: true,
+        })
+        : manifest(),
+    };
+    const service = new WorkspaceCheckpointService(repository, checkpointManifest);
+    const created = await service.execute(actorA, { operation: 'create', workspaceId: 'ws-1', path: 'src', name: 'before-build' });
+    if (!created.ok) throw new Error('checkpoint creation failed');
+
+    const summary = await service.execute(actorA, { operation: 'summary', checkpointId: created.value.checkpoint.id, maxEntries: 10 } as WorkspaceCheckpointInput);
+    expect(summary).toMatchObject({
+      ok: true,
+      value: { operation: 'summary', added: 1, removed: 2, changed: 3, unchanged: 4, scanned: 10, truncated: true },
+    });
+    expect(JSON.stringify(summary)).not.toContain('src/new.ts');
+    await expect(service.execute(actorB, { operation: 'summary', checkpointId: created.value.checkpoint.id } as WorkspaceCheckpointInput)).resolves.toMatchObject({ ok: false, error: { code: 'FILE_NOT_FOUND' } });
+  });
 });

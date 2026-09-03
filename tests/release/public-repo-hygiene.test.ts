@@ -26,6 +26,21 @@ async function trackedFiles(): Promise<string[]> {
   return present;
 }
 
+async function isSourceExport(): Promise<boolean> {
+  try {
+    const current = JSON.parse(await readFile(path.join(repositoryRoot, 'package.json'), 'utf8')) as { version?: unknown };
+    const { stdout } = await execFileAsync('git', ['show', 'HEAD:package.json'], {
+      cwd: repositoryRoot,
+      encoding: 'utf8',
+      maxBuffer: 256 * 1024,
+    });
+    const committed = JSON.parse(stdout) as { version?: unknown };
+    return current.version !== committed.version;
+  } catch {
+    return true;
+  }
+}
+
 describe('public repository hygiene', () => {
   it('tracks only Linux-headless platform sources and artifacts', async () => {
     const tracked = await trackedFiles();
@@ -98,8 +113,21 @@ describe('public repository hygiene', () => {
   it('does not link README readers to ignored local documentation', async () => {
     const readme = await readFile(path.join(repositoryRoot, 'README.md'), 'utf8');
     const tracked = new Set(await trackedFiles());
+    const sourceExport = await isSourceExport();
     const localDocLinks = Array.from(readme.matchAll(/\[[^\]]+\]\((docs\/[^)#]+)(?:#[^)]+)?\)/g), (match) => match[1]);
-    const missing = localDocLinks.filter((link): link is string => link !== undefined && !tracked.has(link));
+    const missing: string[] = [];
+    for (const link of localDocLinks) {
+      if (link === undefined || tracked.has(link)) continue;
+      if (sourceExport) {
+        try {
+          await access(path.join(repositoryRoot, link));
+          continue;
+        } catch {
+          // Source exports have no authoritative Git index; a missing file is still a broken link.
+        }
+      }
+      missing.push(link);
+    }
 
     expect(missing, `README links to untracked docs: ${missing.join(', ')}`).toEqual([]);
   });

@@ -66,6 +66,18 @@ export function inspectDestructiveOperation(toolName: string, input: unknown): D
       return ['service-restart', 'file-write', 'project-command'].includes(String(value.operation ?? ''))
         ? destructive('remote host mutation requires a matching preview and explicit confirmation')
         : { destructive: false };
+    case 'remote_rollout':
+      return ['execute', 'cancel'].includes(String(value.operation ?? ''))
+        ? destructive('remote rollout can restart services on registered hosts and requires explicit confirmation')
+        : { destructive: false };
+    case 'remote_rollout_resume':
+      return value.operation === 'execute'
+        ? destructive('resuming a remote rollout can restart previously failed services and requires explicit confirmation')
+        : { destructive: false };
+    case 'support_bundle':
+      return value.dry_run === false
+        ? destructive('writing a support archive requires explicit confirmation')
+        : { destructive: false };
     case 'mcp_call':
       return destructive('child MCP side effects cannot be proven non-destructive at the gateway boundary');
     case 'window':

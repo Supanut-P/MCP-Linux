@@ -10,6 +10,7 @@ export const capabilityToolNames = Object.freeze([
   'health',
   'system_info',
   'journal',
+  'service_logs',
   'network',
   'service',
   'package',

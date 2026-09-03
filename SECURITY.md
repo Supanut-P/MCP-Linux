@@ -46,6 +46,10 @@ one of these boundaries:
 - a secret appears in logs, audit, diagnostics, command arguments, or Git; or
 - an unauthenticated client reaches a protected HTTP MCP endpoint.
 
+The `support_bundle` diagnostic path uses the shared redaction policy, a 2 MiB
+archive cap, a 200-event cap, registered-root path checks, and explicit
+dry-run confirmation.
+
 v1 operational evidence should also include the package verifier output,
 contract snapshot result, upgrade/rollback test result, and (when claiming
 runtime stability) the output from `scripts/soak-linux-headless.sh`. The soak

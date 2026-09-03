@@ -1,6 +1,7 @@
 # baitonghub-linux-mcp Tool Contract
 
-Status: God-Tier Wave 0–8 additive contract snapshot for `v4.0.0`.
+Status: Baitonghub-Linux-mcp v1.13.0 additive contract snapshot for the Linux
+headless runtime.
 
 This is the compatibility contract for the current MCP surface. The runtime
 advertises the JSON Schema for every input through `tools/list`; the TypeScript
@@ -8,14 +9,16 @@ Zod schemas in `packages/mcp-server/src/tools/` are the implementation source
 of truth. The existing human-oriented catalog remains useful for field details,
 while this document records the primitive/core contract, preserves the earlier
 compatibility baseline, and records policy class, annotations, and schema source.
-The full configurable v4 registry contains 214 tools; the default runtime advertises 208 because the six `codex_*` delegation tools are opt-in. The additive v4 entries are defined
+The full configurable v1.13 registry contains 216 tools; the default headless
+runtime advertises 210 because the six `codex_*` delegation tools are opt-in.
+The additive entries are defined
 in `packages/mcp-server/src/upgrade-catalog.ts` and the exact runtime order is
 verified by `packages/mcp-server/src/tool-registry.test.ts`.
 
 <!-- BEGIN GENERATED TOOL REGISTRY -->
 ## Generated live ToolRegistry index
 
-This block is generated from the built `ToolRegistry`. Current count: **210 tools**.
+This block is generated from the built `ToolRegistry`. Current count: **227 tools**.
 Run `pnpm docs:tools` after intentionally changing the registry; CI runs `pnpm docs:tools:check` and fails on drift.
 
 | # | Tool | Permission | Read-only | Destructive |
@@ -65,171 +68,188 @@ Run `pnpm docs:tools` after intentionally changing the registry; CI runs `pnpm d
 | 43 | `window` | DANGEROUS | no | yes |
 | 44 | `health` | READ | yes | no |
 | 45 | `system_info` | READ | yes | no |
-| 46 | `journal` | READ | yes | no |
-| 47 | `network` | READ | yes | no |
-| 48 | `service` | DANGEROUS | no | yes |
-| 49 | `package` | DANGEROUS | no | yes |
-| 50 | `schedule` | DANGEROUS | no | yes |
-| 51 | `notification` | EXECUTE | no | no |
-| 52 | `file_dialog` | EXECUTE | yes | no |
-| 53 | `clipboard` | DANGEROUS | no | no |
-| 54 | `web_fetch` | DANGEROUS | yes | no |
-| 55 | `container` | DANGEROUS | no | yes |
-| 56 | `archive` | DANGEROUS | no | yes |
-| 57 | `dependency_audit` | READ | yes | no |
-| 58 | `remote_host` | DANGEROUS | no | yes |
-| 59 | `remote_fleet` | READ | yes | no |
-| 60 | `artifact_verify` | READ | yes | no |
-| 61 | `http_probe` | READ | yes | no |
-| 62 | `storage_usage` | READ | yes | no |
-| 63 | `backup` | DANGEROUS | no | yes |
-| 64 | `db_inspect` | READ | yes | no |
-| 65 | `db_query` | READ | yes | no |
-| 66 | `skills_list` | DANGEROUS | no | yes |
-| 67 | `skills_read` | DANGEROUS | no | yes |
-| 68 | `mcp_list` | DANGEROUS | no | yes |
-| 69 | `mcp_describe` | DANGEROUS | no | yes |
-| 70 | `mcp_call` | DANGEROUS | no | yes |
-| 71 | `workspace_context` | READ | yes | no |
-| 72 | `workspace_context_continue` | READ | yes | no |
-| 73 | `workspace_full_scan` | READ | yes | no |
-| 74 | `workspace_full_scan_continue` | READ | yes | no |
-| 75 | `workspace_snapshot` | READ | yes | no |
-| 76 | `search_all` | READ | yes | no |
-| 77 | `read_many_files` | READ | yes | no |
-| 78 | `read_file_page` | READ | yes | no |
-| 79 | `read_file_page_continue` | READ | yes | no |
-| 80 | `workspace_index` | READ | yes | no |
-| 81 | `workspace_index_status` | READ | yes | no |
-| 82 | `workspace_index_watch` | READ | yes | no |
-| 83 | `workspace_index_stop` | READ | yes | no |
-| 84 | `session_handoff` | READ | yes | no |
-| 85 | `verify_incremental` | EXECUTE | no | no |
-| 86 | `symbol_search` | READ | yes | no |
-| 87 | `find_definition` | READ | yes | no |
-| 88 | `find_references` | READ | yes | no |
-| 89 | `find_implementations` | READ | yes | no |
-| 90 | `call_hierarchy` | READ | yes | no |
-| 91 | `import_graph` | READ | yes | no |
-| 92 | `dependency_graph` | READ | yes | no |
-| 93 | `module_graph` | READ | yes | no |
-| 94 | `type_search` | READ | yes | no |
-| 95 | `trace_symbol` | READ | yes | no |
-| 96 | `context_ranking` | READ | yes | no |
-| 97 | `debug_context` | READ | yes | no |
-| 98 | `review_context` | READ | yes | no |
-| 99 | `change_context` | READ | yes | no |
-| 100 | `symbol_context` | READ | yes | no |
-| 101 | `test_context` | READ | yes | no |
-| 102 | `dependency_context` | READ | yes | no |
-| 103 | `git_context` | READ | yes | no |
-| 104 | `frontend_context` | READ | yes | no |
-| 105 | `backend_context` | READ | yes | no |
-| 106 | `route_intent` | READ | yes | no |
-| 107 | `recipe_list` | READ | yes | no |
-| 108 | `recipe_describe` | READ | yes | no |
-| 109 | `recipe_run` | EXECUTE | no | no |
-| 110 | `dry_run` | READ | yes | no |
-| 111 | `review_changes` | READ | yes | no |
-| 112 | `changed_symbols` | READ | yes | no |
-| 113 | `affected_modules` | READ | yes | no |
-| 114 | `git_history_context` | READ | yes | no |
-| 115 | `git_blame_context` | READ | yes | no |
-| 116 | `discover_tests` | READ | yes | no |
-| 117 | `run_affected_tests` | EXECUTE | no | no |
-| 118 | `test_failures` | READ | yes | no |
-| 119 | `coverage_context` | READ | yes | no |
-| 120 | `test_history` | READ | yes | no |
-| 121 | `cache_stats` | READ | yes | no |
-| 122 | `cache_clear` | WRITE | no | no |
-| 123 | `cache_invalidate` | WRITE | no | no |
-| 124 | `hook_list` | READ | yes | no |
-| 125 | `hook_register` | WRITE | no | no |
-| 126 | `hook_remove` | WRITE | no | no |
-| 127 | `skill_match` | READ | yes | no |
-| 128 | `skill_load` | READ | yes | no |
-| 129 | `plugin_install` | DANGEROUS | no | yes |
-| 130 | `plugin_list` | READ | yes | no |
-| 131 | `plugin_enable` | WRITE | no | no |
-| 132 | `plugin_disable` | WRITE | no | no |
-| 133 | `plugin_remove` | DANGEROUS | no | yes |
-| 134 | `session_context` | READ | yes | no |
-| 135 | `session_checkpoint` | WRITE | no | no |
-| 136 | `session_resume` | READ | yes | no |
-| 137 | `session_history` | READ | yes | no |
-| 138 | `response_mode` | READ | yes | no |
-| 139 | `inspect_web_app` | READ | yes | no |
-| 140 | `debug_ui` | READ | yes | no |
-| 141 | `capture_ui_state` | READ | yes | no |
-| 142 | `form_context` | READ | yes | no |
-| 143 | `network_context` | READ | yes | no |
-| 144 | `console_context` | READ | yes | no |
-| 145 | `browser_debug_context` | READ | yes | no |
-| 146 | `service_context` | READ | yes | no |
-| 147 | `process_context` | READ | yes | no |
-| 148 | `port_context` | READ | yes | no |
-| 149 | `installed_runtime_context` | READ | yes | no |
-| 150 | `path_context` | READ | yes | no |
-| 151 | `startup_context` | READ | yes | no |
-| 152 | `mcp_discover` | READ | yes | no |
-| 153 | `mcp_health` | READ | yes | no |
-| 154 | `mcp_resources` | READ | yes | no |
-| 155 | `task_create` | EXECUTE | no | no |
-| 156 | `task_status` | READ | yes | no |
-| 157 | `task_cancel` | EXECUTE | no | no |
-| 158 | `task_result` | READ | yes | no |
-| 159 | `task_list` | READ | yes | no |
-| 160 | `delegate` | EXECUTE | no | no |
-| 161 | `delegate_status` | READ | yes | no |
-| 162 | `delegate_cancel` | EXECUTE | no | no |
-| 163 | `delegate_result` | READ | yes | no |
-| 164 | `parallel_delegate` | EXECUTE | no | no |
-| 165 | `permission_check` | READ | yes | no |
-| 166 | `permission_profile` | READ | yes | no |
-| 167 | `live_logs_query` | READ | yes | no |
-| 168 | `live_logs_status` | READ | yes | no |
-| 169 | `telemetry_dashboard` | READ | yes | no |
-| 170 | `context_economy_stats` | READ | yes | no |
-| 171 | `execution_plan` | READ | yes | no |
-| 172 | `repo_map` | READ | yes | no |
-| 173 | `context_expand` | READ | yes | no |
-| 174 | `recovery_status` | READ | yes | no |
-| 175 | `tool_schema_list` | READ | yes | no |
-| 176 | `tool_schema_register` | WRITE | no | no |
-| 177 | `capabilities` | READ | yes | no |
-| 178 | `tool_search` | READ | yes | no |
-| 179 | `tool_dynamic_filter` | READ | yes | no |
-| 180 | `tool_describe` | READ | yes | no |
-| 181 | `tool_categories` | READ | yes | no |
-| 182 | `tool_function_find` | READ | yes | no |
-| 183 | `tool_aliases` | READ | yes | no |
-| 184 | `mcp_hub` | READ | yes | no |
-| 185 | `dev_context` | READ | yes | no |
-| 186 | `recipe_catalog` | READ | yes | no |
-| 187 | `capture_screenshot` | READ | yes | no |
-| 188 | `compare_screenshot` | READ | yes | no |
-| 189 | `dom_snapshot` | READ | yes | no |
-| 190 | `layout_metadata` | READ | yes | no |
-| 191 | `visual_context` | READ | yes | no |
-| 192 | `inspect_pdf` | READ | yes | no |
-| 193 | `compare_pdf_pages` | READ | yes | no |
-| 194 | `project_profile_get` | READ | yes | no |
-| 195 | `project_profile_set` | WRITE | no | no |
-| 196 | `handoff_context` | READ | yes | no |
-| 197 | `benchmark_run` | EXECUTE | no | no |
-| 198 | `regression_report` | READ | yes | no |
-| 199 | `lsp_diagnostics` | READ | yes | no |
-| 200 | `lsp_rename` | WRITE | no | no |
-| 201 | `debug_attach` | EXECUTE | no | no |
-| 202 | `debug_step` | EXECUTE | no | no |
-| 203 | `git_worktree_spawn` | DANGEROUS | no | yes |
-| 204 | `git_worktree_remove` | DANGEROUS | no | yes |
-| 205 | `pdf_extract_tables` | READ | yes | no |
-| 206 | `self_heal_plan` | READ | yes | no |
-| 207 | `self_heal_apply` | DANGEROUS | no | yes |
-| 208 | `skills_import` | WRITE | no | no |
-| 209 | `agent_swarm_run` | EXECUTE | no | no |
-| 210 | `tool_batch` | DANGEROUS | no | yes |
+| 46 | `runtime_metrics` | READ | yes | no |
+| 47 | `journal` | READ | yes | no |
+| 48 | `service_logs` | READ | yes | no |
+| 49 | `network` | READ | yes | no |
+| 50 | `service` | DANGEROUS | no | yes |
+| 51 | `package` | DANGEROUS | no | yes |
+| 52 | `schedule` | DANGEROUS | no | yes |
+| 53 | `notification` | EXECUTE | no | no |
+| 54 | `file_dialog` | EXECUTE | yes | no |
+| 55 | `clipboard` | DANGEROUS | no | no |
+| 56 | `web_fetch` | DANGEROUS | yes | no |
+| 57 | `container` | DANGEROUS | no | yes |
+| 58 | `archive` | DANGEROUS | no | yes |
+| 59 | `dependency_audit` | READ | yes | no |
+| 60 | `remote_host` | DANGEROUS | no | yes |
+| 61 | `remote_fleet` | READ | yes | no |
+| 62 | `remote_rollout` | DANGEROUS | no | yes |
+| 63 | `remote_rollout_resume` | DANGEROUS | no | yes |
+| 64 | `artifact_verify` | READ | yes | no |
+| 65 | `http_probe` | READ | yes | no |
+| 66 | `storage_usage` | READ | yes | no |
+| 67 | `backup` | DANGEROUS | no | yes |
+| 68 | `audit_query` | READ | yes | no |
+| 69 | `task_events` | READ | yes | no |
+| 70 | `task_history` | READ | yes | no |
+| 71 | `diagnostics_snapshot` | READ | yes | no |
+| 72 | `remote_fleet_diff` | READ | yes | no |
+| 73 | `release_verify` | READ | yes | no |
+| 74 | `environment_preflight` | READ | yes | no |
+| 75 | `workflow_preflight` | READ | yes | no |
+| 76 | `workspace_checkpoint` | WRITE | no | no |
+| 77 | `db_inspect` | READ | yes | no |
+| 78 | `db_query` | READ | yes | no |
+| 79 | `target_catalog` | READ | yes | no |
+| 80 | `support_bundle` | DANGEROUS | no | yes |
+| 81 | `skills_list` | DANGEROUS | no | yes |
+| 82 | `skills_read` | DANGEROUS | no | yes |
+| 83 | `mcp_list` | DANGEROUS | no | yes |
+| 84 | `mcp_describe` | DANGEROUS | no | yes |
+| 85 | `mcp_call` | DANGEROUS | no | yes |
+| 86 | `workspace_context` | READ | yes | no |
+| 87 | `workspace_context_continue` | READ | yes | no |
+| 88 | `workspace_full_scan` | READ | yes | no |
+| 89 | `workspace_full_scan_continue` | READ | yes | no |
+| 90 | `workspace_snapshot` | READ | yes | no |
+| 91 | `search_all` | READ | yes | no |
+| 92 | `read_many_files` | READ | yes | no |
+| 93 | `read_file_page` | READ | yes | no |
+| 94 | `read_file_page_continue` | READ | yes | no |
+| 95 | `workspace_index` | READ | yes | no |
+| 96 | `workspace_index_status` | READ | yes | no |
+| 97 | `workspace_index_watch` | READ | yes | no |
+| 98 | `workspace_index_stop` | READ | yes | no |
+| 99 | `workspace_changes` | READ | yes | no |
+| 100 | `session_handoff` | READ | yes | no |
+| 101 | `verify_incremental` | EXECUTE | no | no |
+| 102 | `symbol_search` | READ | yes | no |
+| 103 | `find_definition` | READ | yes | no |
+| 104 | `find_references` | READ | yes | no |
+| 105 | `find_implementations` | READ | yes | no |
+| 106 | `call_hierarchy` | READ | yes | no |
+| 107 | `import_graph` | READ | yes | no |
+| 108 | `dependency_graph` | READ | yes | no |
+| 109 | `module_graph` | READ | yes | no |
+| 110 | `type_search` | READ | yes | no |
+| 111 | `trace_symbol` | READ | yes | no |
+| 112 | `context_ranking` | READ | yes | no |
+| 113 | `debug_context` | READ | yes | no |
+| 114 | `review_context` | READ | yes | no |
+| 115 | `change_context` | READ | yes | no |
+| 116 | `symbol_context` | READ | yes | no |
+| 117 | `test_context` | READ | yes | no |
+| 118 | `dependency_context` | READ | yes | no |
+| 119 | `git_context` | READ | yes | no |
+| 120 | `frontend_context` | READ | yes | no |
+| 121 | `backend_context` | READ | yes | no |
+| 122 | `route_intent` | READ | yes | no |
+| 123 | `recipe_list` | READ | yes | no |
+| 124 | `recipe_describe` | READ | yes | no |
+| 125 | `recipe_run` | EXECUTE | no | no |
+| 126 | `dry_run` | READ | yes | no |
+| 127 | `review_changes` | READ | yes | no |
+| 128 | `changed_symbols` | READ | yes | no |
+| 129 | `affected_modules` | READ | yes | no |
+| 130 | `git_history_context` | READ | yes | no |
+| 131 | `git_blame_context` | READ | yes | no |
+| 132 | `discover_tests` | READ | yes | no |
+| 133 | `run_affected_tests` | EXECUTE | no | no |
+| 134 | `test_failures` | READ | yes | no |
+| 135 | `coverage_context` | READ | yes | no |
+| 136 | `test_history` | READ | yes | no |
+| 137 | `cache_stats` | READ | yes | no |
+| 138 | `cache_clear` | WRITE | no | no |
+| 139 | `cache_invalidate` | WRITE | no | no |
+| 140 | `hook_list` | READ | yes | no |
+| 141 | `hook_register` | WRITE | no | no |
+| 142 | `hook_remove` | WRITE | no | no |
+| 143 | `skill_match` | READ | yes | no |
+| 144 | `skill_load` | READ | yes | no |
+| 145 | `plugin_install` | DANGEROUS | no | yes |
+| 146 | `plugin_list` | READ | yes | no |
+| 147 | `plugin_enable` | WRITE | no | no |
+| 148 | `plugin_disable` | WRITE | no | no |
+| 149 | `plugin_remove` | DANGEROUS | no | yes |
+| 150 | `session_context` | READ | yes | no |
+| 151 | `session_checkpoint` | WRITE | no | no |
+| 152 | `session_resume` | READ | yes | no |
+| 153 | `session_history` | READ | yes | no |
+| 154 | `response_mode` | READ | yes | no |
+| 155 | `inspect_web_app` | READ | yes | no |
+| 156 | `debug_ui` | READ | yes | no |
+| 157 | `capture_ui_state` | READ | yes | no |
+| 158 | `form_context` | READ | yes | no |
+| 159 | `network_context` | READ | yes | no |
+| 160 | `console_context` | READ | yes | no |
+| 161 | `browser_debug_context` | READ | yes | no |
+| 162 | `service_context` | READ | yes | no |
+| 163 | `process_context` | READ | yes | no |
+| 164 | `port_context` | READ | yes | no |
+| 165 | `installed_runtime_context` | READ | yes | no |
+| 166 | `path_context` | READ | yes | no |
+| 167 | `startup_context` | READ | yes | no |
+| 168 | `mcp_discover` | READ | yes | no |
+| 169 | `mcp_health` | READ | yes | no |
+| 170 | `mcp_resources` | READ | yes | no |
+| 171 | `task_create` | EXECUTE | no | no |
+| 172 | `task_status` | READ | yes | no |
+| 173 | `task_cancel` | EXECUTE | no | no |
+| 174 | `task_result` | READ | yes | no |
+| 175 | `task_list` | READ | yes | no |
+| 176 | `delegate` | EXECUTE | no | no |
+| 177 | `delegate_status` | READ | yes | no |
+| 178 | `delegate_cancel` | EXECUTE | no | no |
+| 179 | `delegate_result` | READ | yes | no |
+| 180 | `parallel_delegate` | EXECUTE | no | no |
+| 181 | `permission_check` | READ | yes | no |
+| 182 | `permission_profile` | READ | yes | no |
+| 183 | `live_logs_query` | READ | yes | no |
+| 184 | `live_logs_status` | READ | yes | no |
+| 185 | `telemetry_dashboard` | READ | yes | no |
+| 186 | `context_economy_stats` | READ | yes | no |
+| 187 | `execution_plan` | READ | yes | no |
+| 188 | `repo_map` | READ | yes | no |
+| 189 | `context_expand` | READ | yes | no |
+| 190 | `recovery_status` | READ | yes | no |
+| 191 | `tool_schema_list` | READ | yes | no |
+| 192 | `tool_schema_register` | WRITE | no | no |
+| 193 | `capabilities` | READ | yes | no |
+| 194 | `tool_search` | READ | yes | no |
+| 195 | `tool_dynamic_filter` | READ | yes | no |
+| 196 | `tool_describe` | READ | yes | no |
+| 197 | `tool_categories` | READ | yes | no |
+| 198 | `tool_function_find` | READ | yes | no |
+| 199 | `tool_aliases` | READ | yes | no |
+| 200 | `mcp_hub` | READ | yes | no |
+| 201 | `dev_context` | READ | yes | no |
+| 202 | `recipe_catalog` | READ | yes | no |
+| 203 | `capture_screenshot` | READ | yes | no |
+| 204 | `compare_screenshot` | READ | yes | no |
+| 205 | `dom_snapshot` | READ | yes | no |
+| 206 | `layout_metadata` | READ | yes | no |
+| 207 | `visual_context` | READ | yes | no |
+| 208 | `inspect_pdf` | READ | yes | no |
+| 209 | `compare_pdf_pages` | READ | yes | no |
+| 210 | `project_profile_get` | READ | yes | no |
+| 211 | `project_profile_set` | WRITE | no | no |
+| 212 | `handoff_context` | READ | yes | no |
+| 213 | `benchmark_run` | EXECUTE | no | no |
+| 214 | `regression_report` | READ | yes | no |
+| 215 | `lsp_diagnostics` | READ | yes | no |
+| 216 | `lsp_rename` | WRITE | no | no |
+| 217 | `debug_attach` | EXECUTE | no | no |
+| 218 | `debug_step` | EXECUTE | no | no |
+| 219 | `git_worktree_spawn` | DANGEROUS | no | yes |
+| 220 | `git_worktree_remove` | DANGEROUS | no | yes |
+| 221 | `pdf_extract_tables` | READ | yes | no |
+| 222 | `self_heal_plan` | READ | yes | no |
+| 223 | `self_heal_apply` | DANGEROUS | no | yes |
+| 224 | `skills_import` | WRITE | no | no |
+| 225 | `agent_swarm_run` | EXECUTE | no | no |
+| 226 | `policy_explain` | READ | yes | no |
+| 227 | `tool_batch` | DANGEROUS | no | yes |
 <!-- END GENERATED TOOL REGISTRY -->
 
 ## v1.2 bounded operator probes
@@ -286,7 +306,7 @@ Destructive operations still require explicit chat confirmation by default. The 
 
 ## Core primitive runtime catalog
 
-The table below records the core primitive layer. The full **214-tool** configurable runtime
+The table below records the core primitive layer. The full **216-tool** configurable runtime
 index is generated from `ToolRegistry` in the project README so it cannot be
 mistaken for this smaller primitive table. The `schema` column identifies the
 authoritative implementation file and the number of top-level input properties
@@ -505,7 +525,14 @@ workspace_context: {
 workspace_context_continue: { continuationToken: string; pageSize?: number }
 workspace_full_scan: { workspaceId?: string; path?: string; glob?: string; pageSize?: number; includeIgnored?: boolean }
 workspace_full_scan_continue: { continuationToken: string; pageSize?: number }
-workspace_snapshot: { workspaceId: string }
+workspace_snapshot: {
+  workspaceId: string;
+  operation?: 'identity' | 'manifest';
+  path?: string;
+  maxEntries?: number;
+  hashMode?: 'none' | 'sha256';
+  cursor?: string;
+}
 search_all: { query: string; workspaceId?: string; path?: string; glob?: string; maxResults?: number; includeIgnored?: boolean }
 read_many_files: { workspaceId?: string; files: Array<{ path: string; startLine?: number; endLine?: number }> }
 ```

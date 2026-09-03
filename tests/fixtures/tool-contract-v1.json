@@ -286,6 +286,58 @@
       }
     },
     {
+      "name": "audit_query",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "maxLength": 512,
+            "minLength": 8,
+            "type": "string"
+          },
+          "limit": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "resultCode": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "since": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "tool": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "until": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
       "name": "backend_context",
       "permission": "READ",
       "annotations": {
@@ -1321,6 +1373,20 @@
       }
     },
     {
+      "name": "diagnostics_snapshot",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
       "name": "discover_tests",
       "permission": "READ",
       "annotations": {
@@ -1470,6 +1536,20 @@
       "inputSchema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "additionalProperties": {},
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "environment_preflight",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
         "properties": {},
         "type": "object"
       }
@@ -1874,7 +1954,9 @@
               "window",
               "health",
               "system_info",
+              "runtime_metrics",
               "journal",
+              "service_logs",
               "network",
               "service",
               "package",
@@ -2798,6 +2880,41 @@
       }
     },
     {
+      "name": "policy_explain",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "operation": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "tool": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool"
+        ],
+        "type": "object"
+      }
+    },
+    {
       "name": "port_context",
       "permission": "READ",
       "annotations": {
@@ -3460,6 +3577,75 @@
       }
     },
     {
+      "name": "release_verify",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "artifacts": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "sha256": {
+                  "pattern": "^[a-f0-9]{64}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "type": "object"
+            },
+            "maxItems": 4,
+            "minItems": 1,
+            "type": "array"
+          },
+          "checksumsPath": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "metadataPath": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "sbomPath": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "version": {
+            "pattern": "^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$",
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "metadataPath",
+          "checksumsPath",
+          "artifacts"
+        ],
+        "type": "object"
+      }
+    },
+    {
       "name": "remote_fleet",
       "permission": "READ",
       "annotations": {
@@ -3483,6 +3669,12 @@
             "minItems": 1,
             "type": "array"
           },
+          "maxParallel": {
+            "default": 4,
+            "maximum": 4,
+            "minimum": 1,
+            "type": "integer"
+          },
           "metadata": {
             "additionalProperties": {},
             "propertyNames": {
@@ -3494,7 +3686,11 @@
             "enum": [
               "health",
               "inventory",
-              "service-status"
+              "service-status",
+              "disk_usage",
+              "checksum",
+              "network",
+              "snapshot"
             ],
             "type": "string"
           },
@@ -3519,7 +3715,44 @@
         "required": [
           "hostIds",
           "operation",
+          "maxParallel",
           "dry_run"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "remote_fleet_diff",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "baseline": {},
+          "hostIds": {
+            "items": {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          },
+          "maxParallel": {
+            "default": 4,
+            "maximum": 4,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "hostIds",
+          "baseline",
+          "maxParallel"
         ],
         "type": "object"
       }
@@ -3627,6 +3860,228 @@
           "dry_run"
         ],
         "type": "object"
+      }
+    },
+    {
+      "name": "remote_rollout",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "canaryCount": {
+                "maximum": 9007199254740991,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "expiresAt": {
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                "type": "string"
+              },
+              "hostIds": {
+                "items": {
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "minItems": 1,
+                "type": "array"
+              },
+              "maxParallel": {
+                "default": 2,
+                "maximum": 4,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "operation": {
+                "const": "plan",
+                "type": "string"
+              },
+              "unit": {
+                "pattern": "^[A-Za-z0-9_.@:-]{1,256}\\.service$",
+                "type": "string"
+              },
+              "workspaceId": {
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "operation",
+              "workspaceId",
+              "hostIds",
+              "unit",
+              "canaryCount",
+              "maxParallel"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "execute",
+                "type": "string"
+              },
+              "previewHash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "rolloutId": {
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "type": "string"
+              },
+              "userConfirmed": {
+                "const": true,
+                "type": "boolean"
+              },
+              "workspaceId": {
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "operation",
+              "rolloutId",
+              "workspaceId",
+              "previewHash",
+              "userConfirmed"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "status",
+                "type": "string"
+              },
+              "rolloutId": {
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "operation",
+              "rolloutId"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "cancel",
+                "type": "string"
+              },
+              "rolloutId": {
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "type": "string"
+              },
+              "userConfirmed": {
+                "const": true,
+                "type": "boolean"
+              },
+              "workspaceId": {
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "operation",
+              "rolloutId",
+              "workspaceId",
+              "userConfirmed"
+            ],
+            "type": "object"
+          }
+        ]
+      }
+    },
+    {
+      "name": "remote_rollout_resume",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "preview",
+                "type": "string"
+              },
+              "rolloutId": {
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "type": "string"
+              },
+              "workspaceId": {
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "operation",
+              "rolloutId",
+              "workspaceId"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "execute",
+                "type": "string"
+              },
+              "previewHash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "rolloutId": {
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "type": "string"
+              },
+              "userConfirmed": {
+                "const": true,
+                "type": "boolean"
+              },
+              "workspaceId": {
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "operation",
+              "rolloutId",
+              "workspaceId",
+              "previewHash",
+              "userConfirmed"
+            ],
+            "type": "object"
+          }
+        ]
       }
     },
     {
@@ -3739,6 +4194,48 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "additionalProperties": {},
         "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "runtime_metrics",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "operation": {
+            "const": "snapshot",
+            "default": "snapshot",
+            "type": "string"
+          },
+          "scopes": {
+            "default": [
+              "host",
+              "runtime",
+              "tasks"
+            ],
+            "items": {
+              "enum": [
+                "host",
+                "runtime",
+                "tasks"
+              ],
+              "type": "string"
+            },
+            "maxItems": 3,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "operation",
+          "scopes"
+        ],
         "type": "object"
       }
     },
@@ -4078,6 +4575,55 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "additionalProperties": {},
         "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "service_logs",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "pattern": "^[A-Za-z0-9_-]{1,512}$",
+            "type": "string"
+          },
+          "lines": {
+            "default": 100,
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "maxBytes": {
+            "default": 262144,
+            "maximum": 262144,
+            "minimum": 1024,
+            "type": "integer"
+          },
+          "operation": {
+            "default": "read",
+            "enum": [
+              "read",
+              "tail"
+            ],
+            "type": "string"
+          },
+          "unit": {
+            "pattern": "^[A-Za-z0-9_.@:-]{1,256}\\.service$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "unit",
+          "lines",
+          "maxBytes"
+        ],
         "type": "object"
       }
     },
@@ -4458,6 +5004,66 @@
       }
     },
     {
+      "name": "support_bundle",
+      "permission": "DANGEROUS",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "destination": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "dry_run": {
+            "default": true,
+            "type": "boolean"
+          },
+          "include": {
+            "items": {
+              "enum": [
+                "doctor",
+                "health",
+                "runtime",
+                "audit-summary",
+                "recent-errors",
+                "package-files"
+              ],
+              "type": "string"
+            },
+            "maxItems": 6,
+            "minItems": 1,
+            "type": "array"
+          },
+          "previewHash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "userConfirmed": {
+            "default": false,
+            "type": "boolean"
+          },
+          "workspaceId": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "destination",
+          "include",
+          "dry_run",
+          "userConfirmed"
+        ],
+        "type": "object"
+      }
+    },
+    {
       "name": "symbol_context",
       "permission": "READ",
       "annotations": {
@@ -4556,6 +5162,65 @@
       }
     },
     {
+      "name": "target_catalog",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "enum": [
+                  "database",
+                  "remote-host"
+                ],
+                "type": "string"
+              },
+              "operation": {
+                "const": "list",
+                "type": "string"
+              }
+            },
+            "required": [
+              "operation"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "database",
+                  "remote-host"
+                ],
+                "type": "string"
+              },
+              "operation": {
+                "const": "describe",
+                "type": "string"
+              }
+            },
+            "required": [
+              "operation",
+              "kind",
+              "id"
+            ],
+            "type": "object"
+          }
+        ]
+      }
+    },
+    {
       "name": "task_cancel",
       "permission": "EXECUTE",
       "annotations": {
@@ -4580,6 +5245,105 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "additionalProperties": {},
         "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "task_events",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "maxLength": 512,
+            "minLength": 8,
+            "type": "string"
+          },
+          "limit": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "taskId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "waitMs": {
+            "maximum": 30000,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "taskId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "task_history",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "maxLength": 512,
+            "minLength": 8,
+            "type": "string"
+          },
+          "limit": {
+            "default": 50,
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "since": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "running",
+              "completed",
+              "failed",
+              "timed_out",
+              "cancelled",
+              "termination_unverified",
+              "expired"
+            ],
+            "type": "string"
+          },
+          "until": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "workspaceHash": {
+            "pattern": "^[a-f0-9]{32}$",
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "limit"
+        ],
         "type": "object"
       }
     },
@@ -5483,6 +6247,172 @@
       }
     },
     {
+      "name": "workflow_preflight",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "workspace_changes",
+      "permission": "READ",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "maxEvents": {
+                "default": 50,
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "operation": {
+                "const": "snapshot",
+                "type": "string"
+              },
+              "workspaceId": {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "operation",
+              "workspaceId",
+              "maxEvents"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "afterSequence": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "maxEvents": {
+                "default": 50,
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "operation": {
+                "const": "diff",
+                "type": "string"
+              },
+              "workspaceId": {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "operation",
+              "workspaceId",
+              "afterSequence",
+              "maxEvents"
+            ],
+            "type": "object"
+          }
+        ]
+      }
+    },
+    {
+      "name": "workspace_checkpoint",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "checkpointId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "limit": {
+            "maximum": 32,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "maxEntries": {
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "name": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+            "type": "string"
+          },
+          "operation": {
+            "enum": [
+              "create",
+              "list",
+              "get",
+              "diff",
+              "compare",
+              "prune",
+              "stats",
+              "summary",
+              "delete"
+            ],
+            "type": "string"
+          },
+          "otherCheckpointId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "ttlSeconds": {
+            "maximum": 604800,
+            "minimum": 60,
+            "type": "integer"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
       "name": "workspace_context",
       "permission": "READ",
       "annotations": {
@@ -5844,6 +6774,69 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "additionalProperties": false,
         "properties": {
+          "baseline": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "bytes": {
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "mtimeMs": {
+                  "type": "number"
+                },
+                "path": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "sha256": {
+                  "pattern": "^[a-f0-9]{64}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "mtimeMs"
+              ],
+              "type": "object"
+            },
+            "maxItems": 1000,
+            "type": "array"
+          },
+          "cursor": {
+            "maxLength": 512,
+            "minLength": 8,
+            "type": "string"
+          },
+          "hashMode": {
+            "enum": [
+              "none",
+              "sha256"
+            ],
+            "type": "string"
+          },
+          "maxEntries": {
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "operation": {
+            "enum": [
+              "identity",
+              "manifest",
+              "diff",
+              "usage"
+            ],
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
           "workspaceId": {
             "maxLength": 128,
             "minLength": 1,

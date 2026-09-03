@@ -3,6 +3,7 @@ import { appError, err, ok } from '@baitonghub-linux-mcp/domain';
 import { CAPABILITY_TASK_OWNER_METADATA_KEY } from '@baitonghub-linux-mcp/capabilities';
 import { TasksProtocol } from './tasks-protocol.js';
 import type { McpApplicationServices } from './tool-registry.js';
+import type { RemoteRolloutTaskSnapshot } from './remote-rollout-runtime.js';
 
 const INVALID_PARAMS = -32602;
 const INTERNAL_ERROR = -32603;
@@ -37,6 +38,27 @@ const runningDurable = {
 };
 
 describe('TasksProtocol', () => {
+  it('projects owner-scoped remote rollout tasks through the standard task methods', async () => {
+    const snapshot: RemoteRolloutTaskSnapshot = {
+      taskId: 'rollout-1', status: 'working', createdAt: '2026-08-22T01:00:00.000Z', lastUpdatedAt: '2026-08-22T01:00:01.000Z', workspaceId: 'w',
+      events: [{ hostId: 'vm-a', phase: 'canary', attempt: 1, status: 'started', timestamp: '2026-08-22T01:00:01.000Z' }],
+    };
+    let current = snapshot;
+    const remoteRolloutTasks = {
+      async getTask(id: string): Promise<RemoteRolloutTaskSnapshot | null> { return id === current.taskId ? current : null; },
+      async listTasks(): Promise<readonly RemoteRolloutTaskSnapshot[]> { return [current]; },
+      async cancelTask(): Promise<RemoteRolloutTaskSnapshot> { current = { ...current, status: 'cancelled', lastUpdatedAt: '2026-08-22T01:00:02.000Z' }; return current; },
+      async resultTask(): Promise<RemoteRolloutTaskSnapshot> { return current; },
+    };
+    const protocol = new TasksProtocol({ remoteRolloutTasks } as unknown as McpApplicationServices);
+    expect(await protocol.getTask({ taskId: 'rollout-1' })).toMatchObject({ taskId: 'rollout-1', status: 'working', ttl: null });
+    expect((await protocol.listTasks({})).tasks.map((task) => task.taskId)).toEqual(['rollout-1']);
+    expect((await protocol.cancelTask({ taskId: 'rollout-1' })).status).toBe('cancelled');
+    const result = await protocol.taskResult({ taskId: 'rollout-1' });
+    expect(result.isError).toBe(false);
+    expect(JSON.parse(result.content[0]!.text)).toMatchObject({ taskId: 'rollout-1', status: 'cancelled' });
+  });
+
   it('maps every local task state onto the protocol status lifecycle', async () => {
     const protocol = new TasksProtocol(servicesWithTasks({
       running: { task_id: 'running', state: 'running', started_at: '2026-08-22T01:00:00.000Z' },

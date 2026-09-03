@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { appError, err, ok } from '@baitonghub-linux-mcp/domain';
+import type { Result } from '@baitonghub-linux-mcp/domain';
+import type { TargetCatalogEntry, TargetCatalogKind } from '@baitonghub-linux-mcp/application';
 import { permissionProfiles } from '@baitonghub-linux-mcp/permissions';
 import { DEFAULT_DESTRUCTIVE_AUTO_APPROVAL_POLICY, type DestructiveAutoApprovalPolicy } from '@baitonghub-linux-mcp/shared';
 import type { ActivitySinkEvent } from './activity-tracker.js';
@@ -23,14 +25,15 @@ describe('MCP tool registry', () => {
       'apply_patch', 'move_file', 'copy_file', 'delete_file', 'restore_deleted_file', 'process_start', 'process_list', 'process_status',
       'process_logs', 'process_stop', 'project_dev', 'project_test', 'project_lint',
       'project_typecheck', 'project_build', 'shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'vision_annotated_capture', 'ui_target_action', 'window', 'health',
-      'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit', 'remote_host', 'remote_fleet', 'artifact_verify', 'http_probe', 'storage_usage', 'backup', 'db_inspect', 'db_query',
+      'system_info', 'runtime_metrics', 'journal', 'service_logs', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit', 'remote_host', 'remote_fleet', 'artifact_verify', 'http_probe', 'storage_usage', 'backup', 'db_inspect', 'db_query',
       'skills_list', 'skills_read', 'mcp_list', 'mcp_describe', 'mcp_call',
       'workspace_context', 'workspace_context_continue', 'workspace_full_scan', 'workspace_full_scan_continue',
       'workspace_snapshot', 'search_all', 'read_many_files',
       'read_file_page', 'read_file_page_continue',
-      'workspace_index', 'workspace_index_status', 'workspace_index_watch', 'workspace_index_stop',
+      'workspace_index', 'workspace_index_status', 'workspace_index_watch', 'workspace_index_stop', 'workspace_changes',
       'session_handoff', 'verify_incremental',
-      ...UPGRADE_TOOL_CATALOG.filter((entry) => !['db_inspect', 'db_query', 'remote_fleet'].includes(entry.name)).map((entry) => entry.name),
+      ...UPGRADE_TOOL_CATALOG.filter((entry) => !['db_inspect', 'db_query', 'remote_fleet', 'remote_rollout', 'remote_rollout_resume', 'support_bundle'].includes(entry.name)).map((entry) => entry.name),
+      'policy_explain',
       'tool_batch',
     ]);
   });
@@ -44,13 +47,226 @@ describe('MCP tool registry', () => {
     expect(enabled.list()).toHaveLength(hidden.list().length + CODEX_TOOL_NAMES.length);
   });
 
+  it('filters the advertised and dispatchable surface by explicit server profile', async () => {
+    const core = new ToolRegistry({ capabilities: { listTools: (): readonly string[] => ['health', 'runtime_metrics', 'remote_host', 'service'], execute: async (): Promise<ReturnType<typeof ok>> => ok({}) } }, actor, {
+      serverProfileProvider: (): 'core' => 'core',
+    });
+    const coreNames = new Set(core.list().map((tool) => tool.name));
+    expect(coreNames.has('workspace_list')).toBe(true);
+    expect(coreNames.has('health')).toBe(true);
+    expect(coreNames.has('service')).toBe(false);
+    expect(coreNames.has('remote_host')).toBe(false);
+    await expect(core.invoke('service', { operation: 'status' })).resolves.toMatchObject({ isError: true, structuredContent: { error: { code: 'INVALID_INPUT' } } });
+    await expect(core.invoke('health', { operation: 'check_tool', tool: 'runtime_metrics' })).resolves.toMatchObject({ structuredContent: { serverProfile: 'core' } });
+
+    const fleet = new ToolRegistry({ capabilities: { listTools: (): readonly string[] => ['remote_host'], execute: async (): Promise<ReturnType<typeof ok>> => ok({}) } }, actor, {
+      serverProfileProvider: (): 'fleet' => 'fleet',
+    });
+    const fleetNames = new Set(fleet.list().map((tool) => tool.name));
+    expect(fleetNames.has('remote_host')).toBe(true);
+    expect(fleetNames.has('remote_fleet')).toBe(true);
+    expect(fleetNames.has('service')).toBe(false);
+  });
+
+  it('advertises and dispatches the sanitized target catalog only when the registry is wired', async () => {
+    const registry = new ToolRegistry({
+      targetCatalog: {
+        list: async (kind: TargetCatalogKind | undefined): Promise<Result<readonly TargetCatalogEntry[]>> => ok(kind === 'remote-host'
+          ? [{ id: 'vm103', kind: 'remote-host', displayName: 'VM103', provider: 'openssh', readOnly: true, rootCount: 1, createdAt: '2026-09-01T00:00:00.000Z' }]
+          : []),
+        describe: async (): Promise<Result<TargetCatalogEntry>> => ok({ id: 'vm103', kind: 'remote-host', displayName: 'VM103', provider: 'openssh', readOnly: true, rootCount: 1, createdAt: '2026-09-01T00:00:00.000Z' }),
+      },
+    }, actor);
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'target_catalog')).toBe(false);
+    expect(registry.list().map((tool) => tool.name)).toContain('target_catalog');
+    expect(registry.list().find((tool) => tool.name === 'target_catalog')?.parse({ operation: 'list', kind: 'remote-host' })).toMatchObject({ ok: true });
+    await expect(registry.invoke('target_catalog', { operation: 'list', kind: 'remote-host' })).resolves.toMatchObject({
+      structuredContent: { value: [{ id: 'vm103', kind: 'remote-host' }] },
+    });
+  });
+
+  it('advertises remote_rollout only when the durable rollout service is wired', () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'remote_rollout')).toBe(false);
+    const registry = new ToolRegistry({ remoteRollout: { execute: async (): Promise<Result<unknown>> => ok({}) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('remote_rollout');
+    expect(registry.list().find((tool) => tool.name === 'remote_rollout')?.parse({
+      operation: 'plan', workspaceId: 'workspace-1', hostIds: ['vm103'], unit: 'baitonghub-linux-mcp.service', canaryCount: 1,
+    })).toMatchObject({ ok: true });
+  });
+
+  it('advertises remote_rollout_resume only when the resume service is wired', () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'remote_rollout_resume')).toBe(false);
+    const registry = new ToolRegistry({ remoteRolloutResume: { resume: async (): Promise<Result<unknown>> => ok({}) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('remote_rollout_resume');
+    expect(registry.list().find((tool) => tool.name === 'remote_rollout_resume')?.parse({ operation: 'preview', rolloutId: '00000000-0000-4000-8000-000000000001', workspaceId: 'workspace-1' })).toMatchObject({ ok: true });
+  });
+
+  it('advertises and dispatches bounded audit_query only when the audit port is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'audit_query')).toBe(false);
+    const registry = new ToolRegistry({
+      auditQuery: {
+        execute: async (): Promise<Result<unknown>> => ok({ entries: [], count: 0, truncated: false }),
+      },
+    }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('audit_query');
+    const tool = registry.list().find((candidate) => candidate.name === 'audit_query');
+    expect(tool?.parse({ tool: 'read_file', limit: 5 })).toMatchObject({ ok: true });
+    await expect(registry.invoke('audit_query', { tool: 'read_file', limit: 5 })).resolves.toMatchObject({
+      structuredContent: { entries: [], count: 0, truncated: false },
+    });
+  });
+
+  it('dispatches the manifest branch of the backwards-compatible workspace_snapshot tool', async () => {
+    const registry = new ToolRegistry({
+      workspaceSnapshot: {
+        execute: async (_actor, input): Promise<Result<unknown>> => ok({ workspaceId: input.workspaceId, entries: [], count: 0, truncated: false }),
+      },
+    }, actor);
+    const tool = registry.list().find((candidate) => candidate.name === 'workspace_snapshot');
+    expect(tool?.parse({ workspaceId: 'workspace-1', operation: 'manifest', maxEntries: 10, hashMode: 'none' })).toMatchObject({ ok: true });
+    await expect(registry.invoke('workspace_snapshot', { workspaceId: 'workspace-1', operation: 'manifest', maxEntries: 10 })).resolves.toMatchObject({
+      structuredContent: { workspaceId: 'workspace-1', entries: [], count: 0, truncated: false },
+    });
+  });
+
+  it('advertises and dispatches bounded task_events only when the event service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'task_events')).toBe(false);
+    const registry = new ToolRegistry({
+      taskEvents: {
+        execute: async (_actor, input): Promise<Result<unknown>> => ok({ taskId: input.taskId, state: 'completed', events: [], count: 0, truncated: false }),
+      },
+    }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('task_events');
+    expect(registry.list().find((tool) => tool.name === 'task_events')?.parse({ taskId: 'task-1', limit: 10 })).toMatchObject({ ok: true });
+    await expect(registry.invoke('task_events', { taskId: 'task-1', limit: 10 })).resolves.toMatchObject({
+      structuredContent: { taskId: 'task-1', state: 'completed', events: [], count: 0, truncated: false },
+    });
+  });
+
+  it('advertises and dispatches bounded task_history only when the history service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'task_history')).toBe(false);
+    const registry = new ToolRegistry({
+      taskHistory: {
+        execute: async (_actor, input): Promise<Result<unknown>> => ok({ entries: [], count: 0, truncated: false, limit: input.limit }),
+      },
+    }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('task_history');
+    expect(registry.list().find((tool) => tool.name === 'task_history')?.parse({ state: 'completed', limit: 10 })).toMatchObject({ ok: true });
+    await expect(registry.invoke('task_history', { state: 'completed', limit: 10 })).resolves.toMatchObject({
+      structuredContent: { entries: [], count: 0, truncated: false },
+    });
+  });
+
+  it('advertises and dispatches diagnostics_snapshot only when the diagnostics service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'diagnostics_snapshot')).toBe(false);
+    const registry = new ToolRegistry({ diagnosticsSnapshot: { execute: async (): Promise<Result<unknown>> => ok({ status: 'ready' }) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('diagnostics_snapshot');
+    expect(registry.list().find((tool) => tool.name === 'diagnostics_snapshot')?.parse({})).toMatchObject({ ok: true });
+    await expect(registry.invoke('diagnostics_snapshot', {})).resolves.toMatchObject({ structuredContent: { status: 'ready' } });
+  });
+
+  it('advertises and dispatches remote_fleet_diff only when the diff service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'remote_fleet_diff')).toBe(false);
+    const registry = new ToolRegistry({ remoteFleetDiff: { execute: async (): Promise<Result<unknown>> => ok({ operation: 'remote_fleet_diff', hosts: [], summary: { requested: 0 } }) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('remote_fleet_diff');
+    expect(registry.list().find((tool) => tool.name === 'remote_fleet_diff')?.parse({ hostIds: ['vm1'], baseline: { hosts: [] } })).toMatchObject({ ok: true });
+    await expect(registry.invoke('remote_fleet_diff', { hostIds: ['vm1'], baseline: { hosts: [] } })).resolves.toMatchObject({ structuredContent: { operation: 'remote_fleet_diff' } });
+  });
+
+  it('advertises and dispatches release_verify only when the verification service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'release_verify')).toBe(false);
+    const registry = new ToolRegistry({ releaseVerify: { execute: async (): Promise<Result<unknown>> => ok({ operation: 'release_verify', verified: true, artifacts: [], reasonCodes: [] }) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('release_verify');
+    expect(registry.list().find((tool) => tool.name === 'release_verify')?.parse({ workspaceId: 'workspace-1', metadataPath: 'dist/meta.json', checksumsPath: 'dist/sums', artifacts: [{ path: 'dist/app.deb', sha256: 'a'.repeat(64) }] })).toMatchObject({ ok: true });
+    await expect(registry.invoke('release_verify', { workspaceId: 'workspace-1', metadataPath: 'dist/meta.json', checksumsPath: 'dist/sums', artifacts: [{ path: 'dist/app.deb', sha256: 'a'.repeat(64) }] })).resolves.toMatchObject({ structuredContent: { operation: 'release_verify', verified: true } });
+  });
+
+  it('advertises and dispatches environment_preflight only when the service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'environment_preflight')).toBe(false);
+    const registry = new ToolRegistry({ environmentPreflight: { execute: async (): Promise<Result<unknown>> => ok({ operation: 'environment_preflight', status: 'ready' }) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('environment_preflight');
+    expect(registry.list().find((tool) => tool.name === 'environment_preflight')?.parse({})).toMatchObject({ ok: true });
+    await expect(registry.invoke('environment_preflight', {})).resolves.toMatchObject({ structuredContent: { operation: 'environment_preflight', status: 'ready' } });
+  });
+
+  it('advertises and dispatches workflow_preflight only when the service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'workflow_preflight')).toBe(false);
+    const registry = new ToolRegistry({ workflowPreflight: { execute: async (): Promise<Result<unknown>> => ok({ operation: 'workflow_preflight', status: 'ready' }) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('workflow_preflight');
+    expect(registry.list().find((tool) => tool.name === 'workflow_preflight')?.parse({ workspaceId: 'workspace-1', path: 'src' })).toMatchObject({ ok: true });
+    await expect(registry.invoke('workflow_preflight', {})).resolves.toMatchObject({ structuredContent: { operation: 'workflow_preflight', status: 'ready' } });
+  });
+
+  it('advertises and dispatches workspace_checkpoint only when the service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'workspace_checkpoint')).toBe(false);
+    const registry = new ToolRegistry({ workspaceCheckpoint: { execute: async (): Promise<Result<unknown>> => ok({ operation: 'list', checkpoints: [], count: 0, truncated: false }) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('workspace_checkpoint');
+    expect(registry.list().find((tool) => tool.name === 'workspace_checkpoint')?.parse({ operation: 'list', workspaceId: 'workspace-1' })).toMatchObject({ ok: true });
+    await expect(registry.invoke('workspace_checkpoint', { operation: 'list' })).resolves.toMatchObject({ structuredContent: { operation: 'list', count: 0 } });
+  });
+
+  it('explains active profile and registered-root policy without dispatching the target tool', async () => {
+    let called = false;
+    const registry = new ToolRegistry({
+      capabilities: {
+        listTools: (): readonly string[] => ['shell', 'health'],
+        execute: async (): Promise<Result<unknown>> => { called = true; return ok({}); },
+      },
+    }, actor, { profileProvider: (): typeof permissionProfiles.balanced => permissionProfiles.balanced, serverProfileProvider: (): 'core' => 'core' });
+    await expect(registry.invoke('policy_explain', { tool: 'shell', workspaceId: 'workspace-1', operation: 'run' })).resolves.toMatchObject({
+      structuredContent: { tool: 'shell', allowed: true, reasonCode: 'OK', registeredRootRequired: true, requiresConsent: false },
+    });
+    expect(called).toBe(false);
+    await expect(registry.invoke('policy_explain', { tool: 'shell' })).resolves.toMatchObject({
+      structuredContent: { allowed: false, reasonCode: 'REGISTERED_ROOT_REQUIRED' },
+    });
+  });
+
+  it('advertises support_bundle only when the redaction service is wired', () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'support_bundle')).toBe(false);
+    const registry = new ToolRegistry({ supportBundle: { execute: async (): Promise<Result<unknown>> => ok({ dry_run: true }) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('support_bundle');
+    expect(registry.list().find((tool) => tool.name === 'support_bundle')?.parse({ workspaceId: 'workspace-1', destination: 'support.tar.gz', include: ['health'] })).toMatchObject({ ok: true });
+  });
+
+  it('dispatches bounded workspace change snapshots and diffs', async () => {
+    const calls: string[] = [];
+    const registry = new ToolRegistry({
+      workspaceChanges: {
+        snapshot: async (workspaceId, maxEvents): Promise<Result<unknown>> => { calls.push(`snapshot:${workspaceId}:${maxEvents}`); return ok({ workspaceId, events: [], latestSequence: 4, truncated: false }); },
+        diff: async (workspaceId, afterSequence, maxEvents): Promise<Result<unknown>> => { calls.push(`diff:${workspaceId}:${afterSequence}:${maxEvents}`); return ok({ workspaceId, events: [], latestSequence: 4, truncated: false }); },
+      },
+    }, actor);
+    expect(registry.list().find((tool) => tool.name === 'workspace_changes')?.parse({ operation: 'diff', workspaceId: 'workspace-1', afterSequence: 3 })).toMatchObject({ ok: true });
+    await registry.invoke('workspace_changes', { operation: 'snapshot', workspaceId: 'workspace-1' });
+    await registry.invoke('workspace_changes', { operation: 'diff', workspaceId: 'workspace-1', afterSequence: 3, maxEvents: 10 });
+    expect(calls).toEqual(['snapshot:workspace-1:50', 'diff:workspace-1:3:10']);
+  });
+
+  it('records a stable approval receipt for denied and confirmed dangerous calls', async () => {
+    const events: ActivitySinkEvent[] = [];
+    const registry = new ToolRegistry({
+      capabilities: { listTools: (): readonly string[] => ['service'], execute: async (): Promise<Result<unknown>> => ok({ restarted: true }) },
+      supportBundle: { execute: async (input): Promise<Result<unknown>> => ok({ receiptId: (input as Record<string, unknown>)._approvalReceiptId }) },
+    }, actor, { activity: { async record(event): Promise<void> { events.push(event); } } });
+
+    await registry.invoke('service', { operation: 'restart', unit: 'app.service' });
+    await registry.invoke('support_bundle', { workspaceId: 'workspace-1', destination: 'support.tar.gz', include: ['health'], dry_run: true });
+
+    const denied = events.find((event) => event.toolName === 'service' && event.phase === 'completed');
+    const preview = events.find((event) => event.toolName === 'support_bundle' && event.phase === 'completed');
+    expect(denied?.approvalReceipt).toMatchObject({ toolName: 'service', actorId: 'client-1', decision: 'CONFIRMATION_REQUIRED', targetSummaryHash: expect.stringMatching(/^[a-f0-9]{64}$/) });
+    expect(preview?.approvalReceipt).toMatchObject({ toolName: 'support_bundle', actorId: 'client-1', decision: 'ALLOW' });
+    expect(events.some((event) => event.approvalReceipt?.targetSummaryHash === 'app.service')).toBe(false);
+  });
+
   it('does not advertise a fixed drive letter in workspace registration metadata', () => {
     const registry = new ToolRegistry({}, actor);
     const registration = registry.list().find((tool) => tool.name === 'workspace_register');
     expect(registration?.description).not.toContain('E:\\');
   });
 
-  it('exposes the Khai-Hub-compatible local capability contract', () => {
+  it('exposes the Khai-Hub-compatible local capability contract', async () => {
     const registry = new ToolRegistry({}, actor);
     const byName = new Map(registry.list().map((tool) => [tool.name, tool]));
 
@@ -62,9 +278,18 @@ describe('MCP tool registry', () => {
     expect(byName.get('window')?.parse({ operation: 'list' })).toMatchObject({ ok: true });
     expect(byName.get('window')?.parse({ operation: 'set_window_frame', parameters: { x: 0, y: 0, width: 800, height: 600 } })).toMatchObject({ ok: true });
     expect(byName.get('health')?.parse({ operation: 'check_all' })).toMatchObject({ ok: true });
+    expect(byName.get('health')?.parse({ operation: 'check_tool', tool: 'runtime_metrics' })).toMatchObject({ ok: true });
+    expect(byName.get('health')?.parse({ operation: 'check_tool', tool: 'service_logs' })).toMatchObject({ ok: true });
     expect(byName.get('system_info')?.parse({ operation: 'disk', path: '/' })).toMatchObject({ ok: true });
+    expect(byName.get('runtime_metrics')?.parse({ operation: 'snapshot', scopes: ['host', 'runtime'] })).toMatchObject({ ok: true });
+    expect(byName.get('runtime_metrics')?.parse({ operation: 'snapshot', scopes: ['host', 'unknown'] })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    await expect(new ToolRegistry({}, actor).invoke('health', { operation: 'check_tool', tool: 'runtime_metrics' })).resolves.toMatchObject({
+      structuredContent: { tool: 'runtime_metrics', provider: 'node:os+activity', available: true, ready: true },
+    });
     expect(byName.get('journal')?.parse({ unit: 'caddy.service', lines: 100 })).toMatchObject({ ok: true });
     expect(byName.get('journal')?.parse({ unit: '../../etc/passwd.service' })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    expect(byName.get('service_logs')?.parse({ operation: 'tail', unit: 'caddy.service', lines: 50 })).toMatchObject({ ok: true });
+    expect(byName.get('service_logs')?.parse({ operation: 'read', unit: '../../etc/passwd.service' })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
     expect(byName.get('network')?.parse({ operation: 'listeners', limit: 50 })).toMatchObject({ ok: true });
     expect(byName.get('service')?.parse({ operation: 'status', unit: 'caddy.service' })).toMatchObject({ ok: true });
     expect(byName.get('service')?.parse({ operation: 'restart', unit: '../../etc/passwd.service' })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
@@ -73,6 +298,12 @@ describe('MCP tool registry', () => {
     expect(byName.get('schedule')?.parse({ operation: 'list' })).toMatchObject({ ok: true });
     expect(byName.get('remote_host')?.parse({ hostId: 'vm103', operation: 'system_info' })).toMatchObject({ ok: true });
     expect(byName.get('remote_fleet')?.parse({ hostIds: ['vm103'], operation: 'health' })).toMatchObject({ ok: true });
+    expect(byName.get('remote_fleet')?.parse({ hostIds: ['vm103'], operation: 'disk_usage', path: '/srv/app' })).toMatchObject({ ok: true });
+    expect(byName.get('remote_fleet')?.parse({ hostIds: ['vm103'], operation: 'checksum', path: '/srv/app/app.tar' })).toMatchObject({ ok: true });
+    expect(byName.get('remote_fleet')?.parse({ hostIds: ['vm103'], operation: 'network' })).toMatchObject({ ok: true });
+    expect(byName.get('remote_fleet')?.parse({ hostIds: ['vm103'], operation: 'snapshot', maxParallel: 2 })).toMatchObject({ ok: true });
+    expect(byName.get('workspace_snapshot')?.parse({ workspaceId: 'workspace-1', operation: 'diff', baseline: [] })).toMatchObject({ ok: true });
+    expect(byName.get('workspace_snapshot')?.parse({ workspaceId: 'workspace-1', operation: 'usage' })).toMatchObject({ ok: true });
     expect(byName.get('artifact_verify')?.parse({ workspaceId: 'workspace-1', path: 'dist/app.js' })).toMatchObject({ ok: true });
     expect(byName.get('http_probe')?.parse({ url: 'https://example.com', method: 'HEAD' })).toMatchObject({ ok: true });
     expect(byName.get('storage_usage')?.parse({ workspaceId: 'workspace-1', path: '.', operation: 'largest_files' })).toMatchObject({ ok: true });

@@ -14,13 +14,29 @@ import type {
   ReadFileRequest,
   ReadFilesRequest,
   SearchService,
+  TargetCatalogService,
   WorkspaceIndexService,
+  WorkspaceChangesService,
   WorkspaceQueryService,
   WriteFileRequest,
 } from '@baitonghub-linux-mcp/application';
 import type { z } from 'zod';
 import type { ContextEconomyRuntime } from '../context-economy.js';
 import type { DatabaseRuntimeService } from '../database-runtime.js';
+import type { RemoteRolloutRuntime, RemoteRolloutTaskPort } from '../remote-rollout-runtime.js';
+import type { RuntimeTaskSnapshot } from '../runtime-metrics-service.js';
+import type { SupportBundleService } from '@baitonghub-linux-mcp/application';
+import type { ServerProfileName } from '../server-profile.js';
+import type { AuditQueryService } from '../audit-query-service.js';
+import type { WorkspaceSnapshotService } from '../workspace-snapshot-service.js';
+import type { TaskEventsService } from '../task-events-service.js';
+import type { TaskHistoryService } from '../task-history-service.js';
+import type { DiagnosticsSnapshotService } from '../diagnostics-snapshot-service.js';
+import type { RemoteFleetDiffService } from '../remote-fleet-diff-service.js';
+import type { ReleaseVerifyService } from '../release-verify-service.js';
+import type { EnvironmentPreflightService } from '../environment-preflight-service.js';
+import type { WorkflowPreflightService } from '../workflow-preflight-service.js';
+import type { WorkspaceCheckpointService } from '../workspace-checkpoint-service.js';
 
 export interface WorkspaceInfoPort {
   info(actor: FileActor, workspaceId: string): Promise<Result<unknown>>;
@@ -43,6 +59,8 @@ export interface McpRuntimeTiming {
 export interface McpApplicationServices {
   readonly runtimeStatePath?: string;
   readonly runtimeTiming?: () => McpRuntimeTiming;
+  /** Returns aggregate owned-task counts only; implementations must not expose task IDs or command metadata. */
+  readonly runtimeTaskSnapshot?: () => RuntimeTaskSnapshot | Promise<RuntimeTaskSnapshot>;
   readonly localProviders?: () => { readonly pdfProvider?: string; readonly lspCommands?: Readonly<Record<string, string>> };
   readonly capabilities?: CapabilityService;
   readonly extensions?: ExtensionsService;
@@ -53,10 +71,37 @@ export interface McpApplicationServices {
   readonly file?: Pick<FileService, 'readFile' | 'readFiles' | 'writeFile' | 'applyPatch' | 'moveFile' | 'copyFile' | 'deleteFile' | 'restoreDeletedFile'>;
   readonly search?: Pick<SearchService, 'searchFiles' | 'searchText'>;
   readonly workspaceIndex?: Pick<WorkspaceIndexService, 'indexWorkspace' | 'status' | 'startWatch' | 'stopWatch'>;
+  readonly workspaceChanges?: Pick<WorkspaceChangesService, 'snapshot' | 'diff'>;
   readonly git?: Pick<GitService, 'status' | 'diff' | 'log' | 'run'>;
   readonly process?: Pick<ProcessService, 'start' | 'list' | 'status' | 'logs' | 'stop' | 'startProjectCommand'>;
   readonly codex?: Pick<CodexService, 'status' | 'run' | 'list' | 'taskStatus' | 'taskLogs' | 'stop'>;
   readonly database?: Pick<DatabaseRuntimeService, 'inspect' | 'query'>;
+  readonly targetCatalog?: Pick<TargetCatalogService, 'list' | 'describe'>;
+  readonly remoteRollout?: Pick<RemoteRolloutRuntime, 'execute'>;
+  readonly remoteRolloutResume?: Pick<RemoteRolloutRuntime, 'resume'>;
+  readonly remoteRolloutTasks?: RemoteRolloutTaskPort;
+  readonly remoteFleetAudit?: (event: import('../remote-fleet-runtime.js').RemoteFleetAuditEvent) => Promise<void>;
+  readonly supportBundle?: Pick<SupportBundleService, 'execute'>;
+  /** Bounded, session-scoped access to redacted MCP audit summaries. */
+  readonly auditQuery?: Pick<AuditQueryService, 'execute'>;
+  /** Bounded registered-root manifest snapshots; identity snapshots remain available without this service. */
+  readonly workspaceSnapshot?: Pick<WorkspaceSnapshotService, 'execute'>;
+  /** Bounded lifecycle projections for owned durable shell and rollout tasks. */
+  readonly taskEvents?: Pick<TaskEventsService, 'execute'>;
+  /** Bounded, redacted history of owned durable shell and rollout tasks. */
+  readonly taskHistory?: Pick<TaskHistoryService, 'execute'>;
+  /** Deterministic, redacted incident snapshot over existing read-only providers. */
+  readonly diagnosticsSnapshot?: Pick<DiagnosticsSnapshotService, 'execute'>;
+  /** Read-only comparison of two bounded registered-host snapshots. */
+  readonly remoteFleetDiff?: Pick<RemoteFleetDiffService, 'execute'>;
+  /** Offline verification of local release provenance and checksums. */
+  readonly releaseVerify?: Pick<ReleaseVerifyService, 'execute'>;
+  /** Sanitized runtime/dependency readiness matrix from the health provider. */
+  readonly environmentPreflight?: Pick<EnvironmentPreflightService, 'execute'>;
+  /** Advisory composition of runtime, diagnostics, and optional workspace readiness. */
+  readonly workflowPreflight?: Pick<WorkflowPreflightService, 'execute'>;
+  /** Owner-isolated, metadata-only workspace checkpoints with bounded TTL/quota. */
+  readonly workspaceCheckpoint?: Pick<WorkspaceCheckpointService, 'execute'>;
 }
 
 export interface McpToolAnnotations {
@@ -80,6 +125,8 @@ export interface McpToolContext {
   readonly actor: FileActor;
   readonly services: McpApplicationServices;
   readonly contextEconomy: ContextEconomyRuntime;
+  readonly activity?: import('../activity-tracker.js').ActivityTracker;
+  readonly serverProfile?: ServerProfileName;
 }
 
 export interface ToolConfig<T extends z.ZodType> {

@@ -13,5 +13,8 @@ export * from './workspace-info-service.js';
 export * from './workspace-query-service.js';
 export * from './workspace-index-queue.js';
 export * from './workspace-index.js';
+export * from './workspace-changes-service.js';
 export * from './lifecycle-hooks.js';
 export * from './runtime-cache.js';
+export * from './target-catalog-service.js';
+export * from './support-bundle-service.js';

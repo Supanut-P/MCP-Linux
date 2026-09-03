@@ -1,7 +1,7 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
 import { PathExecutableResolver, createProcessTreeTerminator, type ExecutableResolver, type ProcessTreeTerminator } from '@baitonghub-linux-mcp/process';
 import type { CapabilityBackend } from './local-capability-service.js';
@@ -469,6 +469,7 @@ export class ShellCapabilityBackend implements CapabilityBackend {
       ...(record.errorMessage === undefined ? {} : { error: record.errorMessage }),
       started_at: record.startedAt,
       ...(record.finishedAt === undefined ? {} : { finished_at: record.finishedAt }),
+      ...(record.owner.workspaceId === undefined ? {} : { workspace_hash: hashWorkspaceId(record.owner.workspaceId) }),
       truncated: record.stdout.truncated || record.stderr.truncated,
     };
   }
@@ -538,6 +539,10 @@ function parseShellRequest(value: unknown, defaultTimeoutSeconds: number, defaul
   if (resumeToken !== undefined && operation !== 'resume') return err(appError('INVALID_INPUT', 'resume_token is only valid for resume'));
   if (typeof includeStdout !== 'boolean' || typeof includeStderr !== 'boolean' || typeof dryRun !== 'boolean') return err(appError('INVALID_INPUT', 'Shell flags are invalid'));
   return ok({ operation, ...(executable === undefined ? {} : { executable: executable.trim() }), arguments: rawArguments, privilege, ...(cwd === undefined ? {} : { cwd }), execution, ...(taskId === undefined ? {} : { taskId }), ...(resumeToken === undefined ? {} : { resumeToken }), timeoutSeconds, maxOutputBytes: requestedMaxBytes, ...(tailLines === undefined ? {} : { tailLines }), includeStdout, includeStderr, dryRun, userConfirmed, owner });
+}
+
+function hashWorkspaceId(value: string): string {
+  return createHash('sha256').update(value, 'utf8').digest('hex').slice(0, 32);
 }
 
 function isShellOperation(value: unknown): value is ShellOperation {

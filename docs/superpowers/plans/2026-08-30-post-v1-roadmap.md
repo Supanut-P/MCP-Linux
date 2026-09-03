@@ -41,11 +41,17 @@ The 2026-08-30 Ubuntu acceptance established this baseline:
 - [x] v1.3.0 registered remote fleet inspection
 - [x] v1.4.0 registered-root backup and recovery
 - [x] v1.5.0 release provenance, SBOM, and fail-closed artifact verification
-- [ ] v1.5.0 clean-machine upgrade/rollback and seven-day production evidence
+- [x] v1.5.0 clean-machine upgrade/rollback evidence
+- [~] v1.5.0 seven-day production soak (explicitly waived by product owner;
+  release makes no production-evidence claim)
 - [x] v2.0.0 decision gate reviewed; no breaking contract is justified by current usage evidence
 
-The v1.4.0 implementation is complete and tested. The remaining unchecked
-items are intentionally evidence or approval gates, not missing v1.4 code.
+The v1.4.0 implementation is complete and tested. The seven-day soak is an
+operator evidence gate, not a missing implementation item. On 2026-09-01 the
+product owner explicitly waived that gate to continue version development;
+the waiver is recorded in
+`docs/linux/evidence/v1.5.0/SEVEN_DAY_SOAK_WAIVER.md` and the VM103 soak is
+retained as non-gating observation.
 
 Do not increase the tool count merely to advertise a larger number. Each new tool below has a concrete provider, bounded result, health state, audit target, and packaged Ubuntu acceptance.
 
@@ -363,7 +369,7 @@ Generate checksums, SBOM, and build metadata from the exact tag commit. Release 
 
 - [ ] **Step 4: Run the complete release matrix**
 
-Run every v1.0.1 gate plus reconnect, operator-probe, fleet, backup, upgrade/rollback, secret canary, and soak verification. A release note may claim production evidence only when the evidence directory contains the completed artifacts.
+Run every v1.0.1 gate plus reconnect, operator-probe, fleet, backup, upgrade/rollback, and secret-canary verification. A release note may claim production evidence only when the evidence directory contains the completed artifacts. If the product owner has explicitly waived the soak, the release must carry `SEVEN_DAY_SOAK_WAIVER.md` and state that no production-evidence claim is made.
 
 **v1.5.0 acceptance:** clean install, upgrade, rollback, recovery, secret non-disclosure, long-running tunnel stability, and reproducible artifacts are supported by retained evidence rather than documentation claims.
 
@@ -380,14 +386,18 @@ Do not schedule v2.0 merely because v1.x has many tool names. Open a separate br
 
 v2.0 requires an explicit migration guide, dual-version contract tests, and human approval before implementation or release.
 
-### v2.0 decision review (2026-08-30)
+### v2.0 decision review (2026-08-30; reaffirmed 2026-09-01)
 
 The VM103 evidence database contained 90 audit events. The observed usage was
 limited to the core workspace, file, Git, process, shell, system-info, and
 DOM-inspection tools; no `remote_fleet`, database, or backup tool was used, and
-no deprecated v1 field or incompatible contract was identified. v2.0 therefore
-remains unscheduled: continue additive v1.x work and reopen this gate only when
-retained usage/deprecation evidence supports a specific breaking migration.
+no deprecated v1 field or incompatible contract was identified. The product
+owner has now directed the project to continue version development without
+waiting for the seven-day soak. That direction does not by itself justify
+removing a v1 field or widening authority, so v2.0 remains a separate
+contract-design milestone: it may proceed only with a named migration,
+dual-version tests, and an explicit release decision once concrete usage or
+deprecation evidence supports the change.
 
 ## Release checklist for every version
 

@@ -45,6 +45,7 @@ export const capabilityDescriptors: readonly CapabilityDescriptor[] = Object.fre
   descriptor('health', 'always', 'READ', 'diagnostics'),
   descriptor('system_info', 'native', 'READ', 'system'),
   descriptor('journal', 'native', 'READ', 'system', ['journalctl'], true),
+  descriptor('service_logs', 'native', 'READ', 'system', ['journalctl'], true),
   descriptor('network', 'native', 'READ', 'network', ['iproute2 and iproute2 ss'], true),
   descriptor('service', 'native', 'DANGEROUS', 'system', ['systemd'], true, true),
   descriptor('package', 'native', 'DANGEROUS', 'package-manager', ['apt and dpkg'], true, true),

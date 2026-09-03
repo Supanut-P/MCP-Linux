@@ -84,6 +84,27 @@ describe('SqliteAuditRepository', () => {
     database.close();
   });
 
+  it('applies actor, result, time, and descending cursor filters before the limit', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'baitonghub-linux-mcp-audit-query-db-'));
+    temporaryRoots.push(root);
+    const database = new SqliteDatabase(path.join(root, 'state.db'));
+    const repository = new SqliteAuditRepository(database);
+    const matching: AuditEvent[] = [
+      { ...scopedEvent('q-3', '2026-09-02T00:00:03.000Z', 'workspace-1', 'session-a'), resultCode: 'SUCCESS' },
+      { ...scopedEvent('q-2', '2026-09-02T00:00:02.000Z', 'workspace-1', 'session-a'), resultCode: 'SUCCESS' },
+      { ...scopedEvent('q-1', '2026-09-02T00:00:01.000Z', 'workspace-1', 'session-a'), resultCode: 'PERMISSION_REQUIRED' },
+    ];
+    for (const event of matching) await repository.insert(event);
+    await repository.insert({ ...matching[0]!, id: 'other-actor', actorId: 'other' });
+
+    await expect(repository.listScoped({
+      actorId: 'client-1', actionPrefix: 'mcp_tool:read_file', workspaceId: 'workspace-1', sessionId: 'session-a',
+      resultCode: 'SUCCESS', since: '2026-09-01T00:00:00.000Z', until: '2026-09-03T00:00:00.000Z',
+      before: { timestamp: '2026-09-02T00:00:03.000Z', id: 'q-3' },
+    }, 10)).resolves.toEqual([matching[1]!]);
+    database.close();
+  });
+
 });
 
 

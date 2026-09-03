@@ -80,4 +80,14 @@ describe('ActivityTracker', () => {
     await tracker.end(callId, 'SUCCESS', 1);
     expect(events).toEqual([expect.objectContaining({ phase: 'started', sessionId: 'session-a' }), expect.objectContaining({ phase: 'completed', sessionId: 'session-a' })]);
   });
+
+  it('attaches an approval receipt to the completed event only', async () => {
+    const events: ActivitySinkEvent[] = [];
+    const tracker = new ActivityTracker({ async record(event): Promise<void> { events.push(event); } });
+    const receipt = { id: 'receipt-1', toolName: 'support_bundle', actorId: 'actor-1', targetSummaryHash: 'a'.repeat(64), profile: 'full', decision: 'ALLOW' } as const;
+    const callId = await tracker.begin('support_bundle', { workspaceId: 'ws-1', destination: 'bundle.tar.gz' });
+    await tracker.end(callId, 'SUCCESS', 2, undefined, { approvalReceipt: receipt });
+    expect(events[0]).not.toHaveProperty('approvalReceipt');
+    expect(events[1]).toMatchObject({ approvalReceipt: receipt });
+  });
 });

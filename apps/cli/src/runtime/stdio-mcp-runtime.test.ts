@@ -143,4 +143,16 @@ describe.runIf(process.platform === 'linux')('stdio MCP runtime', () => {
     });
     await replacementRuntime.close();
   }, 15_000);
+
+  it('keeps the explicit server surface profile separate from permission policy', async () => {
+    const dataPath = await mkdtemp(path.join(os.tmpdir(), 'baitonghub-linux-mcp-stdio-server-profile-'));
+    temporaryRoots.push(dataPath);
+    const runtime = createStdioMcpRuntime(dataPath, workspace, true, { permissionProfile: 'safe', serverProfile: 'fleet' });
+    try {
+      expect(runtime.serverProfile).toBe('fleet');
+      expect(runtime.profileProvider()).toEqual(permissionProfiles.safe);
+    } finally {
+      await runtime.close();
+    }
+  });
 });

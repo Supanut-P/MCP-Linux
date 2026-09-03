@@ -117,7 +117,48 @@ export const workspaceFullScanSchema = z.object({
   pageSize: z.number().int().min(1).max(500).optional(),
 }).strict();
 export const workspaceFullScanContinueSchema = workspaceContextContinueSchema;
-export const workspaceSnapshotSchema = workspaceInfoSchema;
+export const workspaceSnapshotSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  operation: z.enum(['identity', 'manifest', 'diff', 'usage']).optional(),
+  path: pathSchema.optional(),
+  maxEntries: z.number().int().min(1).max(1_000).optional(),
+  hashMode: z.enum(['none', 'sha256']).optional(),
+  cursor: z.string().trim().min(8).max(512).optional(),
+  baseline: z.array(z.object({ path: z.string().min(1).max(4_096), bytes: z.number().int().nonnegative(), mtimeMs: z.number().finite(), sha256: z.string().regex(/^[a-f0-9]{64}$/i).optional() }).strict()).max(1_000).optional(),
+}).strict().superRefine((value, context) => {
+  if ((value.operation ?? 'identity') === 'identity' && (value.path !== undefined || value.maxEntries !== undefined || value.cursor !== undefined || value.hashMode !== undefined)) {
+    context.addIssue({ code: 'custom', message: 'Manifest fields require operation=manifest', path: ['operation'] });
+  }
+  if ((value.operation ?? 'identity') !== 'diff' && value.baseline !== undefined) context.addIssue({ code: 'custom', message: 'baseline requires operation=diff', path: ['operation'] });
+  if (value.operation === 'diff' && value.baseline === undefined) context.addIssue({ code: 'custom', message: 'diff requires baseline', path: ['baseline'] });
+  if (value.operation === 'diff' && value.cursor !== undefined) context.addIssue({ code: 'custom', message: 'diff does not support cursor', path: ['cursor'] });
+  if (value.operation === 'usage' && (value.maxEntries !== undefined || value.hashMode !== undefined || value.cursor !== undefined || value.baseline !== undefined)) context.addIssue({ code: 'custom', message: 'usage accepts only workspaceId and path', path: ['operation'] });
+});
+export const workspaceCheckpointSchema = z.object({
+  operation: z.enum(['create', 'list', 'get', 'diff', 'compare', 'prune', 'stats', 'summary', 'delete']).optional(),
+  workspaceId: optionalWorkspaceIdSchema,
+  path: pathSchema.optional(),
+  name: z.string().trim().min(1).max(64).regex(/^[A-Za-z0-9][A-Za-z0-9._-]*$/).optional(),
+  maxEntries: z.number().int().min(1).max(1_000).optional(),
+  ttlSeconds: z.number().int().min(60).max(7 * 24 * 60 * 60).optional(),
+  checkpointId: z.string().uuid().optional(),
+  otherCheckpointId: z.string().uuid().optional(),
+  limit: z.number().int().min(1).max(32).optional(),
+}).strict().superRefine((value, context) => {
+  const operation = value.operation ?? 'create';
+  if (operation === 'create' && value.workspaceId === undefined) context.addIssue({ code: 'custom', message: 'create requires workspaceId', path: ['workspaceId'] });
+  if (operation === 'create' && (value.checkpointId !== undefined || value.otherCheckpointId !== undefined)) context.addIssue({ code: 'custom', message: 'create does not accept checkpoint IDs', path: ['checkpointId'] });
+  if (operation === 'list' && (value.path !== undefined || value.name !== undefined || value.maxEntries !== undefined || value.ttlSeconds !== undefined || value.checkpointId !== undefined || value.otherCheckpointId !== undefined)) context.addIssue({ code: 'custom', message: 'list accepts workspaceId and limit only', path: ['operation'] });
+  if ((operation === 'get' || operation === 'diff' || operation === 'compare' || operation === 'delete') && value.checkpointId === undefined) context.addIssue({ code: 'custom', message: `${operation} requires checkpointId`, path: ['checkpointId'] });
+  if (operation === 'compare' && value.otherCheckpointId === undefined) context.addIssue({ code: 'custom', message: 'compare requires otherCheckpointId', path: ['otherCheckpointId'] });
+  if (operation === 'diff' && (value.workspaceId !== undefined || value.path !== undefined || value.name !== undefined || value.ttlSeconds !== undefined || value.limit !== undefined || value.otherCheckpointId !== undefined)) context.addIssue({ code: 'custom', message: 'diff accepts checkpointId and maxEntries only', path: ['operation'] });
+  if (operation === 'compare' && (value.workspaceId !== undefined || value.path !== undefined || value.name !== undefined || value.ttlSeconds !== undefined || value.limit !== undefined)) context.addIssue({ code: 'custom', message: 'compare accepts checkpointId, otherCheckpointId, and maxEntries only', path: ['operation'] });
+  if (operation === 'prune' && (value.workspaceId !== undefined || value.path !== undefined || value.name !== undefined || value.maxEntries !== undefined || value.ttlSeconds !== undefined || value.checkpointId !== undefined || value.otherCheckpointId !== undefined || value.limit !== undefined)) context.addIssue({ code: 'custom', message: 'prune accepts no additional fields', path: ['operation'] });
+  if (operation === 'stats' && (value.workspaceId !== undefined || value.path !== undefined || value.name !== undefined || value.maxEntries !== undefined || value.ttlSeconds !== undefined || value.checkpointId !== undefined || value.otherCheckpointId !== undefined || value.limit !== undefined)) context.addIssue({ code: 'custom', message: 'stats accepts no additional fields', path: ['operation'] });
+  if (operation === 'summary' && (value.workspaceId !== undefined || value.path !== undefined || value.name !== undefined || value.ttlSeconds !== undefined || value.limit !== undefined || value.otherCheckpointId !== undefined)) context.addIssue({ code: 'custom', message: 'summary accepts checkpointId and maxEntries only', path: ['operation'] });
+  if (operation === 'summary' && value.checkpointId === undefined) context.addIssue({ code: 'custom', message: 'summary requires checkpointId', path: ['checkpointId'] });
+  if ((operation === 'get' || operation === 'delete') && (value.workspaceId !== undefined || value.path !== undefined || value.name !== undefined || value.maxEntries !== undefined || value.ttlSeconds !== undefined || value.otherCheckpointId !== undefined || value.limit !== undefined)) context.addIssue({ code: 'custom', message: `${operation} accepts checkpointId only`, path: ['operation'] });
+});
 export const searchAllSchema = z.object({
   query: z.string().trim().min(1).max(32_768),
   workspaceId: optionalWorkspaceIdSchema,
@@ -142,6 +183,52 @@ export const workspaceIndexWatchSchema = z.object({
   concurrency: z.number().int().min(1).max(32).optional(),
 }).strict();
 export const workspaceIndexStopSchema = workspaceInfoSchema;
+export const workspaceChangesSchema = z.discriminatedUnion('operation', [
+  z.object({ operation: z.literal('snapshot'), workspaceId: workspaceIdSchema, maxEvents: z.number().int().min(1).max(200).default(50) }).strict(),
+  z.object({ operation: z.literal('diff'), workspaceId: workspaceIdSchema, afterSequence: z.number().int().min(0), maxEvents: z.number().int().min(1).max(200).default(50) }).strict(),
+]);
+
+export const auditQuerySchema = z.object({
+  workspaceId: optionalWorkspaceIdSchema,
+  tool: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]*$/).optional(),
+  resultCode: z.string().trim().min(1).max(64).regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]*$/).optional(),
+  since: z.string().datetime({ offset: true }).optional(),
+  until: z.string().datetime({ offset: true }).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  cursor: z.string().trim().min(8).max(512).optional(),
+}).strict();
+
+export const taskEventsSchema = z.object({
+  taskId: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/),
+  cursor: z.string().trim().min(8).max(512).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  waitMs: z.number().int().min(0).max(30_000).optional(),
+}).strict();
+
+export const taskHistorySchema = z.object({
+  workspaceId: optionalWorkspaceIdSchema,
+  workspaceHash: z.string().trim().regex(/^[a-f0-9]{32}$/).optional(),
+  state: z.enum(['running', 'completed', 'failed', 'timed_out', 'cancelled', 'termination_unverified', 'expired']).optional(),
+  since: z.string().datetime({ offset: true }).optional(),
+  until: z.string().datetime({ offset: true }).optional(),
+  limit: z.number().int().min(1).max(100).default(50),
+  cursor: z.string().trim().min(8).max(512).optional(),
+}).strict();
+
+export const diagnosticsSnapshotSchema = z.object({}).strict();
+
+export const workflowPreflightSchema = z.object({
+  workspaceId: optionalWorkspaceIdSchema,
+  path: pathSchema.optional(),
+}).strict().superRefine((value, context) => {
+  if (value.path !== undefined && value.workspaceId === undefined) context.addIssue({ code: 'custom', path: ['workspaceId'], message: 'path requires workspaceId' });
+});
+
+export const policyExplainSchema = z.object({
+  tool: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/),
+  operation: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/).optional(),
+  workspaceId: optionalWorkspaceIdSchema,
+}).strict();
 
 const capabilityMetadataSchema = z.record(z.string(), z.unknown());
 const capabilityParametersSchema = z.record(z.string(), z.unknown());
@@ -267,7 +354,7 @@ export const windowCapabilitySchema = z.object({
 
 export const healthCapabilitySchema = z.object({
   operation: z.enum(['check_all', 'check_tool']).default('check_all'),
-  tool: z.enum(['shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window', 'health', 'system_info', 'journal', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit', 'remote_host', 'artifact_verify', 'http_probe', 'storage_usage']).optional(),
+  tool: z.enum(['shell', 'dom_cdp', 'accessibility', 'input_event', 'vision', 'window', 'health', 'system_info', 'runtime_metrics', 'journal', 'service_logs', 'network', 'service', 'package', 'schedule', 'notification', 'file_dialog', 'clipboard', 'web_fetch', 'container', 'archive', 'dependency_audit', 'remote_host', 'artifact_verify', 'http_probe', 'storage_usage']).optional(),
   request_id: z.string().trim().min(1).max(128).optional(),
 }).strict();
 
@@ -279,6 +366,11 @@ export const systemInfoCapabilitySchema = z.object({
   ...capabilityRequestSchema,
 }).strict();
 
+export const runtimeMetricsSchema = z.object({
+  operation: z.literal('snapshot').default('snapshot'),
+  scopes: z.array(z.enum(['host', 'runtime', 'tasks'])).min(1).max(3).default(['host', 'runtime', 'tasks']),
+}).strict();
+
 export const journalCapabilitySchema = z.object({
   operation: z.enum(['read', 'tail']).default('read'),
   unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/).optional(),
@@ -286,6 +378,14 @@ export const journalCapabilitySchema = z.object({
   since: z.string().trim().min(1).max(128).optional(),
   lines: z.number().int().min(1).max(1_000).default(100),
   ...capabilityRequestSchema,
+}).strict();
+
+export const serviceLogsCapabilitySchema = z.object({
+  operation: z.enum(['read', 'tail']).default('read'),
+  unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,256}\.service$/),
+  cursor: z.string().regex(/^[A-Za-z0-9_-]{1,512}$/).optional(),
+  lines: z.number().int().min(1).max(500).default(100),
+  maxBytes: z.number().int().min(1_024).max(256 * 1024).default(256 * 1024),
 }).strict();
 
 export const networkCapabilitySchema = z.object({
@@ -390,6 +490,12 @@ export const backupCapabilitySchema = z.object({
   dry_run: z.boolean().optional(),
 }).strict();
 
+const targetCatalogIdSchema = z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/);
+export const targetCatalogSchema = z.discriminatedUnion('operation', [
+  z.object({ operation: z.literal('list'), kind: z.enum(['database', 'remote-host']).optional() }).strict(),
+  z.object({ operation: z.literal('describe'), kind: z.enum(['database', 'remote-host']), id: targetCatalogIdSchema }).strict(),
+]);
+
 export const containerCapabilitySchema = z.object({
   workspaceId: optionalWorkspaceIdSchema,
   project_root: pathSchema.optional(),
@@ -445,10 +551,64 @@ export const remoteHostCapabilitySchema = z.object({
 const remoteHostIdSchema = z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/);
 export const remoteFleetCapabilitySchema = z.object({
   hostIds: z.array(remoteHostIdSchema).min(1).max(20).refine((ids) => new Set(ids).size === ids.length, 'hostIds must not contain duplicates'),
-  operation: z.enum(['health', 'inventory', 'service-status']),
+  operation: z.enum(['health', 'inventory', 'service-status', 'disk_usage', 'checksum', 'network', 'snapshot']),
   path: pathSchema.optional(),
   unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/).optional(),
+  maxParallel: z.number().int().min(1).max(4).default(4),
   ...capabilityRequestSchema,
+}).strict();
+
+export const remoteFleetDiffSchema = z.object({
+  hostIds: z.array(remoteHostIdSchema).min(1).max(20).refine((ids) => new Set(ids).size === ids.length, 'hostIds must not contain duplicates'),
+  baseline: z.unknown(),
+  maxParallel: z.number().int().min(1).max(4).default(4),
+}).strict();
+
+const releaseVerifyArtifactSchema = z.object({
+  path: pathSchema,
+  sha256: z.string().regex(/^[a-f0-9]{64}$/i),
+}).strict();
+
+export const releaseVerifySchema = z.object({
+  workspaceId: workspaceIdSchema,
+  version: z.string().trim().regex(/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/).optional(),
+  metadataPath: pathSchema,
+  checksumsPath: pathSchema,
+  sbomPath: pathSchema.optional(),
+  artifacts: z.array(releaseVerifyArtifactSchema).min(1).max(4),
+}).strict();
+
+export const environmentPreflightSchema = z.object({}).strict();
+
+const rolloutIdSchema = z.string().trim().uuid();
+const rolloutWorkspaceSchema = z.string().trim().min(1).max(256);
+export const remoteRolloutCapabilitySchema = z.discriminatedUnion('operation', [
+  z.object({
+    operation: z.literal('plan'),
+    workspaceId: rolloutWorkspaceSchema,
+    hostIds: z.array(remoteHostIdSchema).min(1).max(20).refine((ids) => new Set(ids).size === ids.length, 'hostIds must not contain duplicates'),
+    unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,256}\.service$/),
+    canaryCount: z.number().int().min(1),
+    maxParallel: z.number().int().min(1).max(4).default(2),
+    expiresAt: z.string().datetime({ offset: true }).optional(),
+  }).strict(),
+  z.object({ operation: z.literal('execute'), rolloutId: rolloutIdSchema, workspaceId: rolloutWorkspaceSchema, previewHash: z.string().regex(/^[a-f0-9]{64}$/), userConfirmed: z.literal(true) }).strict(),
+  z.object({ operation: z.literal('status'), rolloutId: rolloutIdSchema }).strict(),
+  z.object({ operation: z.literal('cancel'), rolloutId: rolloutIdSchema, workspaceId: rolloutWorkspaceSchema, userConfirmed: z.literal(true) }).strict(),
+]);
+
+export const remoteRolloutResumeCapabilitySchema = z.discriminatedUnion('operation', [
+  z.object({ operation: z.literal('preview'), rolloutId: rolloutIdSchema, workspaceId: rolloutWorkspaceSchema }).strict(),
+  z.object({ operation: z.literal('execute'), rolloutId: rolloutIdSchema, workspaceId: rolloutWorkspaceSchema, previewHash: z.string().regex(/^[a-f0-9]{64}$/), userConfirmed: z.literal(true) }).strict(),
+]);
+
+export const supportBundleSchema = z.object({
+  workspaceId: rolloutWorkspaceSchema,
+  destination: pathSchema,
+  include: z.array(z.enum(['doctor', 'health', 'runtime', 'audit-summary', 'recent-errors', 'package-files'])).min(1).max(6).refine((sections) => new Set(sections).size === sections.length, 'include must not contain duplicates'),
+  dry_run: z.boolean().default(true),
+  previewHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  userConfirmed: z.boolean().default(false),
 }).strict();
 
 const databaseTargetFields = {

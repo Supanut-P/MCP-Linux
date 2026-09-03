@@ -1,12 +1,12 @@
 import { createHash } from 'node:crypto';
-import { watch, type FSWatcher } from 'node:fs';
-import { mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { lstatSync, watch, type FSWatcher } from 'node:fs';
+import { lstat, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
 import { classifyContextPath, type ContextDiscoveryMode } from '@baitonghub-linux-mcp/search';
 import type { Workspace, WorkspaceRepository } from '@baitonghub-linux-mcp/workspace';
-import { WorkspaceIndexQueue, type WorkspaceIndexQueueOptions, type WorkspaceIndexQueueStatus } from './workspace-index-queue.js';
+import { WorkspaceIndexQueue, type WorkspaceChangeJournal, type WorkspaceIndexQueueOptions, type WorkspaceIndexQueueStatus } from './workspace-index-queue.js';
 
 export interface WorkspaceIndexEntry {
   readonly relativePath: string;
@@ -84,8 +84,14 @@ export interface WorkspaceIndexStatus {
   readonly watcher: WorkspaceIndexQueueStatus | null;
 }
 
+export type WorkspaceIndexChanges = WorkspaceChangeJournal;
+
+interface RecursiveFileWatcher {
+  close(): void;
+}
+
 export class WorkspaceIndexService {
-  private readonly watchers = new Map<string, { readonly fileWatcher: FSWatcher; readonly queue: WorkspaceIndexQueue }>();
+  private readonly watchers = new Map<string, { readonly fileWatcher: RecursiveFileWatcher; readonly queue: WorkspaceIndexQueue }>();
 
   public constructor(
     private readonly workspaces: WorkspaceRepository,
@@ -114,9 +120,9 @@ export class WorkspaceIndexService {
     if (!classifyContextPath(normalized, discovery).discoverable) return ok(current);
     const remaining = current.entries.filter((entry) => entry.relativePath !== normalized && !entry.relativePath.startsWith(`${normalized}/`));
     try {
-      const metadata = await stat(absolutePath);
+      const metadata = await lstat(absolutePath);
       const additions: WorkspaceIndexEntry[] = [];
-      if (metadata.isDirectory()) await this.scanDirectory(workspace.value.realRootPath, absolutePath, additions, discovery);
+      if (metadata.isDirectory() && !metadata.isSymbolicLink()) await this.scanDirectory(workspace.value.realRootPath, absolutePath, additions, discovery);
       else additions.push(await this.describePath(workspace.value.realRootPath, absolutePath, metadata));
       const snapshot = this.snapshotValue(workspace.value, [...remaining, ...additions]);
       await this.store.save(snapshot);
@@ -156,6 +162,15 @@ export class WorkspaceIndexService {
     });
   }
 
+  public async changes(workspaceId: string, afterSequence = 0, maxEvents = 50): Promise<Result<WorkspaceIndexChanges>> {
+    const workspace = await this.resolve(workspaceId);
+    if (!workspace.ok) return workspace;
+    const watcher = this.watchers.get(workspace.value.id);
+    return watcher === undefined
+      ? err(appError('WATCHER_NOT_RUNNING', 'Workspace watcher is not running', true))
+      : ok(watcher.queue.changes(afterSequence, maxEvents));
+  }
+
   public async startWatch(workspaceId: string, options: WorkspaceIndexWatchOptions = {}): Promise<Result<WorkspaceIndexStatus>> {
     const workspace = await this.resolve(workspaceId);
     if (!workspace.ok) return workspace;
@@ -164,13 +179,12 @@ export class WorkspaceIndexService {
       if (event.kind === 'delete') await this.removePath(workspaceId, event.relativePath);
       else await this.indexPath(workspaceId, event.relativePath);
     }, options);
-    let fileWatcher: FSWatcher;
+    let fileWatcher: RecursiveFileWatcher;
     try {
-      fileWatcher = watch(workspace.value.realRootPath, { recursive: true }, (_eventType, filename) => {
-        if (filename === null) return;
-        const relativePath = filename;
-        if (!classifyContextPath(relativePath, 'automatic').discoverable) return;
-        queue.enqueue({ relativePath, kind: 'change' });
+      fileWatcher = await createRecursiveWatcher(workspace.value.realRootPath, (eventType, relativePath, exists) => {
+        if (!isSafeRelativePath(relativePath) || !classifyContextPath(relativePath, 'automatic').discoverable) return;
+        const deleted = eventType === 'rename' && !exists;
+        queue.enqueue({ relativePath, kind: deleted ? 'delete' : 'change', changeKind: deleted ? 'deleted' : eventType === 'rename' ? 'created' : 'modified' });
       });
     } catch {
       return err(appError('INTERNAL_ERROR', 'Workspace watcher could not be started'));
@@ -261,6 +275,54 @@ export class WorkspaceIndexService {
 
 function normalizeRelativePath(value: string): string {
   return value.replaceAll('\\', '/').replace(/^\.\//, '').replace(/\/$/, '');
+}
+
+function isSafeRelativePath(value: string): boolean {
+  const normalized = normalizeRelativePath(value);
+  return normalized.length > 0 && !normalized.startsWith('/') && !/^[A-Za-z]:\//.test(normalized) && !normalized.split('/').some((segment) => segment === '..' || segment === '');
+}
+
+async function createRecursiveWatcher(rootPath: string, onEvent: (eventType: string, relativePath: string, exists: boolean) => void): Promise<RecursiveFileWatcher> {
+  const watchers = new Map<string, FSWatcher>();
+  const directories = new Set<string>();
+  const attach = async (directoryPath: string): Promise<void> => {
+    const resolved = path.resolve(directoryPath);
+    if (directories.has(resolved)) return;
+    directories.add(resolved);
+    let watcher: FSWatcher;
+    try {
+      watcher = watch(resolved, { recursive: false }, (eventType, filename) => {
+        if (filename === null) return;
+        const name = filename.toString();
+        const childPath = path.join(resolved, name);
+        const relativePath = normalizeRelativePath(path.relative(rootPath, childPath));
+        const inspected = inspectPath(childPath);
+        onEvent(eventType, relativePath, inspected.exists);
+        if (eventType === 'rename' && inspected.exists && inspected.isDirectory) void attach(childPath);
+      });
+    } catch {
+      directories.delete(resolved);
+      return;
+    }
+    watchers.set(resolved, watcher);
+    let children;
+    try { children = await readdir(resolved, { withFileTypes: true }); } catch { return; }
+    for (const child of children) {
+      if (child.isDirectory() && !child.isSymbolicLink()) await attach(path.join(resolved, child.name));
+    }
+  };
+  await attach(rootPath);
+  if (watchers.size === 0) throw new Error('watcher unavailable');
+  return { close: (): void => { for (const watcher of watchers.values()) watcher.close(); watchers.clear(); directories.clear(); } };
+}
+
+function inspectPath(filePath: string): { readonly exists: boolean; readonly isDirectory: boolean } {
+  try {
+    const metadata = lstatSync(filePath);
+    return { exists: true, isDirectory: metadata.isDirectory() && !metadata.isSymbolicLink() };
+  } catch {
+    return { exists: false, isDirectory: false };
+  }
 }
 
 function isWithin(rootPath: string, candidatePath: string): boolean {

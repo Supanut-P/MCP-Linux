@@ -1,5 +1,5 @@
 import { defineTool, missingService, type McpToolContext, type McpToolDefinition } from './tool-types.js';
-import { workspaceIndexSchema, workspaceIndexStatusSchema, workspaceIndexStopSchema, workspaceIndexWatchSchema } from './schemas.js';
+import { workspaceChangesSchema, workspaceIndexSchema, workspaceIndexStatusSchema, workspaceIndexStopSchema, workspaceIndexWatchSchema } from './schemas.js';
 
 export function workspaceIndexTools(context: McpToolContext): McpToolDefinition[] {
   return [
@@ -45,6 +45,19 @@ export function workspaceIndexTools(context: McpToolContext): McpToolDefinition[
       handler: async (input) => context.services.workspaceIndex === undefined
         ? missingService()
         : context.services.workspaceIndex.stopWatch(input.workspaceId),
+    }),
+    defineTool({
+      name: 'workspace_changes',
+      description: 'Return bounded, read-only file change events from an active workspace watcher without file contents or absolute paths.',
+      permission: 'READ',
+      annotations: { readOnlyHint: true, destructiveHint: false },
+      inputSchema: workspaceChangesSchema,
+      handler: async (input) => {
+        if (context.services.workspaceChanges === undefined) return missingService();
+        return input.operation === 'snapshot'
+          ? context.services.workspaceChanges.snapshot(input.workspaceId, input.maxEvents)
+          : context.services.workspaceChanges.diff(input.workspaceId, input.afterSequence, input.maxEvents);
+      },
     }),
   ];
 }

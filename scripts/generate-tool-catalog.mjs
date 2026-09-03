@@ -11,7 +11,24 @@ const endMarker = '<!-- END GENERATED TOOL REGISTRY -->';
 const checkOnly = process.argv.includes('--check');
 
 const { ToolRegistry } = await import(pathToFileURL(registryModulePath).href);
-const registry = new ToolRegistry({}, { clientId: 'catalog-generator', clientName: 'catalog-generator' }, { codexToolsEnabled: true });
+const registry = new ToolRegistry({
+  targetCatalog: {
+    list: async () => ({ ok: true, value: [] }),
+    describe: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Not available in catalog generation', recoverable: false } }),
+    },
+  remoteRollout: { execute: async () => ({ ok: true, value: {} }) },
+  remoteRolloutResume: { resume: async () => ({ ok: true, value: {} }) },
+  supportBundle: { execute: async () => ({ ok: true, value: {} }) },
+  auditQuery: { execute: async () => ({ ok: true, value: { entries: [], count: 0, truncated: false } }) },
+  taskEvents: { execute: async () => ({ ok: true, value: { taskId: 'catalog-task', state: 'completed', events: [], count: 0, truncated: false } }) },
+  taskHistory: { execute: async () => ({ ok: true, value: { entries: [], count: 0, truncated: false } }) },
+  diagnosticsSnapshot: { execute: async () => ({ ok: true, value: { snapshotAt: new Date(0).toISOString(), status: 'ready', health: { available: true, ready: true, unavailableCount: 0, consentRequiredCount: 0, missingDependencies: [] }, runtime: { available: true, ready: true }, audit: { available: true, ready: true, count: 0, truncated: false }, dependencies: { ready: true, missingDependencies: [] } } }) },
+  remoteFleetDiff: { execute: async () => ({ ok: true, value: { operation: 'remote_fleet_diff', hosts: [], summary: { requested: 0, changed: 0, unchanged: 0, unavailable: 0, maxParallel: 4 } } }) },
+  releaseVerify: { execute: async () => ({ ok: true, value: { operation: 'release_verify', verified: true, artifacts: [], reasonCodes: [] } }) },
+  environmentPreflight: { execute: async () => ({ ok: true, value: { operation: 'environment_preflight', status: 'ready', platform: 'linux', displayServer: 'headless', runtime: { nodeVersion: 'v24.0.0', nodeMajor: 24 }, capabilities: { total: 0, available: 0, ready: 0, consentRequired: 0, notReady: [], missingDependencies: [] } } }) },
+  workflowPreflight: { execute: async () => ({ ok: true, value: { operation: 'workflow_preflight', status: 'ready', environment: { available: true, ready: true, status: 'ready', platform: 'linux', displayServer: 'headless', runtime: { nodeVersion: 'v24.0.0', nodeMajor: 24 }, capabilities: { total: 0, available: 0, ready: 0, consentRequired: 0, notReady: [], missingDependencies: [] } }, diagnostics: { available: true, ready: true, status: 'ready', health: { available: true, ready: true, unavailableCount: 0, consentRequiredCount: 0, missingDependencies: [] }, runtime: { available: true, ready: true }, audit: { available: true, ready: true, count: 0, truncated: false }, dependencies: { ready: true, missingDependencies: [] } } } }) },
+  workspaceCheckpoint: { execute: async () => ({ ok: true, value: { operation: 'list', checkpoints: [], count: 0, truncated: false } }) },
+}, { clientId: 'catalog-generator', clientName: 'catalog-generator' }, { codexToolsEnabled: true });
 const tools = registry.list();
 const current = await readFile(contractPath, 'utf8');
 const newline = current.includes('\r\n') ? '\r\n' : '\n';

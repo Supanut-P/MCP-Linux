@@ -3,7 +3,8 @@ import { appError } from '@baitonghub-linux-mcp/domain';
 import { sanitizeException, type DiagnosticLogger, type FileActor } from '@baitonghub-linux-mcp/application';
 import { DefaultPermissionEngine, permissionProfiles, type PermissionProfile } from '@baitonghub-linux-mcp/permissions';
 import { DEFAULT_DESTRUCTIVE_AUTO_APPROVAL_POLICY, type DestructiveAutoApprovalPolicy } from '@baitonghub-linux-mcp/shared';
-import { ActivityTracker, type ActivitySink, type TraceContext } from './activity-tracker.js';
+import { ActivityTracker, summarizeToolTarget, type ActivitySink, type TraceContext } from './activity-tracker.js';
+import { createApprovalReceipt, type ApprovalReceipt } from './approval-receipt.js';
 import { ContextEngine } from './context-engine.js';
 import { ContextEconomyRuntime } from './context-economy.js';
 import { hasExplicitUserConfirmation, inspectDestructiveOperation } from './destructive-policy.js';
@@ -26,9 +27,22 @@ import { mcpBridgeTools } from './tools/mcp-bridge-tools.js';
 import { processTools } from './tools/process-tools.js';
 import { sessionTools } from './tools/session-tools.js';
 import { searchTools } from './tools/search-tools.js';
+import { targetCatalogTools } from './tools/target-catalog-tools.js';
+import { supportBundleTools } from './tools/support-bundle-tools.js';
+import { auditTools } from './tools/audit-tools.js';
+import { taskEventsTools } from './tools/task-events-tools.js';
+import { taskHistoryTools } from './tools/task-history-tools.js';
+import { diagnosticsSnapshotTools } from './tools/diagnostics-snapshot-tools.js';
+import { remoteFleetDiffTools } from './tools/remote-fleet-diff-tools.js';
+import { releaseVerifyTools } from './tools/release-verify-tools.js';
+import { environmentPreflightTools } from './tools/environment-preflight-tools.js';
+import { workflowPreflightTools } from './tools/workflow-preflight-tools.js';
+import { workspaceCheckpointTools } from './tools/workspace-checkpoint-tools.js';
+import { policyExplainTools } from './tools/policy-explain-tools.js';
 import { skillTools } from './tools/skill-tools.js';
 import { workspaceTools } from './tools/workspace-tools.js';
 import type { McpApplicationServices, McpToolContext, McpToolDefinition } from './tools/tool-types.js';
+import { filterServerProfileTools, type ServerProfileName } from './server-profile.js';
 
 export type { McpApplicationServices } from './tools/tool-types.js';
 export type { ActiveProjectScope, WorkspaceScope } from './destructive-scope.js';
@@ -39,6 +53,8 @@ export interface ToolRegistryOptions {
   readonly activityTracker?: ActivityTracker;
   readonly sessionId?: string;
   readonly profileProvider?: () => PermissionProfile;
+  /** Explicit server surface profile; this filters advertisement and dispatch only. */
+  readonly serverProfileProvider?: () => ServerProfileName;
   /** Legacy compatibility. New callers should supply destructivePolicyProvider. */
   readonly allowAiDeleteProvider?: () => boolean;
   /** Fine-grained local destructive auto-approval policy. */
@@ -68,23 +84,28 @@ export class ToolRegistry {
   private readonly sessionId: string | undefined;
   private readonly permissionEngine = new DefaultPermissionEngine();
   private readonly profileProvider: () => PermissionProfile;
+  private readonly serverProfileProvider: () => ServerProfileName;
   private readonly destructivePolicyProvider: () => DestructiveAutoApprovalPolicy;
   private readonly workspaceScopeResolver: (workspaceId: string) => Promise<WorkspaceScope | null>;
   private readonly activityWorkspaceResolver: (cwd: string) => Promise<string | undefined>;
   private readonly shellTaskWorkspaces = new Map<string, string>();
   private readonly maxToolDurationMs: number | null;
+  private readonly actorId: string;
 
   public constructor(services: McpApplicationServices, actor: FileActor, options: ToolRegistryOptions = {}) {
+    this.actorId = actor.clientId;
     this.diagnostic = options.diagnostic;
     this.activity = options.activityTracker ?? new ActivityTracker(options.activity);
     this.sessionId = options.sessionId;
     this.profileProvider = options.profileProvider ?? ((): PermissionProfile => permissionProfiles.full);
+    this.serverProfileProvider = options.serverProfileProvider ?? ((): ServerProfileName => 'full');
     this.destructivePolicyProvider = options.destructivePolicyProvider ?? ((): DestructiveAutoApprovalPolicy => legacyDeletePolicy(options.allowAiDeleteProvider?.() === true));
     this.workspaceScopeResolver = normalizeWorkspaceScopeResolver(services, actor, options);
     this.activityWorkspaceResolver = normalizeActivityWorkspaceResolver(services, actor);
     this.maxToolDurationMs = normalizeToolResponseBudget(options.maxToolDurationMs);
     const contextEconomy = new ContextEconomyRuntime();
-    const context: McpToolContext = { services, actor, contextEconomy };
+    const serverProfile = this.serverProfileProvider();
+    const context: McpToolContext = { services, actor, contextEconomy, activity: this.activity, serverProfile };
     const contextEngine = new ContextEngine(services, actor, contextEconomy);
     const filePageEngine = new FilePageEngine(services, actor);
     const incrementalVerifier = options.incrementalVerifier ?? new IncrementalVerifier();
@@ -99,7 +120,18 @@ export class ToolRegistry {
       ...processTools(context),
       ...(options.codexToolsEnabled === true ? codexTools(context) : []),
       ...advertisedCapabilityTools(context),
+      ...auditTools(context),
+      ...taskEventsTools(context),
+      ...taskHistoryTools(context),
+      ...diagnosticsSnapshotTools(context),
+      ...remoteFleetDiffTools(context),
+      ...releaseVerifyTools(context),
+      ...environmentPreflightTools(context),
+      ...workflowPreflightTools(context),
+      ...workspaceCheckpointTools(context),
       ...databaseTools(context),
+      ...targetCatalogTools(context),
+      ...supportBundleTools(context),
       ...skillTools(context),
       ...mcpBridgeTools(context),
       ...contextTools(context, contextEngine),
@@ -108,13 +140,14 @@ export class ToolRegistry {
       ...sessionTools(context, incrementalVerifier),
       ...upgradeTools(context),
     ];
-    this.tools = [
-      ...baseTools,
-      ...batchTools({
-        invoke: (name, input, signal) => this.invoke(name, input, undefined, signal),
-        describe: (name) => baseTools.find((tool) => tool.name === name),
-      }),
-    ];
+    const visibleBaseTools = filterServerProfileTools(baseTools, serverProfile);
+    const policyTools = filterServerProfileTools(policyExplainTools(context, () => this.tools, this.profileProvider), serverProfile);
+    const visibleNames = new Set([...visibleBaseTools, ...policyTools].map((tool) => tool.name));
+    const visibleBatchTools = filterServerProfileTools(batchTools({
+      invoke: (name, input, signal) => this.invoke(name, input, undefined, signal),
+      describe: (name) => visibleBaseTools.find((tool) => tool.name === name),
+    }), serverProfile).filter((tool) => visibleNames.has(tool.name) || tool.name === 'tool_batch');
+    this.tools = [...visibleBaseTools, ...policyTools, ...visibleBatchTools];
     this.schemaRegistry = new ToolSchemaRegistry();
     for (const tool of this.tools) this.schemaRegistry.register(tool);
   }
@@ -154,6 +187,7 @@ export class ToolRegistry {
         return response;
       }
       const destructiveDecision = inspectDestructiveOperation(tool.name, parsed.value);
+      const dangerousCall = tool.permission === 'DANGEROUS' || destructiveDecision.destructive;
       const policy = this.destructivePolicyProvider();
       const destructiveWorkspaceId = readExplicitWorkspaceId(parsed.value);
       const workspaceScope = destructiveDecision.destructive && destructiveWorkspaceId !== undefined
@@ -165,7 +199,8 @@ export class ToolRegistry {
       if (destructiveDecision.destructive && !hasExplicitUserConfirmation(parsed.value) && !policyAllowsScopedDestructive) {
         const message = `Destructive operation requires explicit user confirmation${destructiveDecision.reason === undefined ? '' : `: ${destructiveDecision.reason}`}. Ask the user in chat first, then retry with userConfirmed: true`;
         const response = mapError(appError('PERMISSION_REQUIRED', message, true));
-        await this.activity.end(callId, 'PERMISSION_REQUIRED', Date.now() - started, message);
+        const receipt = dangerousCall ? this.approvalReceipt(tool.name, parsed.value, 'CONFIRMATION_REQUIRED') : undefined;
+        await this.activity.end(callId, 'PERMISSION_REQUIRED', Date.now() - started, message, receipt === undefined ? undefined : { approvalReceipt: receipt });
         return response;
       }
       const permissionDecision = this.permissionEngine.decide(this.profileProvider(), {
@@ -181,10 +216,17 @@ export class ToolRegistry {
           ? 'MCP tool ' + tool.name + ' is denied by the active permission profile'
           : 'MCP tool ' + tool.name + ' requires permission approval';
         const response = mapError(appError(code, message, permissionDecision === 'ASK'));
-        await this.activity.end(callId, code, Date.now() - started, message);
+        const receipt = dangerousCall ? this.approvalReceipt(tool.name, parsed.value, permissionDecision) : undefined;
+        await this.activity.end(callId, code, Date.now() - started, message, receipt === undefined ? undefined : { approvalReceipt: receipt });
         return response;
       }
-      const executionInput = policyAllowsScopedDestructive ? withInternalUserConfirmation(parsed.value) : parsed.value;
+      const approvalReceipt = dangerousCall
+        ? this.approvalReceipt(tool.name, parsed.value, policyAllowsScopedDestructive ? 'AUTO_ALLOW' : 'ALLOW', hasExplicitUserConfirmation(parsed.value) || policyAllowsScopedDestructive)
+        : undefined;
+      const confirmedInput = policyAllowsScopedDestructive ? withInternalUserConfirmation(parsed.value) : parsed.value;
+      const executionInput = approvalReceipt === undefined || tool.name !== 'support_bundle'
+        ? confirmedInput
+        : withInternalApprovalReceipt(confirmedInput, approvalReceipt.id);
       const execution = await this.executeWithinResponseBudget(tool, executionInput, parentSignal);
       const response = execution.response;
       this.rememberShellTaskWorkspace(name, response, activityWorkspaceId);
@@ -198,9 +240,10 @@ export class ToolRegistry {
           resultCode,
           Date.now() - started,
           resultMessage,
+          approvalReceipt === undefined ? undefined : { approvalReceipt },
         ));
       } else {
-        await this.activity.end(callId, resultCode, Date.now() - started, resultMessage);
+        await this.activity.end(callId, resultCode, Date.now() - started, resultMessage, approvalReceipt === undefined ? undefined : { approvalReceipt });
       }
       return response;
     } catch (error: unknown) {
@@ -237,6 +280,24 @@ export class ToolRegistry {
       return null;
     }
   }
+
+  private approvalReceipt(toolName: string, input: unknown, decision: string, confirmed = false): ApprovalReceipt {
+    const profile = this.profileProvider();
+    const workspaceId = readWorkspaceId(input);
+    const targetSummary = summarizeToolTarget(toolName, input);
+    const previewHash = readPreviewHash(input);
+    return createApprovalReceipt({
+      toolName,
+      actorId: this.actorId,
+      ...(workspaceId === undefined ? {} : { workspaceId }),
+      ...(targetSummary === undefined ? {} : { targetSummary }),
+      ...(previewHash === undefined ? {} : { previewHash }),
+      profile: profile.name,
+      decision,
+      ...(confirmed ? { confirmedAt: new Date().toISOString() } : {}),
+    });
+  }
+
   private async executeWithinResponseBudget(tool: McpToolDefinition, input: unknown, parentSignal?: AbortSignal): Promise<BudgetedToolExecution> {
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -299,10 +360,13 @@ export class ToolRegistry {
 function advertisedCapabilityTools(context: McpToolContext): readonly McpToolDefinition[] {
   const definitions = capabilityTools(context);
   const advertised = context.services.capabilities?.listTools?.();
-  if (advertised === undefined) return definitions;
+  if (advertised === undefined) return definitions.filter((tool) => (tool.name !== 'remote_rollout' || context.services.remoteRollout !== undefined) && (tool.name !== 'remote_rollout_resume' || context.services.remoteRolloutResume !== undefined));
   const allowed = new Set<string>(advertised);
   return definitions.filter((tool) => {
+    if (tool.name === 'runtime_metrics') return true;
     if (tool.name === 'remote_fleet') return allowed.has('remote_host');
+    if (tool.name === 'remote_rollout') return allowed.has('remote_host') && context.services.remoteRollout !== undefined;
+    if (tool.name === 'remote_rollout_resume') return allowed.has('remote_host') && context.services.remoteRolloutResume !== undefined;
     if (tool.name === 'vision_annotated_capture') return allowed.has('vision');
     if (tool.name === 'ui_target_action') return allowed.has('input_event') && allowed.has('accessibility');
     return allowed.has(tool.name);
@@ -312,6 +376,17 @@ function advertisedCapabilityTools(context: McpToolContext): readonly McpToolDef
 function withInternalUserConfirmation(input: unknown): unknown {
   if (typeof input !== 'object' || input === null || Array.isArray(input)) return input;
   return { ...(input as Record<string, unknown>), userConfirmed: true };
+}
+
+function withInternalApprovalReceipt(input: unknown, receiptId: string): unknown {
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) return input;
+  return { ...(input as Record<string, unknown>), _approvalReceiptId: receiptId };
+}
+
+function readPreviewHash(input: unknown): string | undefined {
+  if (!isRecord(input)) return undefined;
+  const value = input.previewHash ?? input.preview_hash;
+  return typeof value === 'string' && /^[a-f0-9]{64}$/.test(value) ? value : undefined;
 }
 
 function legacyDeletePolicy(enabled: boolean): DestructiveAutoApprovalPolicy {

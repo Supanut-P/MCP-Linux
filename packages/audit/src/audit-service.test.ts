@@ -86,4 +86,14 @@ describe('AuditService', () => {
       metadata: { toolName: 'read_file', callId: 'call-1', phase: 'completed', errorMessage: 'File or directory was not found' },
     });
   });
+
+  it('stores approval receipts inside redacted MCP audit metadata', async () => {
+    const repository = new MemoryAuditRepository();
+    await new AuditService(repository).recordMcpTool({
+      actorId: 'client-1', actorName: 'test', toolName: 'support_bundle', callId: 'call-1', phase: 'completed', resultCode: 'SUCCESS', durationMs: 3,
+      approvalReceipt: { id: 'receipt-1', actorId: 'client-1', targetSummaryHash: 'a'.repeat(64), profile: 'full', decision: 'ALLOW', secret: 'do-not-store' },
+    });
+    expect(repository.events[0]?.metadata).toMatchObject({ approvalReceipt: { id: 'receipt-1', targetSummaryHash: 'a'.repeat(64), secret: '[REDACTED]' } });
+    expect(JSON.stringify(repository.events[0])).not.toContain('do-not-store');
+  });
 });

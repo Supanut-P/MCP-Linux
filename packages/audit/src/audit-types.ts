@@ -29,10 +29,17 @@ export interface AuditEvent {
 
 export interface AuditEventQuery {
   readonly actionPrefix?: string;
+  /** Scope queries to one authenticated actor; omitted means all actors for internal callers. */
+  readonly actorId?: string;
   /** undefined = all workspaces; null = global/unscoped events only. */
   readonly workspaceId?: string | null;
   /** undefined = all sessions; null = legacy/unscoped events only. */
   readonly sessionId?: string | null;
+  readonly resultCode?: string;
+  readonly since?: string;
+  readonly until?: string;
+  /** Return events strictly older than this descending-order position. */
+  readonly before?: { readonly timestamp: string; readonly id: string };
 }
 
 export interface AuditEventRepository {
@@ -68,4 +75,5 @@ export interface McpToolAuditInput {
   readonly durationMs: number;
   readonly traceId?: string;
   readonly traceParent?: string;
+  readonly approvalReceipt?: unknown;
 }

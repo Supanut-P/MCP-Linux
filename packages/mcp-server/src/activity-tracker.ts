@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import type { ApprovalReceipt } from './approval-receipt.js';
 
 export interface ActivitySinkEvent {
   readonly callId: string;
@@ -13,6 +14,7 @@ export interface ActivitySinkEvent {
   readonly timestamp: string;
   readonly traceId?: string;
   readonly traceParent?: string;
+  readonly approvalReceipt?: ApprovalReceipt;
 }
 
 export interface TraceContext {
@@ -38,9 +40,16 @@ export interface InFlightToolCall {
   readonly traceParent?: string;
 }
 
+export interface ActivitySnapshot {
+  readonly requestTotal: number;
+  readonly activeCount: number;
+  readonly revision: number;
+}
+
 export class ActivityTracker {
   private readonly inflight = new Map<string, InFlightToolCall>();
   private activityRevision = 0;
+  private requestTotal = 0;
 
   public constructor(
     private readonly sink?: ActivitySink,
@@ -53,6 +62,15 @@ export class ActivityTracker {
 
   public revision(): number {
     return this.activityRevision;
+  }
+
+  /** Returns aggregate counters only; request identifiers and target metadata stay private. */
+  public snapshot(): ActivitySnapshot {
+    return {
+      requestTotal: this.requestTotal,
+      activeCount: this.inflight.size,
+      revision: this.activityRevision,
+    };
   }
 
   public async begin(toolName: string, input: unknown, traceContext?: TraceContext): Promise<string> {
@@ -72,6 +90,7 @@ export class ActivityTracker {
       ...(trace.traceParent === undefined ? {} : { traceParent: trace.traceParent }),
     };
     this.inflight.set(callId, entry);
+    this.requestTotal += 1;
     this.activityRevision += 1;
     await this.safeRecord({
       callId,
@@ -89,7 +108,7 @@ export class ActivityTracker {
     return callId;
   }
 
-  public async end(callId: string, resultCode: string, durationMs: number, resultMessage?: string): Promise<void> {
+  public async end(callId: string, resultCode: string, durationMs: number, resultMessage?: string, options?: { readonly approvalReceipt?: ApprovalReceipt }): Promise<void> {
     const existing = this.inflight.get(callId);
     this.inflight.delete(callId);
     this.activityRevision += 1;
@@ -107,6 +126,7 @@ export class ActivityTracker {
       ...(existing?.traceId === undefined ? {} : { traceId: existing.traceId }),
       ...(existing?.traceParent === undefined ? {} : { traceParent: existing.traceParent }),
       ...(resultMessage === undefined || resultMessage.length === 0 ? {} : { resultMessage }),
+      ...(options?.approvalReceipt === undefined ? {} : { approvalReceipt: options.approvalReceipt }),
     });
   }
 
@@ -140,6 +160,14 @@ export function summarizeToolTarget(toolName: string, input: unknown): string | 
       // logging credentials or the remote command itself.
       return summarizeForLog(`host:${hostId} ${scope} ${action}${target}`);
     }
+  }
+  if (toolName === 'remote_rollout_resume') {
+    const rolloutId = firstString(input, ['rolloutId', 'rollout_id']);
+    const workspaceId = firstString(input, ['workspaceId', 'workspace_id']);
+    const operation = firstString(input, ['operation', 'action']) ?? 'unknown';
+    const hostIds = Array.isArray(input.hostIds) ? input.hostIds.filter((entry): entry is string => typeof entry === 'string') : [];
+    const retryCounts = isRecord(input.retryCounts) ? Object.keys(input.retryCounts) : [];
+    return summarizeForLog(`rollout:${rolloutId ?? 'unknown'} workspace:${workspaceId ?? 'unscoped'} operation:${operation} hosts:${hostIds.length || retryCounts.length}`);
   }
   const pathValue = firstString(input, ['path', 'relativePath', 'filePath', 'targetPath', 'sourcePath', 'destinationPath']);
   if (pathValue !== undefined) return summarizeForLog(pathValue);

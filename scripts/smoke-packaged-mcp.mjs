@@ -47,6 +47,21 @@ try {
   if (tools.tools.length < expectedToolsMin) {
     throw new Error(`tools/list returned ${tools.tools.length} tools; expected at least ${expectedToolsMin}`);
   }
+  if (!tools.tools.some((tool) => tool.name === 'remote_fleet_diff')) {
+    throw new Error('tools/list did not advertise remote_fleet_diff');
+  }
+  if (!tools.tools.some((tool) => tool.name === 'release_verify')) {
+    throw new Error('tools/list did not advertise release_verify');
+  }
+  if (!tools.tools.some((tool) => tool.name === 'environment_preflight')) {
+    throw new Error('tools/list did not advertise environment_preflight');
+  }
+  if (!tools.tools.some((tool) => tool.name === 'workflow_preflight')) {
+    throw new Error('tools/list did not advertise workflow_preflight');
+  }
+  if (!tools.tools.some((tool) => tool.name === 'workspace_checkpoint')) {
+    throw new Error('tools/list did not advertise workspace_checkpoint');
+  }
 
   const listed = await callTool(client, 'workspace_list', {});
   const entries = readArray(listed);
@@ -103,6 +118,196 @@ try {
     throw new Error(`shell wait did not complete successfully: ${JSON.stringify({ state: final.state, exit_code: final.exit_code, stdout: final.stdout })}`);
   }
 
+  const taskEvents = await callTool(client, 'task_events', { taskId, limit: 10 });
+  const taskEventsValue = readObject(taskEvents);
+  if (taskEventsValue.taskId !== taskId
+    || taskEventsValue.state !== 'completed'
+    || !Array.isArray(taskEventsValue.events)
+    || typeof taskEventsValue.count !== 'number'
+    || typeof taskEventsValue.truncated !== 'boolean') {
+    throw new Error('task_events did not return bounded lifecycle metadata');
+  }
+
+  const taskHistory = await callTool(client, 'task_history', { workspaceId, limit: 10 });
+  const taskHistoryValue = readObject(taskHistory);
+  if (!Array.isArray(taskHistoryValue.entries)
+    || typeof taskHistoryValue.count !== 'number'
+    || typeof taskHistoryValue.truncated !== 'boolean'
+    || taskHistoryValue.entries.some((entry) => entry.taskId !== taskId)) {
+    throw new Error('task_history did not return the bounded owned task summary');
+  }
+
+  const audit = await callTool(client, 'audit_query', { limit: 10 });
+  const auditValue = readObject(audit);
+  if (!Array.isArray(auditValue.entries)
+    || typeof auditValue.count !== 'number'
+    || typeof auditValue.truncated !== 'boolean') {
+    throw new Error('audit_query did not return bounded structured summaries');
+  }
+
+  const diagnostics = await callTool(client, 'diagnostics_snapshot', {});
+  const diagnosticsValue = readObject(diagnostics);
+  if (!['ready', 'degraded', 'unavailable'].includes(diagnosticsValue.status)
+    || !diagnosticsValue.health || !diagnosticsValue.runtime
+    || !diagnosticsValue.audit || !diagnosticsValue.dependencies) {
+    throw new Error('diagnostics_snapshot did not return fixed redacted sections');
+  }
+
+  const workflow = await callTool(client, 'workflow_preflight', {});
+  const workflowValue = readObject(workflow);
+  if (!['ready', 'degraded', 'unavailable'].includes(workflowValue.status)
+    || !workflowValue.environment || !workflowValue.diagnostics) {
+    throw new Error('workflow_preflight did not return fixed readiness sections');
+  }
+
+  const snapshot = await callTool(client, 'workspace_snapshot', {
+    workspaceId,
+    operation: 'manifest',
+    path: 'scripts',
+    maxEntries: 10,
+    hashMode: 'none',
+  });
+  const snapshotValue = readObject(snapshot);
+  if (snapshotValue.workspaceId !== workspaceId
+    || !Array.isArray(snapshotValue.entries)
+    || typeof snapshotValue.count !== 'number'
+    || typeof snapshotValue.truncated !== 'boolean') {
+    throw new Error('workspace_snapshot manifest did not return bounded metadata');
+  }
+  const snapshotDiff = await callTool(client, 'workspace_snapshot', {
+    workspaceId,
+    operation: 'diff',
+    path: 'scripts',
+    maxEntries: 10,
+    hashMode: 'none',
+    baseline: snapshotValue.entries,
+  });
+  const snapshotDiffValue = readObject(snapshotDiff);
+  if (snapshotDiffValue.operation !== 'diff'
+    || !Array.isArray(snapshotDiffValue.added)
+    || !Array.isArray(snapshotDiffValue.removed)
+    || !Array.isArray(snapshotDiffValue.changed)
+    || typeof snapshotDiffValue.unchanged !== 'number'
+    || typeof snapshotDiffValue.truncated !== 'boolean') {
+    throw new Error('workspace_snapshot diff did not return bounded classifications');
+  }
+  const snapshotUsage = await callTool(client, 'workspace_snapshot', {
+    workspaceId,
+    operation: 'usage',
+    path: 'scripts',
+  });
+  const snapshotUsageValue = readObject(snapshotUsage);
+  if (snapshotUsageValue.operation !== 'usage'
+    || typeof snapshotUsageValue.fileCount !== 'number'
+    || typeof snapshotUsageValue.totalBytes !== 'number'
+    || typeof snapshotUsageValue.scannedEntries !== 'number'
+    || typeof snapshotUsageValue.truncated !== 'boolean') {
+    throw new Error('workspace_snapshot usage did not return bounded totals');
+  }
+
+  const checkpoint = await callTool(client, 'workspace_checkpoint', {
+    operation: 'create',
+    workspaceId,
+    path: 'scripts',
+    name: 'packaged-smoke',
+    maxEntries: 10,
+    ttlSeconds: 3600,
+  });
+  const checkpointValue = readObject(checkpoint);
+  const checkpointDetail = checkpointValue.checkpoint;
+  if (checkpointValue.operation !== 'create'
+    || typeof checkpointDetail !== 'object' || checkpointDetail === null
+    || typeof checkpointDetail.id !== 'string'
+    || !Array.isArray(checkpointDetail.entries)
+    || checkpointDetail.entries.some((entry) => 'content' in entry || 'absolutePath' in entry)) {
+    throw new Error('workspace_checkpoint create did not return metadata-only bounded state');
+  }
+  const checkpointId = checkpointDetail.id;
+  const checkpointList = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'list', workspaceId }));
+  if (checkpointList.operation !== 'list' || !Array.isArray(checkpointList.checkpoints) || checkpointList.count < 1) {
+    throw new Error('workspace_checkpoint list did not return the created checkpoint');
+  }
+  const checkpointGet = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'get', checkpointId }));
+  if (checkpointGet.operation !== 'get' || typeof checkpointGet.checkpoint !== 'object' || checkpointGet.checkpoint === null) {
+    throw new Error('workspace_checkpoint get did not return the created checkpoint');
+  }
+  const checkpointDiff = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'diff', checkpointId, maxEntries: 10 }));
+  if (checkpointDiff.operation !== 'diff'
+    || checkpointDiff.checkpointId !== checkpointId
+    || typeof checkpointDiff.diff !== 'object' || checkpointDiff.diff === null
+    || checkpointDiff.diff.operation !== 'diff'
+    || !Array.isArray(checkpointDiff.diff.added)
+    || !Array.isArray(checkpointDiff.diff.removed)
+    || !Array.isArray(checkpointDiff.diff.changed)
+    || typeof checkpointDiff.diff.unchanged !== 'number'
+    || typeof checkpointDiff.diff.truncated !== 'boolean') {
+    throw new Error('workspace_checkpoint diff did not return a bounded comparison');
+  }
+  const checkpointSummary = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'summary', checkpointId, maxEntries: 10 }));
+  if (checkpointSummary.operation !== 'summary'
+    || typeof checkpointSummary.added !== 'number'
+    || typeof checkpointSummary.removed !== 'number'
+    || typeof checkpointSummary.changed !== 'number'
+    || typeof checkpointSummary.unchanged !== 'number'
+    || typeof checkpointSummary.truncated !== 'boolean'
+    || Object.keys(checkpointSummary).some((key) => !['operation', 'added', 'removed', 'changed', 'unchanged', 'truncated'].includes(key))) {
+    throw new Error('workspace_checkpoint summary did not return bounded numeric counters');
+  }
+  if (JSON.stringify(checkpointSummary).includes('src/')) {
+    throw new Error('workspace_checkpoint summary leaked a path');
+  }
+  const checkpointStats = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'stats' }));
+  if (checkpointStats.operation !== 'stats'
+    || checkpointStats.count !== 1
+    || typeof checkpointStats.bytes !== 'number'
+    || checkpointStats.maxRecords !== 32
+    || checkpointStats.maxBytes !== 2 * 1024 * 1024
+    || checkpointStats.remainingRecords !== 31
+    || checkpointStats.remainingBytes !== checkpointStats.maxBytes - checkpointStats.bytes) {
+    throw new Error('workspace_checkpoint stats did not return bounded quota usage');
+  }
+  const checkpointAfter = readObject(await callTool(client, 'workspace_checkpoint', {
+    operation: 'create',
+    workspaceId,
+    path: 'scripts',
+    name: 'packaged-smoke-after',
+    maxEntries: 10,
+    ttlSeconds: 3600,
+  }));
+  if (checkpointAfter.operation !== 'create' || typeof checkpointAfter.checkpoint !== 'object' || checkpointAfter.checkpoint === null || typeof checkpointAfter.checkpoint.id !== 'string') {
+    throw new Error('workspace_checkpoint second create did not return a checkpoint');
+  }
+  const checkpointCompare = readObject(await callTool(client, 'workspace_checkpoint', {
+    operation: 'compare',
+    checkpointId,
+    otherCheckpointId: checkpointAfter.checkpoint.id,
+    maxEntries: 10,
+  }));
+  if (checkpointCompare.operation !== 'compare'
+    || checkpointCompare.checkpointId !== checkpointId
+    || checkpointCompare.otherCheckpointId !== checkpointAfter.checkpoint.id
+    || typeof checkpointCompare.diff !== 'object' || checkpointCompare.diff === null
+    || checkpointCompare.diff.operation !== 'diff'
+    || !Array.isArray(checkpointCompare.diff.added)
+    || !Array.isArray(checkpointCompare.diff.removed)
+    || !Array.isArray(checkpointCompare.diff.changed)
+    || typeof checkpointCompare.diff.unchanged !== 'number'
+    || typeof checkpointCompare.diff.truncated !== 'boolean') {
+    throw new Error('workspace_checkpoint compare did not return a bounded comparison');
+  }
+  const checkpointPrune = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'prune' }));
+  if (checkpointPrune.operation !== 'prune' || checkpointPrune.deleted !== 0) {
+    throw new Error('workspace_checkpoint prune did not return an idempotent cleanup result');
+  }
+  const checkpointDelete = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'delete', checkpointId }));
+  if (checkpointDelete.operation !== 'delete' || checkpointDelete.deleted !== true) {
+    throw new Error('workspace_checkpoint delete did not confirm deletion');
+  }
+  const checkpointAfterDelete = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'delete', checkpointId: checkpointAfter.checkpoint.id }));
+  if (checkpointAfterDelete.operation !== 'delete' || checkpointAfterDelete.deleted !== true) {
+    throw new Error('workspace_checkpoint second delete did not confirm deletion');
+  }
+
   process.stdout.write(JSON.stringify({
     ok: true,
     toolCount: tools.tools.length,
@@ -110,6 +315,29 @@ try {
     registeredWorkspaceId: workspaceId,
     parentKind: listedMachineRoot ? 'machine_root' : 'project_compatibility_fallback',
     taskId,
+    taskEventCount: taskEventsValue.count,
+    taskHistoryCount: taskHistoryValue.count,
+    auditCount: auditValue.count,
+    auditTruncated: auditValue.truncated,
+    diagnosticsStatus: diagnosticsValue.status,
+    remoteFleetDiffAdvertised: true,
+    releaseVerifyAdvertised: true,
+    environmentPreflightAdvertised: true,
+    workflowPreflightAdvertised: true,
+    workflowPreflightStatus: workflowValue.status,
+    workspaceCheckpointAdvertised: true,
+    workspaceCheckpointEntries: checkpointDetail.entries.length,
+    workspaceCheckpointDiffUnchanged: checkpointDiff.diff.unchanged,
+    workspaceCheckpointSummaryChanged: checkpointSummary.changed,
+    workspaceCheckpointStatsCount: checkpointStats.count,
+    workspaceCheckpointCompareUnchanged: checkpointCompare.diff.unchanged,
+    workspaceCheckpointPruned: checkpointPrune.deleted,
+    snapshotCount: snapshotValue.count,
+    snapshotTruncated: snapshotValue.truncated,
+    snapshotDiffUnchanged: snapshotDiffValue.unchanged,
+    snapshotDiffTruncated: snapshotDiffValue.truncated,
+    snapshotUsageFileCount: snapshotUsageValue.fileCount,
+    snapshotUsageTruncated: snapshotUsageValue.truncated,
   }) + '\n');
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);

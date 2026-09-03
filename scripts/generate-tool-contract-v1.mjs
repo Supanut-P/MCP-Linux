@@ -8,7 +8,24 @@ const { z } = await import(pathToFileURL(path.join(root, 'packages', 'mcp-server
 const { ToolRegistry } = await import(pathToFileURL(path.join(root, 'packages', 'mcp-server', 'dist', 'tool-registry.js')).href);
 const output = path.join(root, 'tests', 'fixtures', 'tool-contract-v1.json');
 const checkOnly = process.argv.includes('--check');
-const registry = new ToolRegistry({}, { clientId: 'contract-generator', clientName: 'contract-generator' }, { codexToolsEnabled: true });
+const registry = new ToolRegistry({
+  targetCatalog: {
+    list: async () => ({ ok: true, value: [] }),
+    describe: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Not available in contract generation', recoverable: false } }),
+  },
+  remoteRollout: { execute: async () => ({ ok: true, value: {} }) },
+  remoteRolloutResume: { resume: async () => ({ ok: true, value: {} }) },
+  supportBundle: { execute: async () => ({ ok: true, value: {} }) },
+  auditQuery: { execute: async () => ({ ok: true, value: { entries: [], count: 0, truncated: false } }) },
+  taskEvents: { execute: async () => ({ ok: true, value: { taskId: 'contract-task', state: 'completed', events: [], count: 0, truncated: false } }) },
+  taskHistory: { execute: async () => ({ ok: true, value: { entries: [], count: 0, truncated: false } }) },
+  diagnosticsSnapshot: { execute: async () => ({ ok: true, value: { snapshotAt: new Date(0).toISOString(), status: 'ready', health: { available: true, ready: true, unavailableCount: 0, consentRequiredCount: 0, missingDependencies: [] }, runtime: { available: true, ready: true }, audit: { available: true, ready: true, count: 0, truncated: false }, dependencies: { ready: true, missingDependencies: [] } } }) },
+  remoteFleetDiff: { execute: async () => ({ ok: true, value: { operation: 'remote_fleet_diff', hosts: [], summary: { requested: 0, changed: 0, unchanged: 0, unavailable: 0, maxParallel: 4 } } }) },
+  releaseVerify: { execute: async () => ({ ok: true, value: { operation: 'release_verify', verified: true, artifacts: [], reasonCodes: [] } }) },
+  environmentPreflight: { execute: async () => ({ ok: true, value: { operation: 'environment_preflight', status: 'ready', platform: 'linux', displayServer: 'headless', runtime: { nodeVersion: 'v24.0.0', nodeMajor: 24 }, capabilities: { total: 0, available: 0, ready: 0, consentRequired: 0, notReady: [], missingDependencies: [] } } }) },
+  workflowPreflight: { execute: async () => ({ ok: true, value: { operation: 'workflow_preflight', status: 'ready', environment: { available: true, ready: true, status: 'ready', platform: 'linux', displayServer: 'headless', runtime: { nodeVersion: 'v24.0.0', nodeMajor: 24 }, capabilities: { total: 0, available: 0, ready: 0, consentRequired: 0, notReady: [], missingDependencies: [] } }, diagnostics: { available: true, ready: true, status: 'ready', health: { available: true, ready: true, unavailableCount: 0, consentRequiredCount: 0, missingDependencies: [] }, runtime: { available: true, ready: true }, audit: { available: true, ready: true, count: 0, truncated: false }, dependencies: { ready: true, missingDependencies: [] } } } }) },
+  workspaceCheckpoint: { execute: async () => ({ ok: true, value: { operation: 'list', checkpoints: [], count: 0, truncated: false } }) },
+}, { clientId: 'contract-generator', clientName: 'contract-generator' }, { codexToolsEnabled: true });
 const canonicalize = (value) => Array.isArray(value)
   ? value.map(canonicalize)
   : typeof value !== 'object' || value === null
@@ -21,9 +38,10 @@ const tools = registry.list().map((tool) => ({
   inputSchema: canonicalize(z.toJSONSchema(tool.inputSchema, { target: 'draft-7' })),
 })).sort((a, b) => a.name.localeCompare(b.name));
 const expected = JSON.stringify({ contractVersion: '1.0.0', descriptions: 'non-contractual', tools }, null, 2) + '\n';
+const normalizeLineEndings = (value) => value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 if (checkOnly) {
   const current = await readFile(output, 'utf8').catch(() => '');
-  if (current !== expected) { process.stderr.write(`v1 tool contract drift detected for ${tools.length} tools. Run: corepack pnpm@10.15.0 contract:v1\n`); process.exitCode = 1; }
+  if (normalizeLineEndings(current) !== normalizeLineEndings(expected)) { process.stderr.write(`v1 tool contract drift detected for ${tools.length} tools. Run: corepack pnpm@10.15.0 contract:v1\n`); process.exitCode = 1; }
   else process.stdout.write(`v1 tool contract is synchronized with ${tools.length} tools.\n`);
 } else {
   await writeFile(output, expected, 'utf8');

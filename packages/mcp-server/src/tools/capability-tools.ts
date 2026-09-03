@@ -1,5 +1,5 @@
 import { defineTool, missingService, type McpToolContext, type McpToolDefinition } from './tool-types.js';
-import type { Result } from '@baitonghub-linux-mcp/domain';
+import { ok, type Result } from '@baitonghub-linux-mcp/domain';
 import { DEFAULT_MCP_POLL_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS } from '@baitonghub-linux-mcp/shared';
 import { SetOfMarksService } from '../set-of-marks-service.js';
 import { withCapabilityOwnerMetadata } from '../request-scope.js';
@@ -10,6 +10,8 @@ import {
   fileDialogCapabilitySchema,
   healthCapabilitySchema,
   journalCapabilitySchema,
+  serviceLogsCapabilitySchema,
+  runtimeMetricsSchema,
   networkCapabilitySchema,
   packageCapabilitySchema,
   scheduleCapabilitySchema,
@@ -32,8 +34,11 @@ import {
   storageUsageCapabilitySchema,
   backupCapabilitySchema,
   remoteFleetCapabilitySchema,
+  remoteRolloutCapabilitySchema,
+  remoteRolloutResumeCapabilitySchema,
 } from './schemas.js';
 import { RemoteFleetRuntime } from '../remote-fleet-runtime.js';
+import { RuntimeMetricsService } from '../runtime-metrics-service.js';
 
 function currentMcpPollWaitSeconds(context: McpToolContext): number {
   const configured = context.services.runtimeTiming?.().mcpPollWaitSeconds ?? DEFAULT_MCP_POLL_WAIT_SECONDS;
@@ -65,7 +70,11 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
     return context.services.capabilities.execute(tool, owned, signal);
   };
   const setOfMarks = new SetOfMarksService(context.services.capabilities);
-  const remoteFleet = new RemoteFleetRuntime(context.services.capabilities);
+  const remoteFleet = new RemoteFleetRuntime(context.services.capabilities, context.services.remoteFleetAudit);
+  const runtimeMetrics = new RuntimeMetricsService({
+    ...(context.activity === undefined ? {} : { activity: context.activity }),
+    ...(context.services.runtimeTaskSnapshot === undefined ? {} : { taskSnapshot: context.services.runtimeTaskSnapshot }),
+  });
 
   return [
     defineTool({
@@ -138,7 +147,15 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
       permission: 'READ',
       annotations: { readOnlyHint: true, destructiveHint: false },
       inputSchema: healthCapabilitySchema,
-      handler: async (input, signal) => execute('health', input, signal),
+      handler: async (input, signal) => {
+        const result = input.operation === 'check_tool' && input.tool === 'runtime_metrics'
+          ? ok({ tool: 'runtime_metrics', ...runtimeMetrics.health() })
+          : await execute('health', input, signal);
+        if (!result.ok || context.serverProfile === undefined) return result;
+        return isRecord(result.value)
+          ? ok({ ...result.value, serverProfile: context.serverProfile })
+          : result;
+      },
     }),
     defineTool({
       name: 'system_info',
@@ -149,12 +166,28 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
       handler: async (input, signal) => execute('system_info', input, signal),
     }),
     defineTool({
+      name: 'runtime_metrics',
+      description: 'Read-only bounded host, MCP runtime, and owned-task counters. It never returns hostname, command line, environment, paths, client identity, or secrets.',
+      permission: 'READ',
+      annotations: { readOnlyHint: true, destructiveHint: false },
+      inputSchema: runtimeMetricsSchema,
+      handler: async (input, signal) => runtimeMetrics.execute(input, signal),
+    }),
+    defineTool({
       name: 'journal',
       description: 'Read bounded, sanitized systemd journal entries on Linux. Unit, priority, since, and line count are validated; provider stderr is never returned.',
       permission: 'READ',
       annotations: { readOnlyHint: true, destructiveHint: false },
       inputSchema: journalCapabilitySchema,
       handler: async (input, signal) => execute('journal', input, signal),
+    }),
+    defineTool({
+      name: 'service_logs',
+      description: 'Read or continue a bounded, sanitized systemd service log stream on Linux. The unit and opaque cursor are validated; no arbitrary journal query or provider stderr is returned.',
+      permission: 'READ',
+      annotations: { readOnlyHint: true, destructiveHint: false },
+      inputSchema: serviceLogsCapabilitySchema,
+      handler: async (input, signal) => execute('service_logs', input, signal),
     }),
     defineTool({
       name: 'network',
@@ -254,11 +287,31 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
     }),
     defineTool({
       name: 'remote_fleet',
-      description: 'Read-only inspection of 1-20 explicitly registered SSH hosts. Uses fixed remote operations with at most four sessions in parallel; host addresses, credentials, paths, and commands remain inside each host registration.',
+      description: 'Read-only inspection of 1-20 explicitly registered SSH hosts using health, inventory, service status, disk usage, checksum, topology-safe network summary, or aggregate snapshot operations. At most four sessions run in parallel; host addresses, credentials, paths, and commands remain inside each host registration.',
       permission: 'READ',
       annotations: { readOnlyHint: true, destructiveHint: false },
       inputSchema: remoteFleetCapabilitySchema,
       handler: async (input, signal) => remoteFleet.execute(input, signal),
+    }),
+    defineTool({
+      name: 'remote_rollout',
+      description: 'Plan, execute, inspect, or cancel a canary-first restart of one fixed systemd service across registered SSH hosts. Execution requires an unexpired preview hash and explicit confirmation; no arbitrary remote shell is accepted.',
+      permission: 'DANGEROUS',
+      annotations: { readOnlyHint: false, destructiveHint: true },
+      inputSchema: remoteRolloutCapabilitySchema,
+      handler: async (input, signal) => context.services.remoteRollout === undefined
+        ? missingService()
+        : context.services.remoteRollout.execute(input, signal),
+    }),
+    defineTool({
+      name: 'remote_rollout_resume',
+      description: 'Preview and execute a bounded recovery of a failed remote rollout. Successful hosts are never restarted; a fresh preview hash and explicit confirmation are required, and unverified remote outcomes are not retried.',
+      permission: 'DANGEROUS',
+      annotations: { readOnlyHint: false, destructiveHint: true },
+      inputSchema: remoteRolloutResumeCapabilitySchema,
+      handler: async (input, signal) => context.services.remoteRolloutResume === undefined
+        ? missingService()
+        : context.services.remoteRolloutResume.resume(input, signal),
     }),
     defineTool({
       name: 'artifact_verify',
@@ -293,4 +346,8 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
       handler: async (input, signal) => execute('backup', input, signal),
     }),
   ];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

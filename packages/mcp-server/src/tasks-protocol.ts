@@ -4,14 +4,16 @@ import type { FileActor } from '@baitonghub-linux-mcp/application';
 import { DEFAULT_MCP_POLL_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS } from '@baitonghub-linux-mcp/shared';
 import { z } from 'zod';
 import type { McpApplicationServices } from './tool-registry.js';
+import type { RemoteRolloutTaskSnapshot } from './remote-rollout-runtime.js';
 import { withCapabilityOwnerMetadata } from './request-scope.js';
 
 /**
  * Protocol-level exposure of durable background tasks per the MCP Tasks
- * utility (spec 2025-11-25, experimental). Tasks are still created through
- * the `shell` tool with execution=background; this surface only serves
- * tasks/get, tasks/result, tasks/list, and tasks/cancel so spec-aware
- * clients can poll and retrieve results without knowing baitonghub-linux-mcp's tool names.
+ * utility (spec 2025-11-25, experimental). Tasks can be created through the
+ * standard task-augmented `shell` tools/call path or the legacy shell tool
+ * with execution=background; this surface serves tasks/get, tasks/result,
+ * tasks/list, and tasks/cancel so spec-aware clients can poll and retrieve
+ * results without knowing baitonghub-linux-mcp's tool names.
  */
 
 export interface ProtocolTask {
@@ -38,7 +40,7 @@ export interface TasksProtocolOptions {
   readonly pollTickMs?: number;
 }
 
-type ShellSnapshot = Record<string, unknown>;
+export type ShellSnapshot = Record<string, unknown>;
 type TaskIdParams = { readonly taskId: string };
 type ListParams = { readonly cursor?: string | undefined };
 
@@ -63,7 +65,7 @@ function protocolStatus(state: string): ProtocolTask['status'] {
   }
 }
 
-function toProtocolTask(snapshot: ShellSnapshot, pollIntervalMs: number): ProtocolTask | undefined {
+export function toProtocolTask(snapshot: ShellSnapshot, pollIntervalMs: number): ProtocolTask | undefined {
   const taskId = typeof snapshot.task_id === 'string' ? snapshot.task_id.trim() : '';
   const startedAt = typeof snapshot.started_at === 'string' ? snapshot.started_at : '';
   if (taskId.length === 0 || startedAt.length === 0) return undefined;
@@ -83,6 +85,20 @@ function toProtocolTask(snapshot: ShellSnapshot, pollIntervalMs: number): Protoc
     createdAt: startedAt,
     lastUpdatedAt: finishedAt,
     ttl,
+    pollInterval: pollIntervalMs,
+  };
+}
+
+/** Maps a task-augmented remote rollout without exposing connection metadata. */
+export function toRemoteProtocolTask(snapshot: RemoteRolloutTaskSnapshot, pollIntervalMs: number): ProtocolTask {
+  const lastEvent = snapshot.events.at(-1);
+  return {
+    taskId: snapshot.taskId,
+    status: snapshot.status,
+    ...(lastEvent?.resultCode === undefined ? {} : { statusMessage: lastEvent.resultCode }),
+    createdAt: snapshot.createdAt,
+    lastUpdatedAt: snapshot.lastUpdatedAt,
+    ttl: null,
     pollInterval: pollIntervalMs,
   };
 }
@@ -130,13 +146,27 @@ export class TasksProtocol {
     return this.protocolTask(params.taskId);
   }
 
+  /** Map a freshly-created shell snapshot using the same poll/TTL contract as tasks/get. */
+  public taskFromSnapshot(snapshot: ShellSnapshot): ProtocolTask | undefined {
+    return toProtocolTask(snapshot, this.currentPollIntervalMs());
+  }
+
+  public taskFromRemoteSnapshot(snapshot: RemoteRolloutTaskSnapshot): ProtocolTask {
+    return toRemoteProtocolTask(snapshot, this.currentPollIntervalMs());
+  }
+
   public async listTasks(params: ListParams): Promise<{ tasks: ProtocolTask[]; nextCursor?: string }> {
+    if (this.services.capabilities === undefined && this.services.remoteRolloutTasks === undefined) throw internalError('Capability service is unavailable');
     const offset = params.cursor === undefined ? 0 : decodeCursor(params.cursor);
-    const snapshots = await this.listSnapshots();
+    const snapshots = this.services.capabilities === undefined ? [] : await this.listSnapshots();
+    const remoteTasks = await this.listRemoteTasks();
     const pollIntervalMs = this.currentPollIntervalMs();
-    const mapped = snapshots
+    const mapped = [
+      ...snapshots
       .map((snapshot) => toProtocolTask(snapshot, pollIntervalMs))
-      .filter((task): task is ProtocolTask => task !== undefined);
+      .filter((task): task is ProtocolTask => task !== undefined),
+      ...remoteTasks.map((task) => toRemoteProtocolTask(task, pollIntervalMs)),
+    ];
     const tasks = mapped.slice(offset, offset + this.pageSize);
     const nextOffset = offset + tasks.length;
     return { tasks, ...(nextOffset < mapped.length ? { nextCursor: encodeCursor(nextOffset) } : {}) };
@@ -146,6 +176,12 @@ export class TasksProtocol {
     const current = await this.protocolTask(params.taskId);
     if (TERMINAL_STATUSES.has(current.status)) {
       throw invalidParams(`Cannot cancel task: already in terminal status '${current.status}'`);
+    }
+    const remote = await this.getRemoteTask(params.taskId);
+    if (remote !== null) {
+      const cancelled = await this.services.remoteRolloutTasks!.cancelTask(params.taskId, this.actor);
+      if (cancelled === null) throw invalidParams(`Task not found: ${params.taskId}`);
+      return toRemoteProtocolTask(cancelled, this.currentPollIntervalMs());
     }
     const cancelled = await this.executeShell('cancel', params.taskId);
     if (!cancelled.ok) throw this.shellError(cancelled.error);
@@ -165,6 +201,23 @@ export class TasksProtocol {
    */
   public async taskResult(params: TaskIdParams): Promise<TaskResultPayload> {
     const waitDeadline = Date.now() + this.currentMaxResultWaitMs();
+    const remote = await this.getRemoteTask(params.taskId);
+    if (remote !== null) {
+      for (;;) {
+        const current = await this.services.remoteRolloutTasks!.resultTask(params.taskId, this.actor);
+        if (current === null) throw invalidParams(`Task not found: ${params.taskId}`);
+        const task = toRemoteProtocolTask(current, this.currentPollIntervalMs());
+        if (TERMINAL_STATUSES.has(task.status)) {
+          return {
+            content: [{ type: 'text', text: JSON.stringify(current, null, 2) }],
+            isError: task.status === 'failed',
+            _meta: { [RELATED_TASK_META_KEY]: { taskId: params.taskId } },
+          };
+        }
+        if (Date.now() >= waitDeadline) throw internalError(`Task ${params.taskId} is still ${task.status}; poll tasks/get later. Do not repeatedly poll in the same chat turn; preserve the taskId and return control while the durable task keeps running`);
+        await sleep(this.pollTickMs);
+      }
+    }
     for (;;) {
       const result = await this.executeShell('status', params.taskId);
       if (!result.ok) throw this.shellError(result.error);
@@ -186,6 +239,8 @@ export class TasksProtocol {
   }
 
   private async protocolTask(taskId: string): Promise<ProtocolTask> {
+    const remote = await this.getRemoteTask(taskId);
+    if (remote !== null) return toRemoteProtocolTask(remote, this.currentPollIntervalMs());
     const result = await this.executeShell('status', taskId);
     if (!result.ok) throw this.shellError(result.error);
     const task = toProtocolTask(this.snapshot(result.value), this.currentPollIntervalMs());
@@ -214,6 +269,16 @@ export class TasksProtocol {
     const value = this.snapshot(result.value);
     if (!Array.isArray(value.tasks)) return [];
     return value.tasks.filter((task): task is ShellSnapshot => typeof task === 'object' && task !== null);
+  }
+
+  private async listRemoteTasks(): Promise<readonly RemoteRolloutTaskSnapshot[]> {
+    if (this.services.remoteRolloutTasks === undefined) return [];
+    return this.services.remoteRolloutTasks.listTasks(this.actor);
+  }
+
+  private async getRemoteTask(taskId: string): Promise<RemoteRolloutTaskSnapshot | null> {
+    if (this.services.remoteRolloutTasks === undefined) return null;
+    return this.services.remoteRolloutTasks.getTask(taskId, this.actor);
   }
 
   private async executeShell(operation: 'list'): Promise<Result<unknown>>;

@@ -58,4 +58,10 @@ describe('central destructive policy', () => {
     expect(inspectDestructiveOperation('schedule', { operation: 'plan', unit: 'demo' }).destructive).toBe(false);
     expect(inspectDestructiveOperation('schedule', { operation: 'remove', unit: 'demo' }).destructive).toBe(true);
   });
+
+  it('keeps support bundle preview read-only but gates archive creation', () => {
+    expect(inspectDestructiveOperation('support_bundle', { dry_run: true }).destructive).toBe(false);
+    expect(inspectDestructiveOperation('support_bundle', { dry_run: false, userConfirmed: false }).destructive).toBe(true);
+    expect(inspectDestructiveOperation('support_bundle', { dry_run: false, userConfirmed: true }).destructive).toBe(true);
+  });
 });

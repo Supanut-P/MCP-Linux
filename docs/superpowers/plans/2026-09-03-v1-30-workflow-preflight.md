@@ -121,18 +121,41 @@ tool row/schema.
 
 ### Task 4: Run gates and record proof
 
-- [ ] **Step 1: Run local gates**
+- [x] **Step 1: Run local gates**
 
 Run lint, typecheck, full test, integration, packaging, release gate,
 rebrand, catalog, contract, v1 acceptance, and `git diff --check`.
 
-- [ ] **Step 2: Run the exact-commit Ubuntu VM103 gate and package smoke**
+- [x] **Step 2: Run the exact-commit Ubuntu VM103 gate and package smoke**
 
 Build DEB/tar from the feature commit, run the Linux-only tests and package
 inspection, generate provenance/SBOM/checksums, and retain the VM log/artifacts
 under `dist/v1.30.0-ubuntu-vm103/`.
 
-- [ ] **Step 3: Record checksums and commit only local proof**
+- [x] **Step 3: Record checksums and commit only local proof**
 
 Update this plan and the v1.12–v2 roadmap with exact counts/hashes, commit the
 implementation and proof, and stop before external push/tag/release.
+
+#### Proof recorded (2026-09-03, Ubuntu 24.04.4 x64 VM103)
+
+- Source: commit `df6495d994656fb394a0db7b4912ef9cb8ca14f9`, archive
+  `8775b5ba5d69f14db835e0e5272a3c03b68d667016641503338b19b507c5a66d`.
+- Gates: branding, lint, typecheck, catalog, contract, full unit suite,
+  integration (3/3), packaging (15/15), release gate (10/10), v1 acceptance
+  (5/5), and staged `git diff --check` all passed. Full unit output included
+  capabilities 24 files/121 tests, mcp-server 51 files/277 tests, and CLI
+  7 files/18 tests; one workspace test was intentionally skipped.
+- Exact package smoke (DEB and tar): `toolCount=220`,
+  `workflowPreflightAdvertised=true`, `workflowPreflightStatus=degraded`,
+  `snapshotDiffUnchanged=10`, `snapshotDiffTruncated=true`,
+  `snapshotUsageFileCount=17`, `snapshotUsageTruncated=false`.
+- Artifacts: DEB SHA-256
+  `5072c2d959133146b0d07e7e78bbbbd92ec070e8cd38ae55149fa46a825d2270`,
+  Linux tar SHA-256
+  `5f8e4a39b8ecc26ec62338a6f2aa674e2486e5866bc164fa4a901182895be788`,
+  provenance checksum SHA-256
+  `4c73fc5ba7bc5feceeecdbe1fd328b37c20f5a2ee184510057265667e9f3b46f`.
+- `verify-linux-package.sh` and `verify-upgrade-rollback.sh` passed. The
+  seven-day soak remains explicitly waived; no external push/tag/release was
+  performed.

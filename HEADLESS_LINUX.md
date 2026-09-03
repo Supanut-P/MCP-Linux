@@ -177,6 +177,16 @@ Node major version, capability availability/readiness, consent counts, and
 sanitized missing-dependency names. It never returns hostnames, absolute
 paths, command lines, environment values, provider errors, or secrets.
 
+`workflow_preflight` is an advisory, read-only composition for a larger
+workflow. It combines the same environment matrix with the fixed redacted
+`diagnostics_snapshot` sections and, when given a registered `workspaceId`,
+the bounded regular-file usage summary from `workspace_snapshot`. A relative
+`path` may narrow that workspace section; a path without a workspace ID is
+rejected. It never authorizes or executes work, writes files, returns file
+contents, or exposes absolute paths, commands, topology, credentials, or raw
+provider errors. Missing sections remain explicitly `unavailable` and the
+overall status is `ready`, `degraded`, or `unavailable`.
+
 `workspace_changes` provides a bounded snapshot/diff feed from an active
 workspace watcher. Events contain only a monotonic sequence, a normalized
 relative path, an event kind, and an observation timestamp. The feed never

@@ -192,6 +192,13 @@ export const taskHistorySchema = z.object({
 
 export const diagnosticsSnapshotSchema = z.object({}).strict();
 
+export const workflowPreflightSchema = z.object({
+  workspaceId: optionalWorkspaceIdSchema,
+  path: pathSchema.optional(),
+}).strict().superRefine((value, context) => {
+  if (value.path !== undefined && value.workspaceId === undefined) context.addIssue({ code: 'custom', path: ['workspaceId'], message: 'path requires workspaceId' });
+});
+
 export const policyExplainSchema = z.object({
   tool: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/),
   operation: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/).optional(),

@@ -36,6 +36,7 @@ import { diagnosticsSnapshotTools } from './tools/diagnostics-snapshot-tools.js'
 import { remoteFleetDiffTools } from './tools/remote-fleet-diff-tools.js';
 import { releaseVerifyTools } from './tools/release-verify-tools.js';
 import { environmentPreflightTools } from './tools/environment-preflight-tools.js';
+import { workflowPreflightTools } from './tools/workflow-preflight-tools.js';
 import { policyExplainTools } from './tools/policy-explain-tools.js';
 import { skillTools } from './tools/skill-tools.js';
 import { workspaceTools } from './tools/workspace-tools.js';
@@ -125,6 +126,7 @@ export class ToolRegistry {
       ...remoteFleetDiffTools(context),
       ...releaseVerifyTools(context),
       ...environmentPreflightTools(context),
+      ...workflowPreflightTools(context),
       ...databaseTools(context),
       ...targetCatalogTools(context),
       ...supportBundleTools(context),

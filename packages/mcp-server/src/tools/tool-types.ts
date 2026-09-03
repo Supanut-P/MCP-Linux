@@ -35,6 +35,7 @@ import type { DiagnosticsSnapshotService } from '../diagnostics-snapshot-service
 import type { RemoteFleetDiffService } from '../remote-fleet-diff-service.js';
 import type { ReleaseVerifyService } from '../release-verify-service.js';
 import type { EnvironmentPreflightService } from '../environment-preflight-service.js';
+import type { WorkflowPreflightService } from '../workflow-preflight-service.js';
 
 export interface WorkspaceInfoPort {
   info(actor: FileActor, workspaceId: string): Promise<Result<unknown>>;
@@ -96,6 +97,8 @@ export interface McpApplicationServices {
   readonly releaseVerify?: Pick<ReleaseVerifyService, 'execute'>;
   /** Sanitized runtime/dependency readiness matrix from the health provider. */
   readonly environmentPreflight?: Pick<EnvironmentPreflightService, 'execute'>;
+  /** Advisory composition of runtime, diagnostics, and optional workspace readiness. */
+  readonly workflowPreflight?: Pick<WorkflowPreflightService, 'execute'>;
 }
 
 export interface McpToolAnnotations {

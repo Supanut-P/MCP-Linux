@@ -56,6 +56,9 @@ try {
   if (!tools.tools.some((tool) => tool.name === 'environment_preflight')) {
     throw new Error('tools/list did not advertise environment_preflight');
   }
+  if (!tools.tools.some((tool) => tool.name === 'workflow_preflight')) {
+    throw new Error('tools/list did not advertise workflow_preflight');
+  }
 
   const listed = await callTool(client, 'workspace_list', {});
   const entries = readArray(listed);
@@ -147,6 +150,13 @@ try {
     throw new Error('diagnostics_snapshot did not return fixed redacted sections');
   }
 
+  const workflow = await callTool(client, 'workflow_preflight', {});
+  const workflowValue = readObject(workflow);
+  if (!['ready', 'degraded', 'unavailable'].includes(workflowValue.status)
+    || !workflowValue.environment || !workflowValue.diagnostics) {
+    throw new Error('workflow_preflight did not return fixed readiness sections');
+  }
+
   const snapshot = await callTool(client, 'workspace_snapshot', {
     workspaceId,
     operation: 'manifest',
@@ -207,6 +217,8 @@ try {
     remoteFleetDiffAdvertised: true,
     releaseVerifyAdvertised: true,
     environmentPreflightAdvertised: true,
+    workflowPreflightAdvertised: true,
+    workflowPreflightStatus: workflowValue.status,
     snapshotCount: snapshotValue.count,
     snapshotTruncated: snapshotValue.truncated,
     snapshotDiffUnchanged: snapshotDiffValue.unchanged,

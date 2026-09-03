@@ -189,6 +189,14 @@ describe('MCP tool registry', () => {
     await expect(registry.invoke('environment_preflight', {})).resolves.toMatchObject({ structuredContent: { operation: 'environment_preflight', status: 'ready' } });
   });
 
+  it('advertises and dispatches workflow_preflight only when the service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'workflow_preflight')).toBe(false);
+    const registry = new ToolRegistry({ workflowPreflight: { execute: async (): Promise<Result<unknown>> => ok({ operation: 'workflow_preflight', status: 'ready' }) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('workflow_preflight');
+    expect(registry.list().find((tool) => tool.name === 'workflow_preflight')?.parse({ workspaceId: 'workspace-1', path: 'src' })).toMatchObject({ ok: true });
+    await expect(registry.invoke('workflow_preflight', {})).resolves.toMatchObject({ structuredContent: { operation: 'workflow_preflight', status: 'ready' } });
+  });
+
   it('explains active profile and registered-root policy without dispatching the target tool', async () => {
     let called = false;
     const registry = new ToolRegistry({

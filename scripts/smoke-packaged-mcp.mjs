@@ -243,6 +243,19 @@ try {
     || typeof checkpointDiff.diff.truncated !== 'boolean') {
     throw new Error('workspace_checkpoint diff did not return a bounded comparison');
   }
+  const checkpointSummary = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'summary', checkpointId, maxEntries: 10 }));
+  if (checkpointSummary.operation !== 'summary'
+    || typeof checkpointSummary.added !== 'number'
+    || typeof checkpointSummary.removed !== 'number'
+    || typeof checkpointSummary.changed !== 'number'
+    || typeof checkpointSummary.unchanged !== 'number'
+    || typeof checkpointSummary.truncated !== 'boolean'
+    || Object.keys(checkpointSummary).some((key) => !['operation', 'added', 'removed', 'changed', 'unchanged', 'truncated'].includes(key))) {
+    throw new Error('workspace_checkpoint summary did not return bounded numeric counters');
+  }
+  if (JSON.stringify(checkpointSummary).includes('src/')) {
+    throw new Error('workspace_checkpoint summary leaked a path');
+  }
   const checkpointStats = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'stats' }));
   if (checkpointStats.operation !== 'stats'
     || checkpointStats.count !== 1
@@ -315,6 +328,7 @@ try {
     workspaceCheckpointAdvertised: true,
     workspaceCheckpointEntries: checkpointDetail.entries.length,
     workspaceCheckpointDiffUnchanged: checkpointDiff.diff.unchanged,
+    workspaceCheckpointSummaryChanged: checkpointSummary.changed,
     workspaceCheckpointStatsCount: checkpointStats.count,
     workspaceCheckpointCompareUnchanged: checkpointCompare.diff.unchanged,
     workspaceCheckpointPruned: checkpointPrune.deleted,

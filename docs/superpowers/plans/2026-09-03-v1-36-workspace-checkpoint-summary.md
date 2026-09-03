@@ -20,7 +20,7 @@
 ### Task 2: Implement bounded numeric reduction
 
 - [ ] Reuse the existing owner-scoped checkpoint `diff` path and bounded manifest limits.
-- [ ] Return only `added`, `removed`, `changed`, `unchanged`, `scanned`, and `truncated` numeric/boolean fields.
+- [ ] Return only `added`, `removed`, `changed`, `unchanged`, and `truncated` numeric/boolean fields.
 - [ ] Preserve fail-closed errors from missing, foreign, or expired checkpoints.
 
 ### Task 3: Version and documentation

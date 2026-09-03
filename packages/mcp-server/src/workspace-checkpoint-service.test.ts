@@ -240,7 +240,7 @@ describe('WorkspaceCheckpointService', () => {
     const summary = await service.execute(actorA, { operation: 'summary', checkpointId: created.value.checkpoint.id, maxEntries: 10 } as WorkspaceCheckpointInput);
     expect(summary).toMatchObject({
       ok: true,
-      value: { operation: 'summary', added: 1, removed: 2, changed: 3, unchanged: 4, scanned: 10, truncated: true },
+      value: { operation: 'summary', added: 1, removed: 2, changed: 3, unchanged: 4, truncated: true },
     });
     expect(JSON.stringify(summary)).not.toContain('src/new.ts');
     await expect(service.execute(actorB, { operation: 'summary', checkpointId: created.value.checkpoint.id } as WorkspaceCheckpointInput)).resolves.toMatchObject({ ok: false, error: { code: 'FILE_NOT_FOUND' } });

@@ -6,7 +6,7 @@ export function workspaceCheckpointTools(context: McpToolContext): McpToolDefini
   if (service === undefined) return [];
   return [defineTool({
     name: 'workspace_checkpoint',
-    description: 'Create, list, inspect, diff, compare, prune, stats, or delete an owner-isolated workspace manifest checkpoint. Prune removes only expired records for the authenticated owner; stats reports numeric owner quota usage. Only bounded relative paths and file metadata are stored; file contents, commands, secrets, and absolute paths are never persisted.',
+    description: 'Create, list, inspect, diff, compare, prune, stats, summary, or delete an owner-isolated workspace manifest checkpoint. Prune removes only expired records for the authenticated owner; stats reports numeric owner quota usage; summary reports numeric change counts without paths. Only bounded relative paths and file metadata are stored; file contents, commands, secrets, and absolute paths are never persisted.',
     permission: 'WRITE',
     annotations: { readOnlyHint: false, destructiveHint: false },
     inputSchema: workspaceCheckpointSchema,

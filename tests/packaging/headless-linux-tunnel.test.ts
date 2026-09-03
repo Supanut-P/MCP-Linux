@@ -76,6 +76,8 @@ describe('headless Linux Secure MCP Tunnel packaging', () => {
     expect(smoke).toContain('workspaceCheckpointDiffUnchanged');
     expect(smoke).toContain("operation: 'stats'");
     expect(smoke).toContain('workspaceCheckpointStatsCount');
+    expect(smoke).toContain("operation: 'summary'");
+    expect(smoke).toContain('workspaceCheckpointSummaryChanged');
     expect(smoke).toContain("operation: 'compare'");
     expect(smoke).toContain('workspaceCheckpointCompareUnchanged');
     expect(smoke).toContain("operation: 'prune'");

@@ -214,6 +214,12 @@ fixed owner quota limits, and remaining capacity after expiry cleanup. It
 accepts no workspace, path, checkpoint ID, or filter and never returns names,
 IDs, entries, or absolute paths.
 
+`workspace_checkpoint summary` uses one owner-scoped checkpoint ID to compare
+the current bounded manifest and returns only numeric added/removed/changed/
+unchanged counts plus an explicit `truncated` flag. It never returns paths,
+file names, IDs, contents, or provider output; missing, foreign, and expired
+checkpoints fail closed.
+
 `workspace_changes` provides a bounded snapshot/diff feed from an active
 workspace watcher. Events contain only a monotonic sequence, a normalized
 relative path, an event kind, and an observation timestamp. The feed never

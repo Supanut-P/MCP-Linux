@@ -36,7 +36,7 @@ export interface WorkspaceCheckpointManifestProvider {
 }
 
 export interface WorkspaceCheckpointInput {
-  readonly operation?: 'create' | 'list' | 'get' | 'diff' | 'compare' | 'prune' | 'stats' | 'delete';
+  readonly operation?: 'create' | 'list' | 'get' | 'diff' | 'compare' | 'prune' | 'stats' | 'summary' | 'delete';
   readonly workspaceId?: string;
   readonly path?: string;
   readonly name?: string;
@@ -70,6 +70,7 @@ export type WorkspaceCheckpointOutput =
   | { readonly operation: 'list'; readonly checkpoints: readonly WorkspaceCheckpointSummary[]; readonly count: number; readonly truncated: boolean }
   | { readonly operation: 'prune'; readonly deleted: number }
   | { readonly operation: 'stats'; readonly count: number; readonly bytes: number; readonly maxRecords: number; readonly maxBytes: number; readonly remainingRecords: number; readonly remainingBytes: number }
+  | { readonly operation: 'summary'; readonly added: number; readonly removed: number; readonly changed: number; readonly unchanged: number; readonly truncated: boolean }
   | { readonly operation: 'delete'; readonly checkpointId: string; readonly deleted: true };
 
 export interface WorkspaceCheckpointServiceOptions {
@@ -114,6 +115,7 @@ export class WorkspaceCheckpointService {
       }
       if (checkpoint === null) return err(appError('FILE_NOT_FOUND', 'Workspace checkpoint was not found'));
       if (normalized.value.operation === 'diff') return await this.diff(actor, normalized.value, checkpoint, signal);
+      if (normalized.value.operation === 'summary') return await this.summary(actor, normalized.value, checkpoint, signal);
       if (normalized.value.operation === 'compare') {
         const other = await this.repository.get(ownerKey, normalized.value.otherCheckpointId);
         if (other === null) return err(appError('FILE_NOT_FOUND', 'Workspace checkpoint was not found'));
@@ -200,6 +202,25 @@ export class WorkspaceCheckpointService {
     }
     return ok({ operation: 'diff', checkpointId: checkpoint.id, workspaceId: checkpoint.workspaceId, diff: snapshot.value });
   }
+
+  private async summary(
+    actor: FileActor,
+    input: NormalizedSummaryInput,
+    checkpoint: WorkspaceCheckpointRecord,
+    signal?: AbortSignal,
+  ): Promise<Result<WorkspaceCheckpointOutput>> {
+    const diff = await this.diff(actor, { operation: 'diff', checkpointId: checkpoint.id, maxEntries: input.maxEntries }, checkpoint, signal);
+    if (!diff.ok) return diff;
+    if (diff.value.operation !== 'diff') return err(appError('CAPABILITY_UNAVAILABLE', 'Workspace checkpoint summary was unavailable', true));
+    return ok({
+      operation: 'summary',
+      added: diff.value.diff.added.length,
+      removed: diff.value.diff.removed.length,
+      changed: diff.value.diff.changed.length,
+      unchanged: diff.value.diff.unchanged,
+      truncated: diff.value.diff.truncated,
+    });
+  }
 }
 
 type NormalizedCreateInput = {
@@ -215,8 +236,9 @@ type NormalizedDiffInput = { readonly operation: 'diff'; readonly checkpointId: 
 type NormalizedCompareInput = { readonly operation: 'compare'; readonly checkpointId: string; readonly otherCheckpointId: string; readonly maxEntries: number };
 type NormalizedPruneInput = { readonly operation: 'prune' };
 type NormalizedStatsInput = { readonly operation: 'stats' };
+type NormalizedSummaryInput = { readonly operation: 'summary'; readonly checkpointId: string; readonly maxEntries: number };
 type NormalizedLookupInput = { readonly operation: 'get' | 'delete'; readonly checkpointId: string };
-type NormalizedInput = NormalizedCreateInput | NormalizedListInput | NormalizedDiffInput | NormalizedCompareInput | NormalizedPruneInput | NormalizedStatsInput | NormalizedLookupInput;
+type NormalizedInput = NormalizedCreateInput | NormalizedListInput | NormalizedDiffInput | NormalizedCompareInput | NormalizedPruneInput | NormalizedStatsInput | NormalizedSummaryInput | NormalizedLookupInput;
 
 function normalizeInput(input: WorkspaceCheckpointInput): Result<NormalizedInput> {
   if (typeof input !== 'object' || input === null || Array.isArray(input)) return err(appError('INVALID_INPUT', 'Workspace checkpoint input is invalid'));
@@ -252,6 +274,15 @@ function normalizeInput(input: WorkspaceCheckpointInput): Result<NormalizedInput
       return err(appError('INVALID_INPUT', 'Workspace checkpoint stats accepts no additional fields'));
     }
     return ok({ operation });
+  }
+  if (operation === 'summary') {
+    if (!isSafeId(input.checkpointId)) return err(appError('INVALID_INPUT', 'Workspace checkpoint id is invalid'));
+    if (input.workspaceId !== undefined || input.path !== undefined || input.name !== undefined || input.ttlSeconds !== undefined || input.limit !== undefined || input.otherCheckpointId !== undefined) {
+      return err(appError('INVALID_INPUT', 'Workspace checkpoint summary accepts checkpointId and maxEntries only'));
+    }
+    const maxEntries = input.maxEntries ?? MAX_ENTRIES;
+    if (!Number.isSafeInteger(maxEntries) || maxEntries < 1 || maxEntries > MAX_ENTRIES) return err(appError('INVALID_INPUT', 'Workspace checkpoint maxEntries is invalid'));
+    return ok({ operation, checkpointId: input.checkpointId, maxEntries });
   }
   if (!isSafeId(input.checkpointId)) return err(appError('INVALID_INPUT', 'Workspace checkpoint id is invalid'));
   if (operation === 'diff') {

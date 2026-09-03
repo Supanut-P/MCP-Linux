@@ -6383,6 +6383,7 @@
               "compare",
               "prune",
               "stats",
+              "summary",
               "delete"
             ],
             "type": "string"

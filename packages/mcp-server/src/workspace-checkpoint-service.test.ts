@@ -102,4 +102,23 @@ describe('WorkspaceCheckpointService', () => {
     const service = new WorkspaceCheckpointService(repository, unsafe);
     await expect(service.execute(actorA, { operation: 'create', workspaceId: 'ws-1' })).resolves.toMatchObject({ ok: false, error: { code: 'CAPABILITY_UNAVAILABLE' } });
   });
+
+  it('diffs the stored checkpoint through the owner-scoped workspace path', async () => {
+    const repository = new MemoryRepository();
+    const checkpointManifest: WorkspaceCheckpointManifestProvider = {
+      execute: async (_actor, input) => input.operation === 'diff'
+        ? ok({ operation: 'diff' as const, workspaceId: input.workspaceId, path: input.path ?? '.', hashMode: 'none' as const, added: [{ path: 'src/new.ts', bytes: 2, mtimeMs: 1 }], removed: [], changed: [], unchanged: 0, truncated: false })
+        : manifest(),
+    };
+    const service = new WorkspaceCheckpointService(repository, checkpointManifest);
+    const created = await service.execute(actorA, { operation: 'create', workspaceId: 'ws-1', path: 'src', name: 'before-build' });
+    if (!created.ok) throw new Error('checkpoint creation failed');
+
+    await expect(service.execute(actorA, { operation: 'diff', checkpointId: created.value.checkpoint.id, maxEntries: 10 })).resolves.toMatchObject({
+      ok: true,
+      value: { operation: 'diff', checkpointId: created.value.checkpoint.id, workspaceId: 'ws-1', diff: { added: [{ path: 'src/new.ts' }], truncated: false } },
+    });
+    await expect(service.execute(actorB, { operation: 'diff', checkpointId: created.value.checkpoint.id })).resolves.toMatchObject({ ok: false, error: { code: 'FILE_NOT_FOUND' } });
+    await expect(service.execute(actorA, { operation: 'diff', checkpointId: created.value.checkpoint.id, workspaceId: 'ws-other' })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+  });
 });

@@ -6379,6 +6379,7 @@
               "create",
               "list",
               "get",
+              "diff",
               "delete"
             ],
             "type": "string"

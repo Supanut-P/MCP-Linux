@@ -190,10 +190,12 @@ overall status is `ready`, `degraded`, or `unavailable`.
 `workspace_checkpoint` stores a named, bounded manifest for the current actor
 between turns. The checkpoint contains only normalized relative paths, byte
 counts, timestamps, and optional hashes; it never stores file contents or
-absolute paths. `create`, `list`, `get`, and `delete` are owner-isolated by a
-one-way client/session fingerprint, expired records are pruned, and each owner
-is limited to 32 records and 2 MiB of manifest metadata. The operation changes
-only MCP state and does not write workspace files.
+absolute paths. `create`, `list`, `get`, `diff`, and `delete` are owner-isolated
+by a one-way client/session fingerprint, expired records are pruned, and each
+owner is limited to 32 records and 2 MiB of manifest metadata. `diff` always
+uses the checkpoint's registered workspace/path and returns the existing
+bounded metadata-only snapshot comparison; it never accepts a caller-supplied
+baseline or writes workspace files.
 
 `workspace_changes` provides a bounded snapshot/diff feed from an active
 workspace watcher. Events contain only a monotonic sequence, a normalized

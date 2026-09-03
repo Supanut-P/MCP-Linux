@@ -72,6 +72,8 @@ describe('headless Linux Secure MCP Tunnel packaging', () => {
     expect(smoke).toContain("tool.name === 'environment_preflight'");
     expect(smoke).toContain("tool.name === 'workspace_checkpoint'");
     expect(smoke).toContain('workspaceCheckpointEntries');
+    expect(smoke).toContain("operation: 'diff'");
+    expect(smoke).toContain('workspaceCheckpointDiffUnchanged');
     expect(smoke).toContain("'/usr/bin/printf'");
   });
 

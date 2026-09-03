@@ -231,6 +231,18 @@ try {
   if (checkpointGet.operation !== 'get' || typeof checkpointGet.checkpoint !== 'object' || checkpointGet.checkpoint === null) {
     throw new Error('workspace_checkpoint get did not return the created checkpoint');
   }
+  const checkpointDiff = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'diff', checkpointId, maxEntries: 10 }));
+  if (checkpointDiff.operation !== 'diff'
+    || checkpointDiff.checkpointId !== checkpointId
+    || typeof checkpointDiff.diff !== 'object' || checkpointDiff.diff === null
+    || checkpointDiff.diff.operation !== 'diff'
+    || !Array.isArray(checkpointDiff.diff.added)
+    || !Array.isArray(checkpointDiff.diff.removed)
+    || !Array.isArray(checkpointDiff.diff.changed)
+    || typeof checkpointDiff.diff.unchanged !== 'number'
+    || typeof checkpointDiff.diff.truncated !== 'boolean') {
+    throw new Error('workspace_checkpoint diff did not return a bounded comparison');
+  }
   const checkpointDelete = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'delete', checkpointId }));
   if (checkpointDelete.operation !== 'delete' || checkpointDelete.deleted !== true) {
     throw new Error('workspace_checkpoint delete did not confirm deletion');
@@ -255,6 +267,7 @@ try {
     workflowPreflightStatus: workflowValue.status,
     workspaceCheckpointAdvertised: true,
     workspaceCheckpointEntries: checkpointDetail.entries.length,
+    workspaceCheckpointDiffUnchanged: checkpointDiff.diff.unchanged,
     snapshotCount: snapshotValue.count,
     snapshotTruncated: snapshotValue.truncated,
     snapshotDiffUnchanged: snapshotDiffValue.unchanged,

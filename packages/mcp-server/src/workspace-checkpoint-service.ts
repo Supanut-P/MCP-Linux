@@ -23,13 +23,20 @@ const MAX_OWNER_RECORDS = 32;
 export interface WorkspaceCheckpointManifestProvider {
   execute(
     actor: FileActor,
-    input: { readonly workspaceId: string; readonly operation: 'manifest'; readonly path?: string; readonly maxEntries?: number; readonly hashMode?: 'none' },
+    input: {
+      readonly workspaceId: string;
+      readonly operation: 'manifest' | 'diff';
+      readonly path?: string;
+      readonly maxEntries?: number;
+      readonly hashMode?: 'none';
+      readonly baseline?: readonly WorkspaceCheckpointEntry[];
+    },
     signal?: AbortSignal,
   ): Promise<Result<WorkspaceSnapshotResult>>;
 }
 
 export interface WorkspaceCheckpointInput {
-  readonly operation?: 'create' | 'list' | 'get' | 'delete';
+  readonly operation?: 'create' | 'list' | 'get' | 'diff' | 'delete';
   readonly workspaceId?: string;
   readonly path?: string;
   readonly name?: string;
@@ -57,6 +64,7 @@ export interface WorkspaceCheckpointDetail extends WorkspaceCheckpointSummary {
 
 export type WorkspaceCheckpointOutput =
   | { readonly operation: 'create' | 'get'; readonly checkpoint: WorkspaceCheckpointDetail }
+  | { readonly operation: 'diff'; readonly checkpointId: string; readonly workspaceId: string; readonly diff: Extract<WorkspaceSnapshotResult, { readonly operation: 'diff' }> }
   | { readonly operation: 'list'; readonly checkpoints: readonly WorkspaceCheckpointSummary[]; readonly count: number; readonly truncated: boolean }
   | { readonly operation: 'delete'; readonly checkpointId: string; readonly deleted: true };
 
@@ -90,6 +98,7 @@ export class WorkspaceCheckpointService {
         return checkpoint === null ? err(appError('FILE_NOT_FOUND', 'Workspace checkpoint was not found')) : ok({ operation: 'get', checkpoint: toDetail(checkpoint) });
       }
       if (checkpoint === null) return err(appError('FILE_NOT_FOUND', 'Workspace checkpoint was not found'));
+      if (normalized.value.operation === 'diff') return await this.diff(actor, normalized.value, checkpoint, signal);
       const deleted = await this.repository.delete(ownerKey, normalized.value.checkpointId);
       return deleted ? ok({ operation: 'delete', checkpointId: normalized.value.checkpointId, deleted: true }) : err(appError('FILE_NOT_FOUND', 'Workspace checkpoint was not found'));
     } catch {
@@ -147,6 +156,27 @@ export class WorkspaceCheckpointService {
     const checkpoints = visible.slice(0, input.limit).map(toSummary);
     return ok({ operation: 'list', checkpoints, count: checkpoints.length, truncated });
   }
+
+  private async diff(
+    actor: FileActor,
+    input: NormalizedDiffInput,
+    checkpoint: WorkspaceCheckpointRecord,
+    signal?: AbortSignal,
+  ): Promise<Result<WorkspaceCheckpointOutput>> {
+    const snapshot = await this.manifest.execute(actor, {
+      workspaceId: checkpoint.workspaceId,
+      operation: 'diff',
+      path: checkpoint.path,
+      maxEntries: input.maxEntries,
+      hashMode: 'none',
+      baseline: checkpoint.entries,
+    }, signal);
+    if (!snapshot.ok) return snapshot;
+    if (!('operation' in snapshot.value) || snapshot.value.operation !== 'diff') {
+      return err(appError('CAPABILITY_UNAVAILABLE', 'Workspace checkpoint diff was unavailable', true));
+    }
+    return ok({ operation: 'diff', checkpointId: checkpoint.id, workspaceId: checkpoint.workspaceId, diff: snapshot.value });
+  }
 }
 
 type NormalizedCreateInput = {
@@ -158,8 +188,9 @@ type NormalizedCreateInput = {
   readonly ttlSeconds: number;
 };
 type NormalizedListInput = { readonly operation: 'list'; readonly workspaceId?: string; readonly limit: number };
+type NormalizedDiffInput = { readonly operation: 'diff'; readonly checkpointId: string; readonly maxEntries: number };
 type NormalizedLookupInput = { readonly operation: 'get' | 'delete'; readonly checkpointId: string };
-type NormalizedInput = NormalizedCreateInput | NormalizedListInput | NormalizedLookupInput;
+type NormalizedInput = NormalizedCreateInput | NormalizedListInput | NormalizedDiffInput | NormalizedLookupInput;
 
 function normalizeInput(input: WorkspaceCheckpointInput): Result<NormalizedInput> {
   if (typeof input !== 'object' || input === null || Array.isArray(input)) return err(appError('INVALID_INPUT', 'Workspace checkpoint input is invalid'));
@@ -183,6 +214,17 @@ function normalizeInput(input: WorkspaceCheckpointInput): Result<NormalizedInput
     return ok({ operation, ...(input.workspaceId === undefined ? {} : { workspaceId: input.workspaceId.trim() }), limit });
   }
   if (!isSafeId(input.checkpointId)) return err(appError('INVALID_INPUT', 'Workspace checkpoint id is invalid'));
+  if (operation === 'diff') {
+    if (input.workspaceId !== undefined || input.path !== undefined || input.name !== undefined || input.ttlSeconds !== undefined || input.limit !== undefined) {
+      return err(appError('INVALID_INPUT', 'Workspace checkpoint diff accepts checkpointId and maxEntries only'));
+    }
+    const maxEntries = input.maxEntries ?? MAX_ENTRIES;
+    if (!Number.isSafeInteger(maxEntries) || maxEntries < 1 || maxEntries > MAX_ENTRIES) return err(appError('INVALID_INPUT', 'Workspace checkpoint maxEntries is invalid'));
+    return ok({ operation, checkpointId: input.checkpointId, maxEntries });
+  }
+  if (input.workspaceId !== undefined || input.path !== undefined || input.name !== undefined || input.maxEntries !== undefined || input.ttlSeconds !== undefined || input.limit !== undefined) {
+    return err(appError('INVALID_INPUT', `${operation} accepts checkpointId only`));
+  }
   return ok({ operation, checkpointId: input.checkpointId });
 }
 

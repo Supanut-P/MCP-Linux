@@ -161,4 +161,34 @@ describe('RemoteFleetRuntime', () => {
       { hostId: 'vm1', operation: 'checksum', path: '/srv/app/app.tar' },
     ]);
   });
+
+  it('projects remote network data into a topology-safe summary', async () => {
+    const calls: Record<string, unknown>[] = [];
+    const runtime = new RemoteFleetRuntime({
+      execute: async (_tool: string, input: unknown): Promise<Result<unknown>> => {
+        calls.push(input as Record<string, unknown>);
+        return ok({ output: JSON.stringify([
+          { ifname: 'eth0', operstate: 'UP', addr_info: [{ local: '192.0.2.10' }] },
+          { ifname: 'lo', operstate: 'UNKNOWN', addr_info: [{ local: '127.0.0.1' }] },
+        ]) });
+      },
+    });
+
+    const result = await runtime.execute({ hostIds: ['vm1'], operation: 'network' });
+
+    expect(result).toMatchObject({ ok: true, value: { hosts: [{ status: 'ok', value: {
+      network: { interfaceCount: 2, upCount: 1, addressCount: 2 },
+    } }] } });
+    expect(JSON.stringify(result)).not.toContain('192.0.2.10');
+    expect(calls).toEqual([{ hostId: 'vm1', operation: 'network' }]);
+  });
+
+  it('returns a truthful unavailable summary for malformed network provider output', async () => {
+    const runtime = new RemoteFleetRuntime({
+      execute: async (): Promise<Result<unknown>> => ok({ output: 'interface=eth0 address=192.0.2.10' }),
+    });
+    const result = await runtime.execute({ hostIds: ['vm1'], operation: 'network' });
+    expect(result).toMatchObject({ ok: true, value: { hosts: [{ status: 'ok', value: { network: { status: 'unavailable' } } }] } });
+    expect(JSON.stringify(result)).not.toContain('192.0.2.10');
+  });
 });

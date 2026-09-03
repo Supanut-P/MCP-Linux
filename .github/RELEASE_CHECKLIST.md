@@ -1,6 +1,6 @@
 # Baitonghub-Linux-mcp release checklist
 
-**Current version:** `v1.26.0`
+**Current version:** `v1.27.0`
 **Target:** Ubuntu 24.04 LTS x64, headless
 
 **Evidence note:** The product owner waived the seven-day soak on 2026-09-01
@@ -47,6 +47,8 @@ the machine-checked waiver is tracked at
 - [ ] `remote_fleet` disk usage and checksum operations stay within registered
       roots, reject secret-looking checksum paths, and preserve the 256 KiB
       per-host cap with sanitized partial results.
+- [ ] `remote_fleet` network summary returns counts only and never exposes
+      interface names, addresses, or other remote topology.
 - [ ] Multi-workspace ownership and isolation pass.
 
 ## Package evidence

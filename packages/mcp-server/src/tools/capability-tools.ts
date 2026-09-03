@@ -287,7 +287,7 @@ export function capabilityTools(context: McpToolContext): McpToolDefinition[] {
     }),
     defineTool({
       name: 'remote_fleet',
-      description: 'Read-only inspection of 1-20 explicitly registered SSH hosts using health, inventory, service status, disk usage, checksum, or aggregate snapshot operations. At most four sessions run in parallel; host addresses, credentials, paths, and commands remain inside each host registration.',
+      description: 'Read-only inspection of 1-20 explicitly registered SSH hosts using health, inventory, service status, disk usage, checksum, topology-safe network summary, or aggregate snapshot operations. At most four sessions run in parallel; host addresses, credentials, paths, and commands remain inside each host registration.',
       permission: 'READ',
       annotations: { readOnlyHint: true, destructiveHint: false },
       inputSchema: remoteFleetCapabilitySchema,

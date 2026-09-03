@@ -3689,6 +3689,7 @@
               "service-status",
               "disk_usage",
               "checksum",
+              "network",
               "snapshot"
             ],
             "type": "string"

@@ -70,11 +70,16 @@ read query. `remote_host` read operations stay inside registered roots; remote
 mutations additionally require `workspaceId`, a matching dry-run hash, and
 `userConfirmed: true`. The CLI accepts references only; never put a secret
 value or private key on the command line. `remote_fleet` can fan out
-read-only `health`, bounded `inventory`, `service-status`, `disk_usage`, or
-`checksum` checks to 1–20 registered hosts, with at most four SSH sessions in
-flight. Snapshot combines the safe health/inventory/service-status checks.
+read-only `health`, bounded `inventory`, `service-status`, `disk_usage`,
+`checksum`, or topology-safe `network` summary checks to 1–20 registered hosts,
+with at most four SSH sessions in flight. Snapshot combines the safe
+health/inventory/service-status checks.
 `maxParallel` is 1–4, host ordering is deterministic for snapshots, each host
 result is capped at 256 KiB, and partial results are sanitized.
+
+The `network` operation parses the registered host's JSON interface response
+and returns only interface/up/address counts; interface names, addresses, and
+other topology details are never returned by `remote_fleet`.
 
 `remote_rollout` is optional and requires the durable local rollout store in
 addition to `remote_host`. It plans and executes one fixed `.service` restart

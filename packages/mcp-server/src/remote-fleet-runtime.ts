@@ -1,7 +1,7 @@
 import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
 import type { CapabilityService } from '@baitonghub-linux-mcp/capabilities';
 
-export type RemoteFleetOperation = 'health' | 'inventory' | 'service-status' | 'disk_usage' | 'checksum' | 'snapshot';
+export type RemoteFleetOperation = 'health' | 'inventory' | 'service-status' | 'disk_usage' | 'checksum' | 'network' | 'snapshot';
 
 export interface RemoteFleetRequest {
   readonly hostIds: readonly string[];
@@ -120,7 +120,7 @@ export class RemoteFleetRuntime {
       const result = await this.executeRemote(remoteRequest, signal, deadline);
       if (result.ok) {
         const durationMs = Date.now() - started;
-        const bounded = boundValue(redactRemoteValue(result.value));
+        const bounded = boundValue(projectRemoteValue(request.operation, result.value));
         await this.recordAudit({ hostId, operation: request.operation, resultCode: 'OK', durationMs, ...(bounded.truncated ? { truncated: true } : {}) });
         return { hostId, status: 'ok', value: bounded.value, durationMs, ...(bounded.truncated ? { truncated: true } : {}) };
       }
@@ -202,7 +202,7 @@ function parseRequest(input: unknown): Result<RemoteFleetRequest> {
   }
   if (new Set(hostIds).size !== hostIds.length) return err(appError('INVALID_INPUT', 'remote_fleet hostIds must not contain duplicates', false));
   const operation = input.operation;
-  if (operation !== 'health' && operation !== 'inventory' && operation !== 'service-status' && operation !== 'disk_usage' && operation !== 'checksum' && operation !== 'snapshot') return err(appError('INVALID_INPUT', 'remote_fleet operation is invalid', false));
+  if (operation !== 'health' && operation !== 'inventory' && operation !== 'service-status' && operation !== 'disk_usage' && operation !== 'checksum' && operation !== 'network' && operation !== 'snapshot') return err(appError('INVALID_INPUT', 'remote_fleet operation is invalid', false));
   const path = input.path === undefined ? undefined : typeof input.path === 'string' ? input.path : null;
   if (path === null) return err(appError('INVALID_INPUT', 'remote_fleet path is invalid', false));
   const unit = input.unit === undefined ? undefined : typeof input.unit === 'string' ? input.unit : null;
@@ -224,6 +224,22 @@ function redactText(value: string): string {
   return value
     .replace(/-----BEGIN [^-]+-----[\s\S]*?-----END [^-]+-----/g, '[redacted]')
     .replace(/\b(token|secret|password|api[_-]?key|private[_-]?key)\s*[:=]\s*[^\s,;]+/gi, '$1=[redacted]');
+}
+
+function projectRemoteValue(operation: RemoteFleetOperation, value: unknown): unknown {
+  const redacted = redactRemoteValue(value);
+  if (operation !== 'network') return redacted;
+  const output = isRecord(redacted) && typeof redacted.output === 'string' ? redacted.output : '';
+  try {
+    const parsed = JSON.parse(output) as unknown;
+    if (!Array.isArray(parsed)) return { network: { status: 'unavailable' } };
+    const interfaces = parsed.filter(isRecord);
+    const upCount = interfaces.filter((entry) => entry.operstate === 'UP').length;
+    const addressCount = interfaces.reduce((total, entry) => total + (Array.isArray(entry.addr_info) ? entry.addr_info.length : 0), 0);
+    return { network: { interfaceCount: interfaces.length, upCount, addressCount } };
+  } catch {
+    return { network: { status: 'unavailable' } };
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

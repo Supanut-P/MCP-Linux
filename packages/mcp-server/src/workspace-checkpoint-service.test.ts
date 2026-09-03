@@ -121,4 +121,47 @@ describe('WorkspaceCheckpointService', () => {
     await expect(service.execute(actorB, { operation: 'diff', checkpointId: created.value.checkpoint.id })).resolves.toMatchObject({ ok: false, error: { code: 'FILE_NOT_FOUND' } });
     await expect(service.execute(actorA, { operation: 'diff', checkpointId: created.value.checkpoint.id, workspaceId: 'ws-other' })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
   });
+
+  it('compares two owner-scoped checkpoints without scanning or accepting a foreign scope', async () => {
+    const repository = new MemoryRepository();
+    let scan = 0;
+    const checkpointManifest: WorkspaceCheckpointManifestProvider = {
+      execute: async () => {
+        scan += 1;
+        return ok({
+          workspaceId: 'ws-1',
+          path: 'src',
+          hashMode: 'none' as const,
+          entries: scan === 1
+            ? [{ path: 'src/app.ts', bytes: 12, mtimeMs: 1 }]
+            : [{ path: 'src/app.ts', bytes: 20, mtimeMs: 2 }, { path: 'src/new.ts', bytes: 2, mtimeMs: 3 }],
+          count: scan === 1 ? 1 : 2,
+          scannedEntries: scan === 1 ? 1 : 2,
+          truncated: false,
+        });
+      },
+    };
+    const service = new WorkspaceCheckpointService(repository, checkpointManifest);
+    const before = await service.execute(actorA, { operation: 'create', workspaceId: 'ws-1', path: 'src', name: 'before' });
+    const after = await service.execute(actorA, { operation: 'create', workspaceId: 'ws-1', path: 'src', name: 'after' });
+    if (!before.ok || !after.ok) throw new Error('checkpoint creation failed');
+
+    await expect(service.execute(actorA, { operation: 'compare', checkpointId: before.value.checkpoint.id, otherCheckpointId: after.value.checkpoint.id, maxEntries: 10 })).resolves.toMatchObject({
+      ok: true,
+      value: {
+        operation: 'compare',
+        diff: {
+          added: [{ path: 'src/new.ts', bytes: 2 }],
+          removed: [],
+          changed: [{ path: 'src/app.ts', before: { bytes: 12 }, after: { bytes: 20 } }],
+          unchanged: 0,
+          truncated: false,
+        },
+      },
+    });
+    await expect(service.execute(actorB, { operation: 'compare', checkpointId: before.value.checkpoint.id, otherCheckpointId: after.value.checkpoint.id })).resolves.toMatchObject({ ok: false, error: { code: 'FILE_NOT_FOUND' } });
+
+    Object.assign(repository.records[1], { workspaceId: 'ws-2' });
+    await expect(service.execute(actorA, { operation: 'compare', checkpointId: before.value.checkpoint.id, otherCheckpointId: after.value.checkpoint.id })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+  });
 });

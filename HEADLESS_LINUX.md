@@ -197,6 +197,13 @@ uses the checkpoint's registered workspace/path and returns the existing
 bounded metadata-only snapshot comparison; it never accepts a caller-supplied
 baseline or writes workspace files.
 
+`workspace_checkpoint compare` compares two saved checkpoints for the same
+owner, registered workspace, and relative path. It accepts only the two
+checkpoint IDs plus an optional entry cap, so it does not rescan the filesystem
+or accept a caller-supplied baseline. The result uses the same bounded,
+metadata-only added/removed/changed/unchanged shape as `workspace_snapshot`
+diff.
+
 `workspace_changes` provides a bounded snapshot/diff feed from an active
 workspace watcher. Events contain only a monotonic sequence, a normalized
 relative path, an event kind, and an observation timestamp. The feed never

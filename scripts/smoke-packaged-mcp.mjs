@@ -243,9 +243,42 @@ try {
     || typeof checkpointDiff.diff.truncated !== 'boolean') {
     throw new Error('workspace_checkpoint diff did not return a bounded comparison');
   }
+  const checkpointAfter = readObject(await callTool(client, 'workspace_checkpoint', {
+    operation: 'create',
+    workspaceId,
+    path: 'scripts',
+    name: 'packaged-smoke-after',
+    maxEntries: 10,
+    ttlSeconds: 3600,
+  }));
+  if (checkpointAfter.operation !== 'create' || typeof checkpointAfter.checkpoint !== 'object' || checkpointAfter.checkpoint === null || typeof checkpointAfter.checkpoint.id !== 'string') {
+    throw new Error('workspace_checkpoint second create did not return a checkpoint');
+  }
+  const checkpointCompare = readObject(await callTool(client, 'workspace_checkpoint', {
+    operation: 'compare',
+    checkpointId,
+    otherCheckpointId: checkpointAfter.checkpoint.id,
+    maxEntries: 10,
+  }));
+  if (checkpointCompare.operation !== 'compare'
+    || checkpointCompare.checkpointId !== checkpointId
+    || checkpointCompare.otherCheckpointId !== checkpointAfter.checkpoint.id
+    || typeof checkpointCompare.diff !== 'object' || checkpointCompare.diff === null
+    || checkpointCompare.diff.operation !== 'diff'
+    || !Array.isArray(checkpointCompare.diff.added)
+    || !Array.isArray(checkpointCompare.diff.removed)
+    || !Array.isArray(checkpointCompare.diff.changed)
+    || typeof checkpointCompare.diff.unchanged !== 'number'
+    || typeof checkpointCompare.diff.truncated !== 'boolean') {
+    throw new Error('workspace_checkpoint compare did not return a bounded comparison');
+  }
   const checkpointDelete = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'delete', checkpointId }));
   if (checkpointDelete.operation !== 'delete' || checkpointDelete.deleted !== true) {
     throw new Error('workspace_checkpoint delete did not confirm deletion');
+  }
+  const checkpointAfterDelete = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'delete', checkpointId: checkpointAfter.checkpoint.id }));
+  if (checkpointAfterDelete.operation !== 'delete' || checkpointAfterDelete.deleted !== true) {
+    throw new Error('workspace_checkpoint second delete did not confirm deletion');
   }
 
   process.stdout.write(JSON.stringify({
@@ -268,6 +301,7 @@ try {
     workspaceCheckpointAdvertised: true,
     workspaceCheckpointEntries: checkpointDetail.entries.length,
     workspaceCheckpointDiffUnchanged: checkpointDiff.diff.unchanged,
+    workspaceCheckpointCompareUnchanged: checkpointCompare.diff.unchanged,
     snapshotCount: snapshotValue.count,
     snapshotTruncated: snapshotValue.truncated,
     snapshotDiffUnchanged: snapshotDiffValue.unchanged,

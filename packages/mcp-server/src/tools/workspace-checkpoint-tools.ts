@@ -6,7 +6,7 @@ export function workspaceCheckpointTools(context: McpToolContext): McpToolDefini
   if (service === undefined) return [];
   return [defineTool({
     name: 'workspace_checkpoint',
-    description: 'Create, list, inspect, diff, or delete an owner-isolated workspace manifest checkpoint. Only bounded relative paths and file metadata are stored; file contents, commands, secrets, and absolute paths are never persisted.',
+    description: 'Create, list, inspect, diff, compare, or delete an owner-isolated workspace manifest checkpoint. Only bounded relative paths and file metadata are stored; file contents, commands, secrets, and absolute paths are never persisted.',
     permission: 'WRITE',
     annotations: { readOnlyHint: false, destructiveHint: false },
     inputSchema: workspaceCheckpointSchema,
@@ -18,6 +18,7 @@ export function workspaceCheckpointTools(context: McpToolContext): McpToolDefini
       ...(input.maxEntries === undefined ? {} : { maxEntries: input.maxEntries }),
       ...(input.ttlSeconds === undefined ? {} : { ttlSeconds: input.ttlSeconds }),
       ...(input.checkpointId === undefined ? {} : { checkpointId: input.checkpointId }),
+      ...(input.otherCheckpointId === undefined ? {} : { otherCheckpointId: input.otherCheckpointId }),
       ...(input.limit === undefined ? {} : { limit: input.limit }),
     }, signal),
   })];

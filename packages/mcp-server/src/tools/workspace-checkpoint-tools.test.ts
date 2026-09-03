@@ -16,5 +16,7 @@ describe('workspace_checkpoint tool', () => {
     expect(tools[0]?.parse({ operation: 'create', workspaceId: 'ws-1', unexpected: true })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
     expect(tools[0]?.parse({ operation: 'diff', checkpointId: '00000000-0000-4000-8000-000000000001', maxEntries: 10 })).toMatchObject({ ok: true });
     expect(tools[0]?.parse({ operation: 'diff', checkpointId: '00000000-0000-4000-8000-000000000001', workspaceId: 'ws-1' })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    expect(tools[0]?.parse({ operation: 'compare', checkpointId: '00000000-0000-4000-8000-000000000001', otherCheckpointId: '00000000-0000-4000-8000-000000000002', maxEntries: 10 })).toMatchObject({ ok: true });
+    expect(tools[0]?.parse({ operation: 'compare', checkpointId: '00000000-0000-4000-8000-000000000001', otherCheckpointId: '00000000-0000-4000-8000-000000000002', path: 'src' })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
   });
 });

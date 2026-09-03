@@ -1,6 +1,6 @@
 # Baitonghub-Linux-mcp release checklist
 
-**Current version:** `v1.32.0`
+**Current version:** `v1.33.0`
 **Target:** Ubuntu 24.04 LTS x64, headless
 
 **Evidence note:** The product owner waived the seven-day soak on 2026-09-01
@@ -50,6 +50,8 @@ the machine-checked waiver is tracked at
 - [ ] `workspace_checkpoint` stores only bounded metadata, isolates owners,
       prunes expired records, enforces per-owner count/byte quotas, and its
       `diff` operation cannot override the stored workspace/path or baseline.
+- [ ] `workspace_checkpoint compare` accepts only two same-owner, same-scope
+      checkpoint IDs and returns a bounded metadata-only diff.
 - [ ] `remote_fleet` disk usage and checksum operations stay within registered
       roots, reject secret-looking checksum paths, and preserve the 256 KiB
       per-host cap with sanitized partial results.

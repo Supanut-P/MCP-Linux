@@ -134,6 +134,23 @@ export const workspaceSnapshotSchema = z.object({
   if (value.operation === 'diff' && value.cursor !== undefined) context.addIssue({ code: 'custom', message: 'diff does not support cursor', path: ['cursor'] });
   if (value.operation === 'usage' && (value.maxEntries !== undefined || value.hashMode !== undefined || value.cursor !== undefined || value.baseline !== undefined)) context.addIssue({ code: 'custom', message: 'usage accepts only workspaceId and path', path: ['operation'] });
 });
+export const workspaceCheckpointSchema = z.object({
+  operation: z.enum(['create', 'list', 'get', 'delete']).optional(),
+  workspaceId: optionalWorkspaceIdSchema,
+  path: pathSchema.optional(),
+  name: z.string().trim().min(1).max(64).regex(/^[A-Za-z0-9][A-Za-z0-9._-]*$/).optional(),
+  maxEntries: z.number().int().min(1).max(1_000).optional(),
+  ttlSeconds: z.number().int().min(60).max(7 * 24 * 60 * 60).optional(),
+  checkpointId: z.string().uuid().optional(),
+  limit: z.number().int().min(1).max(32).optional(),
+}).strict().superRefine((value, context) => {
+  const operation = value.operation ?? 'create';
+  if (operation === 'create' && value.workspaceId === undefined) context.addIssue({ code: 'custom', message: 'create requires workspaceId', path: ['workspaceId'] });
+  if (operation === 'create' && value.checkpointId !== undefined) context.addIssue({ code: 'custom', message: 'create does not accept checkpointId', path: ['checkpointId'] });
+  if (operation === 'list' && (value.path !== undefined || value.name !== undefined || value.maxEntries !== undefined || value.ttlSeconds !== undefined || value.checkpointId !== undefined)) context.addIssue({ code: 'custom', message: 'list accepts workspaceId and limit only', path: ['operation'] });
+  if ((operation === 'get' || operation === 'delete') && value.checkpointId === undefined) context.addIssue({ code: 'custom', message: `${operation} requires checkpointId`, path: ['checkpointId'] });
+  if ((operation === 'get' || operation === 'delete') && (value.workspaceId !== undefined || value.path !== undefined || value.name !== undefined || value.maxEntries !== undefined || value.ttlSeconds !== undefined || value.limit !== undefined)) context.addIssue({ code: 'custom', message: `${operation} accepts checkpointId only`, path: ['operation'] });
+});
 export const searchAllSchema = z.object({
   query: z.string().trim().min(1).max(32_768),
   workspaceId: optionalWorkspaceIdSchema,

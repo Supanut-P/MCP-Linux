@@ -36,6 +36,7 @@ import type { RemoteFleetDiffService } from '../remote-fleet-diff-service.js';
 import type { ReleaseVerifyService } from '../release-verify-service.js';
 import type { EnvironmentPreflightService } from '../environment-preflight-service.js';
 import type { WorkflowPreflightService } from '../workflow-preflight-service.js';
+import type { WorkspaceCheckpointService } from '../workspace-checkpoint-service.js';
 
 export interface WorkspaceInfoPort {
   info(actor: FileActor, workspaceId: string): Promise<Result<unknown>>;
@@ -99,6 +100,8 @@ export interface McpApplicationServices {
   readonly environmentPreflight?: Pick<EnvironmentPreflightService, 'execute'>;
   /** Advisory composition of runtime, diagnostics, and optional workspace readiness. */
   readonly workflowPreflight?: Pick<WorkflowPreflightService, 'execute'>;
+  /** Owner-isolated, metadata-only workspace checkpoints with bounded TTL/quota. */
+  readonly workspaceCheckpoint?: Pick<WorkspaceCheckpointService, 'execute'>;
 }
 
 export interface McpToolAnnotations {

@@ -6343,6 +6343,66 @@
       }
     },
     {
+      "name": "workspace_checkpoint",
+      "permission": "WRITE",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "checkpointId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "limit": {
+            "maximum": 32,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "maxEntries": {
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "name": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+            "type": "string"
+          },
+          "operation": {
+            "enum": [
+              "create",
+              "list",
+              "get",
+              "delete"
+            ],
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "ttlSeconds": {
+            "maximum": 604800,
+            "minimum": 60,
+            "type": "integer"
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
       "name": "workspace_context",
       "permission": "READ",
       "annotations": {

@@ -187,6 +187,14 @@ contents, or exposes absolute paths, commands, topology, credentials, or raw
 provider errors. Missing sections remain explicitly `unavailable` and the
 overall status is `ready`, `degraded`, or `unavailable`.
 
+`workspace_checkpoint` stores a named, bounded manifest for the current actor
+between turns. The checkpoint contains only normalized relative paths, byte
+counts, timestamps, and optional hashes; it never stores file contents or
+absolute paths. `create`, `list`, `get`, and `delete` are owner-isolated by a
+one-way client/session fingerprint, expired records are pruned, and each owner
+is limited to 32 records and 2 MiB of manifest metadata. The operation changes
+only MCP state and does not write workspace files.
+
 `workspace_changes` provides a bounded snapshot/diff feed from an active
 workspace watcher. Events contain only a monotonic sequence, a normalized
 relative path, an event kind, and an observation timestamp. The feed never

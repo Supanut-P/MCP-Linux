@@ -8,6 +8,7 @@ export type AppErrorCode =
   | 'PERMISSION_REQUIRED'
   | 'FILE_NOT_FOUND'
   | 'FILE_TOO_LARGE'
+  | 'QUOTA_EXCEEDED'
   | 'BINARY_FILE'
   | 'PROCESS_NOT_FOUND'
   | 'PROCESS_TIMEOUT'

@@ -39,6 +39,8 @@ export * from './release-verify-service.js';
 export * from './environment-preflight-service.js';
 export * from './tools/environment-preflight-tools.js';
 export * from './workflow-preflight-service.js';
+export * from './workspace-checkpoint-service.js';
 export * from './tools/workflow-preflight-tools.js';
+export * from './tools/workspace-checkpoint-tools.js';
 export * from './tools/policy-explain-tools.js';
 export * from './task-creation.js';

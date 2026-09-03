@@ -197,6 +197,14 @@ describe('MCP tool registry', () => {
     await expect(registry.invoke('workflow_preflight', {})).resolves.toMatchObject({ structuredContent: { operation: 'workflow_preflight', status: 'ready' } });
   });
 
+  it('advertises and dispatches workspace_checkpoint only when the service is wired', async () => {
+    expect(new ToolRegistry({}, actor).list().some((tool) => tool.name === 'workspace_checkpoint')).toBe(false);
+    const registry = new ToolRegistry({ workspaceCheckpoint: { execute: async (): Promise<Result<unknown>> => ok({ operation: 'list', checkpoints: [], count: 0, truncated: false }) } }, actor);
+    expect(registry.list().map((tool) => tool.name)).toContain('workspace_checkpoint');
+    expect(registry.list().find((tool) => tool.name === 'workspace_checkpoint')?.parse({ operation: 'list', workspaceId: 'workspace-1' })).toMatchObject({ ok: true });
+    await expect(registry.invoke('workspace_checkpoint', { operation: 'list' })).resolves.toMatchObject({ structuredContent: { operation: 'list', count: 0 } });
+  });
+
   it('explains active profile and registered-root policy without dispatching the target tool', async () => {
     let called = false;
     const registry = new ToolRegistry({

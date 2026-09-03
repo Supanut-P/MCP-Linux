@@ -59,6 +59,9 @@ try {
   if (!tools.tools.some((tool) => tool.name === 'workflow_preflight')) {
     throw new Error('tools/list did not advertise workflow_preflight');
   }
+  if (!tools.tools.some((tool) => tool.name === 'workspace_checkpoint')) {
+    throw new Error('tools/list did not advertise workspace_checkpoint');
+  }
 
   const listed = await callTool(client, 'workspace_list', {});
   const entries = readArray(listed);
@@ -202,6 +205,37 @@ try {
     throw new Error('workspace_snapshot usage did not return bounded totals');
   }
 
+  const checkpoint = await callTool(client, 'workspace_checkpoint', {
+    operation: 'create',
+    workspaceId,
+    path: 'scripts',
+    name: 'packaged-smoke',
+    maxEntries: 10,
+    ttlSeconds: 3600,
+  });
+  const checkpointValue = readObject(checkpoint);
+  const checkpointDetail = checkpointValue.checkpoint;
+  if (checkpointValue.operation !== 'create'
+    || typeof checkpointDetail !== 'object' || checkpointDetail === null
+    || typeof checkpointDetail.id !== 'string'
+    || !Array.isArray(checkpointDetail.entries)
+    || checkpointDetail.entries.some((entry) => 'content' in entry || 'absolutePath' in entry)) {
+    throw new Error('workspace_checkpoint create did not return metadata-only bounded state');
+  }
+  const checkpointId = checkpointDetail.id;
+  const checkpointList = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'list', workspaceId }));
+  if (checkpointList.operation !== 'list' || !Array.isArray(checkpointList.checkpoints) || checkpointList.count < 1) {
+    throw new Error('workspace_checkpoint list did not return the created checkpoint');
+  }
+  const checkpointGet = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'get', checkpointId }));
+  if (checkpointGet.operation !== 'get' || typeof checkpointGet.checkpoint !== 'object' || checkpointGet.checkpoint === null) {
+    throw new Error('workspace_checkpoint get did not return the created checkpoint');
+  }
+  const checkpointDelete = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'delete', checkpointId }));
+  if (checkpointDelete.operation !== 'delete' || checkpointDelete.deleted !== true) {
+    throw new Error('workspace_checkpoint delete did not confirm deletion');
+  }
+
   process.stdout.write(JSON.stringify({
     ok: true,
     toolCount: tools.tools.length,
@@ -219,6 +253,8 @@ try {
     environmentPreflightAdvertised: true,
     workflowPreflightAdvertised: true,
     workflowPreflightStatus: workflowValue.status,
+    workspaceCheckpointAdvertised: true,
+    workspaceCheckpointEntries: checkpointDetail.entries.length,
     snapshotCount: snapshotValue.count,
     snapshotTruncated: snapshotValue.truncated,
     snapshotDiffUnchanged: snapshotDiffValue.unchanged,

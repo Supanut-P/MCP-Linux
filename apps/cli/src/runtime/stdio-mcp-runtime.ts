@@ -30,7 +30,7 @@ import {
   createLocalExtensionsService,
   type ExtensionsService,
 } from '@baitonghub-linux-mcp/extensions';
-import { ActivityTracker, AuditQueryService, DatabaseRuntimeService, DiagnosticsSnapshotService, EnvironmentPreflightService, ReleaseVerifyService, RemoteFleetDiffService, RemoteRolloutRuntime, RuntimeMetricsService, SharedActivitySnapshotLease, TaskEventsService, TaskHistoryService, WorkflowPreflightService, WorkspaceSnapshotService, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type AuditQueryEvent, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices, type RemoteFleetAuditEvent, type RuntimeTaskSnapshot, type RuntimeTaskState, type ServerProfileName, type WorkspaceSnapshotRootInfo } from '@baitonghub-linux-mcp/mcp-server';
+import { ActivityTracker, AuditQueryService, DatabaseRuntimeService, DiagnosticsSnapshotService, EnvironmentPreflightService, ReleaseVerifyService, RemoteFleetDiffService, RemoteRolloutRuntime, RuntimeMetricsService, SharedActivitySnapshotLease, TaskEventsService, TaskHistoryService, WorkflowPreflightService, WorkspaceCheckpointService, WorkspaceSnapshotService, composeActivitySinks, createFileActivitySink, currentSharedActivityOwner, mcpActivityLogPath, type AuditQueryEvent, type ActivitySink, type ActivitySinkEvent, type McpApplicationServices, type RemoteFleetAuditEvent, type RuntimeTaskSnapshot, type RuntimeTaskState, type ServerProfileName, type WorkspaceSnapshotRootInfo } from '@baitonghub-linux-mcp/mcp-server';
 import { permissionProfiles, type PermissionProfile, type PermissionProfileName } from '@baitonghub-linux-mcp/permissions';
 import {
   AesGcmCheckpointCipher,
@@ -42,6 +42,7 @@ import {
   SqliteDatabaseTargetRepository,
   SqliteRemoteHostRepository,
   SqliteRemoteRolloutRepository,
+  SqliteWorkspaceCheckpointRepository,
 } from '@baitonghub-linux-mcp/storage';
 import { SecretPolicy, WorkspacePathGuard, WorkspaceService, type Workspace } from '@baitonghub-linux-mcp/workspace';
 import { StrictWorkspaceRepository } from './strict-workspace-repository.js';
@@ -104,6 +105,7 @@ export function createStdioMcpRuntime(
       return result.ok ? ok({ id: result.value.id, realRootPath: result.value.realRootPath }) : err(result.error);
     },
   });
+  const workspaceCheckpoint = new WorkspaceCheckpointService(new SqliteWorkspaceCheckpointRepository(database), workspaceSnapshot);
   const databaseTargets = new SqliteDatabaseTargetRepository(database);
   const remoteHosts = new SqliteRemoteHostRepository(database);
   const targetCatalog = new TargetCatalogService(databaseTargets, remoteHosts);
@@ -310,6 +312,7 @@ export function createStdioMcpRuntime(
     releaseVerify,
     environmentPreflight,
     workflowPreflight,
+    workspaceCheckpoint,
   };
 
   return {

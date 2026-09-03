@@ -26,4 +26,6 @@ checkpoints.
 ## Verification
 
 Ubuntu VM103 proof, package inspection, provenance, upgrade/rollback preflight,
-and SHA-256 values will be recorded after the full v1.36 gate.
+and SHA-256 values are recorded under
+`dist/v1.36.0-ubuntu-vm103/`. The exact source commit, DEB, and Linux x64 tar
+hashes are listed in the v1.36 implementation plan and provenance files.

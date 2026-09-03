@@ -36,7 +36,7 @@ export interface WorkspaceCheckpointManifestProvider {
 }
 
 export interface WorkspaceCheckpointInput {
-  readonly operation?: 'create' | 'list' | 'get' | 'diff' | 'compare' | 'prune' | 'delete';
+  readonly operation?: 'create' | 'list' | 'get' | 'diff' | 'compare' | 'prune' | 'stats' | 'delete';
   readonly workspaceId?: string;
   readonly path?: string;
   readonly name?: string;
@@ -69,6 +69,7 @@ export type WorkspaceCheckpointOutput =
   | { readonly operation: 'compare'; readonly checkpointId: string; readonly otherCheckpointId: string; readonly workspaceId: string; readonly diff: Extract<WorkspaceSnapshotResult, { readonly operation: 'diff' }> }
   | { readonly operation: 'list'; readonly checkpoints: readonly WorkspaceCheckpointSummary[]; readonly count: number; readonly truncated: boolean }
   | { readonly operation: 'prune'; readonly deleted: number }
+  | { readonly operation: 'stats'; readonly count: number; readonly bytes: number; readonly maxRecords: number; readonly maxBytes: number; readonly remainingRecords: number; readonly remainingBytes: number }
   | { readonly operation: 'delete'; readonly checkpointId: string; readonly deleted: true };
 
 export interface WorkspaceCheckpointServiceOptions {
@@ -99,6 +100,14 @@ export class WorkspaceCheckpointService {
       await this.repository.pruneExpired(ownerKey, now);
       if (normalized.value.operation === 'create') return await this.create(actor, ownerKey, normalized.value, now, signal);
       if (normalized.value.operation === 'list') return await this.list(ownerKey, normalized.value, now);
+      if (normalized.value.operation === 'stats') {
+        const count = await this.repository.count(ownerKey);
+        const bytes = await this.repository.totalBytes(ownerKey);
+        if (!Number.isSafeInteger(count) || count < 0 || !Number.isSafeInteger(bytes) || bytes < 0) {
+          return err(appError('CAPABILITY_UNAVAILABLE', 'Workspace checkpoint statistics are unavailable', true));
+        }
+        return ok({ operation: 'stats', count, bytes, maxRecords: MAX_OWNER_RECORDS, maxBytes: MAX_OWNER_BYTES, remainingRecords: Math.max(0, MAX_OWNER_RECORDS - count), remainingBytes: Math.max(0, MAX_OWNER_BYTES - bytes) });
+      }
       const checkpoint = await this.repository.get(ownerKey, normalized.value.checkpointId);
       if (normalized.value.operation === 'get') {
         return checkpoint === null ? err(appError('FILE_NOT_FOUND', 'Workspace checkpoint was not found')) : ok({ operation: 'get', checkpoint: toDetail(checkpoint) });
@@ -205,8 +214,9 @@ type NormalizedListInput = { readonly operation: 'list'; readonly workspaceId?: 
 type NormalizedDiffInput = { readonly operation: 'diff'; readonly checkpointId: string; readonly maxEntries: number };
 type NormalizedCompareInput = { readonly operation: 'compare'; readonly checkpointId: string; readonly otherCheckpointId: string; readonly maxEntries: number };
 type NormalizedPruneInput = { readonly operation: 'prune' };
+type NormalizedStatsInput = { readonly operation: 'stats' };
 type NormalizedLookupInput = { readonly operation: 'get' | 'delete'; readonly checkpointId: string };
-type NormalizedInput = NormalizedCreateInput | NormalizedListInput | NormalizedDiffInput | NormalizedCompareInput | NormalizedPruneInput | NormalizedLookupInput;
+type NormalizedInput = NormalizedCreateInput | NormalizedListInput | NormalizedDiffInput | NormalizedCompareInput | NormalizedPruneInput | NormalizedStatsInput | NormalizedLookupInput;
 
 function normalizeInput(input: WorkspaceCheckpointInput): Result<NormalizedInput> {
   if (typeof input !== 'object' || input === null || Array.isArray(input)) return err(appError('INVALID_INPUT', 'Workspace checkpoint input is invalid'));
@@ -234,6 +244,12 @@ function normalizeInput(input: WorkspaceCheckpointInput): Result<NormalizedInput
   if (operation === 'prune') {
     if (input.workspaceId !== undefined || input.path !== undefined || input.name !== undefined || input.maxEntries !== undefined || input.ttlSeconds !== undefined || input.checkpointId !== undefined || input.otherCheckpointId !== undefined || input.limit !== undefined) {
       return err(appError('INVALID_INPUT', 'Workspace checkpoint prune accepts no additional fields'));
+    }
+    return ok({ operation });
+  }
+  if (operation === 'stats') {
+    if (input.workspaceId !== undefined || input.path !== undefined || input.name !== undefined || input.maxEntries !== undefined || input.ttlSeconds !== undefined || input.checkpointId !== undefined || input.otherCheckpointId !== undefined || input.limit !== undefined) {
+      return err(appError('INVALID_INPUT', 'Workspace checkpoint stats accepts no additional fields'));
     }
     return ok({ operation });
   }

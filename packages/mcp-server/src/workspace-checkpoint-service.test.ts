@@ -181,4 +181,34 @@ describe('WorkspaceCheckpointService', () => {
     expect(repository.records.some((record) => record.id === expiredB.value.checkpoint.id)).toBe(true);
     await expect(service.execute(actorB, { operation: 'prune' } as WorkspaceCheckpointInput)).resolves.toMatchObject({ ok: true, value: { operation: 'prune', deleted: 1 } });
   });
+
+  it('reports owner-scoped numeric quota usage after expiry cleanup', async () => {
+    const repository = new MemoryRepository();
+    const service = new WorkspaceCheckpointService(repository, provider(manifest()), { now: (): Date => new Date('2026-09-03T00:00:00.000Z') });
+    const expired = await service.execute(actorA, { operation: 'create', workspaceId: 'ws-1', name: 'expired' });
+    const live = await service.execute(actorA, { operation: 'create', workspaceId: 'ws-1', name: 'live' });
+    const foreign = await service.execute(actorB, { operation: 'create', workspaceId: 'ws-1', name: 'foreign' });
+    if (!expired.ok || !live.ok || !foreign.ok) throw new Error('checkpoint creation failed');
+    repository.records.find((record) => record.id === expired.value.checkpoint.id)!.expiresAt = '2026-09-02T00:00:00.000Z';
+
+    const stats = await service.execute(actorA, { operation: 'stats' } as WorkspaceCheckpointInput);
+    expect(stats).toMatchObject({
+      ok: true,
+      value: {
+        operation: 'stats',
+        count: 1,
+        maxRecords: 32,
+        maxBytes: 2 * 1024 * 1024,
+        remainingRecords: 31,
+      },
+    });
+    if (!stats.ok || stats.value.operation !== 'stats') throw new Error('stats failed');
+    expect(stats.value.bytes).toBeGreaterThan(0);
+    expect(stats.value.remainingBytes).toBe(2 * 1024 * 1024 - stats.value.bytes);
+    expect(JSON.stringify(stats.value)).not.toContain(live.value.checkpoint.id);
+    expect(JSON.stringify(stats.value)).not.toContain('src/app.ts');
+    expect(repository.records.some((record) => record.id === expired.value.checkpoint.id)).toBe(false);
+    await expect(service.execute(actorB, { operation: 'stats' } as WorkspaceCheckpointInput)).resolves.toMatchObject({ ok: true, value: { operation: 'stats', count: 1 } });
+    expect(repository.records.some((record) => record.id === foreign.value.checkpoint.id)).toBe(true);
+  });
 });

@@ -20,5 +20,7 @@ describe('workspace_checkpoint tool', () => {
     expect(tools[0]?.parse({ operation: 'compare', checkpointId: '00000000-0000-4000-8000-000000000001', otherCheckpointId: '00000000-0000-4000-8000-000000000002', path: 'src' })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
     expect(tools[0]?.parse({ operation: 'prune' })).toMatchObject({ ok: true });
     expect(tools[0]?.parse({ operation: 'prune', workspaceId: 'ws-1' })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    expect(tools[0]?.parse({ operation: 'stats' })).toMatchObject({ ok: true });
+    expect(tools[0]?.parse({ operation: 'stats', checkpointId: '00000000-0000-4000-8000-000000000001' })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
   });
 });

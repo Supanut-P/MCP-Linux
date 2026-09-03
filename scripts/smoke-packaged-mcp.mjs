@@ -243,6 +243,16 @@ try {
     || typeof checkpointDiff.diff.truncated !== 'boolean') {
     throw new Error('workspace_checkpoint diff did not return a bounded comparison');
   }
+  const checkpointStats = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'stats' }));
+  if (checkpointStats.operation !== 'stats'
+    || checkpointStats.count !== 1
+    || typeof checkpointStats.bytes !== 'number'
+    || checkpointStats.maxRecords !== 32
+    || checkpointStats.maxBytes !== 2 * 1024 * 1024
+    || checkpointStats.remainingRecords !== 31
+    || checkpointStats.remainingBytes !== checkpointStats.maxBytes - checkpointStats.bytes) {
+    throw new Error('workspace_checkpoint stats did not return bounded quota usage');
+  }
   const checkpointAfter = readObject(await callTool(client, 'workspace_checkpoint', {
     operation: 'create',
     workspaceId,
@@ -305,6 +315,7 @@ try {
     workspaceCheckpointAdvertised: true,
     workspaceCheckpointEntries: checkpointDetail.entries.length,
     workspaceCheckpointDiffUnchanged: checkpointDiff.diff.unchanged,
+    workspaceCheckpointStatsCount: checkpointStats.count,
     workspaceCheckpointCompareUnchanged: checkpointCompare.diff.unchanged,
     workspaceCheckpointPruned: checkpointPrune.deleted,
     snapshotCount: snapshotValue.count,

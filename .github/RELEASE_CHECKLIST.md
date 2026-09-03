@@ -1,6 +1,6 @@
 # Baitonghub-Linux-mcp release checklist
 
-**Current version:** `v1.34.0`
+**Current version:** `v1.35.0`
 **Target:** Ubuntu 24.04 LTS x64, headless
 
 **Evidence note:** The product owner waived the seven-day soak on 2026-09-01
@@ -54,6 +54,8 @@ the machine-checked waiver is tracked at
       checkpoint IDs and returns a bounded metadata-only diff.
 - [ ] `workspace_checkpoint prune` removes only expired records for the
       authenticated owner and is idempotent with a bounded count.
+- [ ] `workspace_checkpoint stats` reports numeric owner quota usage after
+      expiry cleanup without returning IDs, names, entries, or paths.
 - [ ] `remote_fleet` disk usage and checksum operations stay within registered
       roots, reject secret-looking checksum paths, and preserve the 256 KiB
       per-host cap with sanitized partial results.

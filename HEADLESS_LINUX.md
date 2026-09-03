@@ -209,6 +209,11 @@ the authenticated owner and returns the deleted count. It accepts no path,
 workspace, checkpoint ID, or caller-selected retention age; repeated calls are
 idempotent and do not touch workspace files.
 
+`workspace_checkpoint stats` reports only numeric checkpoint count/bytes,
+fixed owner quota limits, and remaining capacity after expiry cleanup. It
+accepts no workspace, path, checkpoint ID, or filter and never returns names,
+IDs, entries, or absolute paths.
+
 `workspace_changes` provides a bounded snapshot/diff feed from an active
 workspace watcher. Events contain only a monotonic sequence, a normalized
 relative path, an event kind, and an observation timestamp. The feed never

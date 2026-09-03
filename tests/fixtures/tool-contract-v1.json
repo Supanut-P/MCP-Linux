@@ -6381,6 +6381,7 @@
               "get",
               "diff",
               "compare",
+              "prune",
               "delete"
             ],
             "type": "string"

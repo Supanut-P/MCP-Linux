@@ -164,4 +164,21 @@ describe('WorkspaceCheckpointService', () => {
     Object.assign(repository.records[1], { workspaceId: 'ws-2' });
     await expect(service.execute(actorA, { operation: 'compare', checkpointId: before.value.checkpoint.id, otherCheckpointId: after.value.checkpoint.id })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
   });
+
+  it('prunes only expired checkpoints for the authenticated owner and is idempotent', async () => {
+    const repository = new MemoryRepository();
+    const service = new WorkspaceCheckpointService(repository, provider(manifest()), { now: (): Date => new Date('2026-09-03T00:00:00.000Z') });
+    const expiredA = await service.execute(actorA, { operation: 'create', workspaceId: 'ws-1', name: 'expired-a' });
+    const liveA = await service.execute(actorA, { operation: 'create', workspaceId: 'ws-1', name: 'live-a' });
+    const expiredB = await service.execute(actorB, { operation: 'create', workspaceId: 'ws-1', name: 'expired-b' });
+    if (!expiredA.ok || !liveA.ok || !expiredB.ok) throw new Error('checkpoint creation failed');
+    repository.records.find((record) => record.id === expiredA.value.checkpoint.id)!.expiresAt = '2026-09-02T00:00:00.000Z';
+    repository.records.find((record) => record.id === expiredB.value.checkpoint.id)!.expiresAt = '2026-09-02T00:00:00.000Z';
+
+    await expect(service.execute(actorA, { operation: 'prune' } as WorkspaceCheckpointInput)).resolves.toMatchObject({ ok: true, value: { operation: 'prune', deleted: 1 } });
+    await expect(service.execute(actorA, { operation: 'prune' } as WorkspaceCheckpointInput)).resolves.toMatchObject({ ok: true, value: { operation: 'prune', deleted: 0 } });
+    await expect(service.execute(actorA, { operation: 'get', checkpointId: liveA.value.checkpoint.id })).resolves.toMatchObject({ ok: true });
+    expect(repository.records.some((record) => record.id === expiredB.value.checkpoint.id)).toBe(true);
+    await expect(service.execute(actorB, { operation: 'prune' } as WorkspaceCheckpointInput)).resolves.toMatchObject({ ok: true, value: { operation: 'prune', deleted: 1 } });
+  });
 });

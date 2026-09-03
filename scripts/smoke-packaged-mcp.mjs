@@ -272,6 +272,10 @@ try {
     || typeof checkpointCompare.diff.truncated !== 'boolean') {
     throw new Error('workspace_checkpoint compare did not return a bounded comparison');
   }
+  const checkpointPrune = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'prune' }));
+  if (checkpointPrune.operation !== 'prune' || checkpointPrune.deleted !== 0) {
+    throw new Error('workspace_checkpoint prune did not return an idempotent cleanup result');
+  }
   const checkpointDelete = readObject(await callTool(client, 'workspace_checkpoint', { operation: 'delete', checkpointId }));
   if (checkpointDelete.operation !== 'delete' || checkpointDelete.deleted !== true) {
     throw new Error('workspace_checkpoint delete did not confirm deletion');
@@ -302,6 +306,7 @@ try {
     workspaceCheckpointEntries: checkpointDetail.entries.length,
     workspaceCheckpointDiffUnchanged: checkpointDiff.diff.unchanged,
     workspaceCheckpointCompareUnchanged: checkpointCompare.diff.unchanged,
+    workspaceCheckpointPruned: checkpointPrune.deleted,
     snapshotCount: snapshotValue.count,
     snapshotTruncated: snapshotValue.truncated,
     snapshotDiffUnchanged: snapshotDiffValue.unchanged,

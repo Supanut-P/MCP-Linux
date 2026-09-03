@@ -204,6 +204,11 @@ or accept a caller-supplied baseline. The result uses the same bounded,
 metadata-only added/removed/changed/unchanged shape as `workspace_snapshot`
 diff.
 
+`workspace_checkpoint prune` explicitly removes only expired checkpoints for
+the authenticated owner and returns the deleted count. It accepts no path,
+workspace, checkpoint ID, or caller-selected retention age; repeated calls are
+idempotent and do not touch workspace files.
+
 `workspace_changes` provides a bounded snapshot/diff feed from an active
 workspace watcher. Events contain only a monotonic sequence, a normalized
 relative path, an event kind, and an observation timestamp. The feed never

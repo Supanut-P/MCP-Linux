@@ -36,7 +36,7 @@ export interface WorkspaceCheckpointManifestProvider {
 }
 
 export interface WorkspaceCheckpointInput {
-  readonly operation?: 'create' | 'list' | 'get' | 'diff' | 'compare' | 'delete';
+  readonly operation?: 'create' | 'list' | 'get' | 'diff' | 'compare' | 'prune' | 'delete';
   readonly workspaceId?: string;
   readonly path?: string;
   readonly name?: string;
@@ -68,6 +68,7 @@ export type WorkspaceCheckpointOutput =
   | { readonly operation: 'diff'; readonly checkpointId: string; readonly workspaceId: string; readonly diff: Extract<WorkspaceSnapshotResult, { readonly operation: 'diff' }> }
   | { readonly operation: 'compare'; readonly checkpointId: string; readonly otherCheckpointId: string; readonly workspaceId: string; readonly diff: Extract<WorkspaceSnapshotResult, { readonly operation: 'diff' }> }
   | { readonly operation: 'list'; readonly checkpoints: readonly WorkspaceCheckpointSummary[]; readonly count: number; readonly truncated: boolean }
+  | { readonly operation: 'prune'; readonly deleted: number }
   | { readonly operation: 'delete'; readonly checkpointId: string; readonly deleted: true };
 
 export interface WorkspaceCheckpointServiceOptions {
@@ -92,6 +93,9 @@ export class WorkspaceCheckpointService {
     const ownerKey = ownerFingerprint(actor);
     const now = this.now().toISOString();
     try {
+      if (normalized.value.operation === 'prune') {
+        return ok({ operation: 'prune', deleted: await this.repository.pruneExpired(ownerKey, now) });
+      }
       await this.repository.pruneExpired(ownerKey, now);
       if (normalized.value.operation === 'create') return await this.create(actor, ownerKey, normalized.value, now, signal);
       if (normalized.value.operation === 'list') return await this.list(ownerKey, normalized.value, now);
@@ -200,8 +204,9 @@ type NormalizedCreateInput = {
 type NormalizedListInput = { readonly operation: 'list'; readonly workspaceId?: string; readonly limit: number };
 type NormalizedDiffInput = { readonly operation: 'diff'; readonly checkpointId: string; readonly maxEntries: number };
 type NormalizedCompareInput = { readonly operation: 'compare'; readonly checkpointId: string; readonly otherCheckpointId: string; readonly maxEntries: number };
+type NormalizedPruneInput = { readonly operation: 'prune' };
 type NormalizedLookupInput = { readonly operation: 'get' | 'delete'; readonly checkpointId: string };
-type NormalizedInput = NormalizedCreateInput | NormalizedListInput | NormalizedDiffInput | NormalizedCompareInput | NormalizedLookupInput;
+type NormalizedInput = NormalizedCreateInput | NormalizedListInput | NormalizedDiffInput | NormalizedCompareInput | NormalizedPruneInput | NormalizedLookupInput;
 
 function normalizeInput(input: WorkspaceCheckpointInput): Result<NormalizedInput> {
   if (typeof input !== 'object' || input === null || Array.isArray(input)) return err(appError('INVALID_INPUT', 'Workspace checkpoint input is invalid'));
@@ -225,6 +230,12 @@ function normalizeInput(input: WorkspaceCheckpointInput): Result<NormalizedInput
     const limit = input.limit ?? DEFAULT_LIMIT;
     if (!Number.isSafeInteger(limit) || limit < 1 || limit > MAX_LIMIT) return err(appError('INVALID_INPUT', 'Workspace checkpoint limit is invalid'));
     return ok({ operation, ...(input.workspaceId === undefined ? {} : { workspaceId: input.workspaceId.trim() }), limit });
+  }
+  if (operation === 'prune') {
+    if (input.workspaceId !== undefined || input.path !== undefined || input.name !== undefined || input.maxEntries !== undefined || input.ttlSeconds !== undefined || input.checkpointId !== undefined || input.otherCheckpointId !== undefined || input.limit !== undefined) {
+      return err(appError('INVALID_INPUT', 'Workspace checkpoint prune accepts no additional fields'));
+    }
+    return ok({ operation });
   }
   if (!isSafeId(input.checkpointId)) return err(appError('INVALID_INPUT', 'Workspace checkpoint id is invalid'));
   if (operation === 'diff') {

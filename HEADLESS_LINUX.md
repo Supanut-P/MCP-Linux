@@ -123,6 +123,13 @@ and an opaque owner-bound `cursor`; it never follows symlinks, rejects escapes
 and special files, and caps serialized output at 256 KiB. Files larger than the
 bounded hash budget are returned without a hash rather than read without limit.
 
+Set `operation: "diff"` with a prior bounded manifest in `baseline` to compare
+the current registered-root snapshot. The result contains only `added`,
+`removed`, `changed`, and `unchanged` regular-file metadata, is capped at
+256 KiB, and reports `truncated: true` whenever either snapshot is incomplete
+or the serialized diff must be shortened. Baseline paths must be unique,
+relative POSIX paths; diff never accepts a continuation cursor or writes files.
+
 `task_events` is a bounded, reconnect-safe lifecycle projection for an owned
 durable shell task or remote rollout. It returns monotonic sequence numbers,
 timestamps, state, sanitized phases/attempts, and terminal result codes. The

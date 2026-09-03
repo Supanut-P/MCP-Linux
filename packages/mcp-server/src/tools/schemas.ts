@@ -119,15 +119,19 @@ export const workspaceFullScanSchema = z.object({
 export const workspaceFullScanContinueSchema = workspaceContextContinueSchema;
 export const workspaceSnapshotSchema = z.object({
   workspaceId: workspaceIdSchema,
-  operation: z.enum(['identity', 'manifest']).optional(),
+  operation: z.enum(['identity', 'manifest', 'diff']).optional(),
   path: pathSchema.optional(),
   maxEntries: z.number().int().min(1).max(1_000).optional(),
   hashMode: z.enum(['none', 'sha256']).optional(),
   cursor: z.string().trim().min(8).max(512).optional(),
+  baseline: z.array(z.object({ path: z.string().min(1).max(4_096), bytes: z.number().int().nonnegative(), mtimeMs: z.number().finite(), sha256: z.string().regex(/^[a-f0-9]{64}$/i).optional() }).strict()).max(1_000).optional(),
 }).strict().superRefine((value, context) => {
   if ((value.operation ?? 'identity') === 'identity' && (value.path !== undefined || value.maxEntries !== undefined || value.cursor !== undefined || value.hashMode !== undefined)) {
     context.addIssue({ code: 'custom', message: 'Manifest fields require operation=manifest', path: ['operation'] });
   }
+  if ((value.operation ?? 'identity') !== 'diff' && value.baseline !== undefined) context.addIssue({ code: 'custom', message: 'baseline requires operation=diff', path: ['operation'] });
+  if (value.operation === 'diff' && value.baseline === undefined) context.addIssue({ code: 'custom', message: 'diff requires baseline', path: ['baseline'] });
+  if (value.operation === 'diff' && value.cursor !== undefined) context.addIssue({ code: 'custom', message: 'diff does not support cursor', path: ['cursor'] });
 });
 export const searchAllSchema = z.object({
   query: z.string().trim().min(1).max(32_768),

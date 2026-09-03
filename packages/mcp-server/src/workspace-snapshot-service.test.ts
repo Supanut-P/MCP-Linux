@@ -55,6 +55,61 @@ describe('WorkspaceSnapshotService', () => {
     await expect(service.execute(actor, { workspaceId: 'workspace-1', operation: 'manifest' }, controller.signal)).resolves.toMatchObject({ ok: false, error: { code: 'PROCESS_TIMEOUT' } });
     await expect(service.execute(actor, { workspaceId: 'workspace-1', operation: 'manifest' })).resolves.toMatchObject({ ok: false, error: { code: 'WORKSPACE_NOT_FOUND' } });
   });
+
+  it('computes a bounded read-only diff against a prior manifest', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'baitonghub-linux-mcp-snapshot-diff-'));
+    try {
+      await writeFile(path.join(root, 'changed.txt'), 'new');
+      await writeFile(path.join(root, 'added.txt'), 'added');
+      const service = createService(root);
+      const result = await service.execute(actor, {
+        workspaceId: 'workspace-1',
+        operation: 'diff',
+        baseline: [
+          { path: 'changed.txt', bytes: 3, mtimeMs: 1 },
+          { path: 'removed.txt', bytes: 7, mtimeMs: 1 },
+        ],
+      });
+      expect(result).toMatchObject({ ok: true, value: {
+        operation: 'diff',
+        added: [{ path: 'added.txt', bytes: 5 }],
+        removed: [{ path: 'removed.txt', bytes: 7 }],
+        changed: [{ path: 'changed.txt', before: { bytes: 3 }, after: { bytes: 3 } }],
+        unchanged: 0,
+        truncated: false,
+      } });
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects invalid diff baselines before scanning', async () => {
+    const service = createService(path.join(tmpdir(), 'missing-baitonghub-snapshot-diff'));
+    await expect(service.execute(actor, { workspaceId: 'workspace-1', operation: 'diff', baseline: [{ path: '../escape', bytes: 1, mtimeMs: 1 }] })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    await expect(service.execute(actor, { workspaceId: 'workspace-1', operation: 'diff', baseline: [{ path: 'C:\\secret.txt', bytes: 1, mtimeMs: 1 }] })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    await expect(service.execute(actor, { workspaceId: 'workspace-1', operation: 'diff', baseline: [{ path: 'same.txt', bytes: 1, mtimeMs: 1 }, { path: 'same.txt', bytes: 2, mtimeMs: 2 }] })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+  });
+
+  it('marks bounded comparisons truncated instead of inventing removals', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'baitonghub-linux-mcp-snapshot-diff-bound-'));
+    try {
+      await writeFile(path.join(root, 'a.txt'), 'a');
+      await writeFile(path.join(root, 'b.txt'), 'b');
+      const service = createService(root);
+      const result = await service.execute(actor, {
+        workspaceId: 'workspace-1',
+        operation: 'diff',
+        maxEntries: 1,
+        baseline: [
+          { path: 'a.txt', bytes: 1, mtimeMs: 1 },
+          { path: 'b.txt', bytes: 1, mtimeMs: 1 },
+        ],
+      });
+      expect(result).toMatchObject({ ok: true, value: { removed: [], truncated: true } });
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
 });
 
 function createService(root: string): WorkspaceSnapshotService {

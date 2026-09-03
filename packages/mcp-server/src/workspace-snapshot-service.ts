@@ -22,11 +22,12 @@ export interface WorkspaceSnapshotRootProvider {
 
 export interface WorkspaceSnapshotInput {
   readonly workspaceId: string;
-  readonly operation?: 'identity' | 'manifest';
+  readonly operation?: 'identity' | 'manifest' | 'diff';
   readonly path?: string;
   readonly maxEntries?: number;
   readonly hashMode?: 'none' | 'sha256';
   readonly cursor?: string;
+  readonly baseline?: readonly WorkspaceSnapshotEntry[];
 }
 
 export interface WorkspaceSnapshotEntry {
@@ -47,6 +48,20 @@ export interface WorkspaceSnapshotOutput {
   readonly nextCursor?: string;
 }
 
+export interface WorkspaceSnapshotDiffOutput {
+  readonly operation: 'diff';
+  readonly workspaceId: string;
+  readonly path: string;
+  readonly hashMode: 'none' | 'sha256';
+  readonly added: readonly WorkspaceSnapshotEntry[];
+  readonly removed: readonly WorkspaceSnapshotEntry[];
+  readonly changed: readonly { readonly path: string; readonly before: WorkspaceSnapshotEntry; readonly after: WorkspaceSnapshotEntry }[];
+  readonly unchanged: number;
+  readonly truncated: boolean;
+}
+
+export type WorkspaceSnapshotResult = WorkspaceSnapshotOutput | WorkspaceSnapshotDiffOutput;
+
 interface SnapshotCursor {
   readonly version: 1;
   readonly owner: string;
@@ -64,10 +79,11 @@ interface Candidate {
 export class WorkspaceSnapshotService {
   public constructor(private readonly roots: WorkspaceSnapshotRootProvider) {}
 
-  public async execute(actor: FileActor, input: WorkspaceSnapshotInput, signal?: AbortSignal): Promise<Result<WorkspaceSnapshotOutput>> {
+  public async execute(actor: FileActor, input: WorkspaceSnapshotInput, signal?: AbortSignal): Promise<Result<WorkspaceSnapshotResult>> {
     const normalized = normalizeInput(input);
     if (!normalized.ok) return normalized;
     if (signal !== undefined && signal.aborted) return cancelled();
+    if (normalized.value.operation === 'diff') return this.executeDiff(actor, normalized.value, signal);
 
     const rootResult = await this.roots.info(actor, normalized.value.workspaceId);
     if (!rootResult.ok) return rootResult;
@@ -125,14 +141,64 @@ export class WorkspaceSnapshotService {
       ...(nextCursor === undefined ? {} : { nextCursor }),
     });
   }
+
+  private async executeDiff(actor: FileActor, input: NormalizedSnapshotInput, signal?: AbortSignal): Promise<Result<WorkspaceSnapshotDiffOutput>> {
+    const manifest = await this.execute(actor, {
+      workspaceId: input.workspaceId,
+      operation: 'manifest',
+      ...(input.path === undefined ? {} : { path: input.path }),
+      maxEntries: MAX_ENTRIES,
+      hashMode: input.hashMode,
+    }, signal);
+    if (!manifest.ok) return manifest;
+    if (!('entries' in manifest.value)) return err(appError('CAPABILITY_UNAVAILABLE', 'Workspace diff manifest was unavailable', true));
+    const currentManifest = manifest.value;
+    const baselineLimited = input.baseline.slice(0, input.maxEntries);
+    const currentLimited = currentManifest.entries.slice(0, input.maxEntries);
+    const comparisonTruncated = currentManifest.truncated || input.baseline.length > input.maxEntries || currentManifest.entries.length > input.maxEntries;
+    const before = new Map(baselineLimited.map((entry) => [entry.path, entry]));
+    const after = new Map(currentLimited.map((entry) => [entry.path, entry]));
+    const added: WorkspaceSnapshotEntry[] = [];
+    const removed: WorkspaceSnapshotEntry[] = [];
+    const changed: Array<{ readonly path: string; readonly before: WorkspaceSnapshotEntry; readonly after: WorkspaceSnapshotEntry }> = [];
+    let unchanged = 0;
+    for (const entry of currentLimited) {
+      const prior = before.get(entry.path);
+      if (prior === undefined) added.push(entry);
+      else if (sameEntry(prior, entry, input.hashMode)) unchanged += 1;
+      else changed.push({ path: entry.path, before: prior, after: entry });
+    }
+    if (!comparisonTruncated) for (const entry of baselineLimited) if (!after.has(entry.path)) removed.push(entry);
+    let output: WorkspaceSnapshotDiffOutput = {
+      operation: 'diff',
+      workspaceId: input.workspaceId,
+      path: input.path ?? '.',
+      hashMode: input.hashMode,
+      added,
+      removed,
+      changed,
+      unchanged,
+      truncated: comparisonTruncated,
+    };
+    while (Buffer.byteLength(JSON.stringify(output), 'utf8') > MAX_SERIALIZED_BYTES && (output.added.length > 0 || output.removed.length > 0 || output.changed.length > 0)) {
+      const nextAdded = output.added.slice(0, -1);
+      const nextRemoved = output.removed.slice(0, -1);
+      const nextChanged = output.changed.slice(0, -1);
+      output = { ...output, added: nextAdded, removed: nextRemoved, changed: nextChanged, truncated: true };
+    }
+    return ok(output);
+  }
 }
 
-function normalizeInput(input: WorkspaceSnapshotInput): Result<Required<Pick<WorkspaceSnapshotInput, 'workspaceId' | 'maxEntries' | 'hashMode'>> & Pick<WorkspaceSnapshotInput, 'path' | 'cursor'>> {
+type NormalizedSnapshotInput = Required<Pick<WorkspaceSnapshotInput, 'workspaceId' | 'maxEntries' | 'hashMode' | 'operation' | 'baseline'>> & Pick<WorkspaceSnapshotInput, 'path' | 'cursor'>;
+
+function normalizeInput(input: WorkspaceSnapshotInput): Result<NormalizedSnapshotInput> {
   if (typeof input !== 'object' || input === null || typeof input.workspaceId !== 'string' || input.workspaceId.trim().length === 0 || input.workspaceId.length > 128) {
     return err(appError('INVALID_INPUT', 'Snapshot workspaceId is invalid'));
   }
-  if (input.operation !== undefined && input.operation !== 'manifest') return err(appError('INVALID_INPUT', 'Snapshot operation must be manifest'));
-  const maxEntries = input.maxEntries ?? DEFAULT_MAX_ENTRIES;
+  const operation = input.operation ?? 'manifest';
+  if (operation !== 'manifest' && operation !== 'diff') return err(appError('INVALID_INPUT', 'Snapshot operation must be manifest or diff'));
+  const maxEntries = input.maxEntries ?? (operation === 'diff' ? MAX_ENTRIES : DEFAULT_MAX_ENTRIES);
   if (!Number.isSafeInteger(maxEntries) || maxEntries < 1 || maxEntries > MAX_ENTRIES) return err(appError('INVALID_INPUT', 'Snapshot maxEntries is invalid'));
   const hashMode = input.hashMode ?? 'none';
   if (hashMode !== 'none' && hashMode !== 'sha256') return err(appError('INVALID_INPUT', 'Snapshot hashMode is invalid'));
@@ -142,7 +208,27 @@ function normalizeInput(input: WorkspaceSnapshotInput): Result<Required<Pick<Wor
   if (input.cursor !== undefined && (typeof input.cursor !== 'string' || input.cursor.length < 8 || input.cursor.length > 512)) {
     return err(appError('INVALID_INPUT', 'Snapshot cursor is invalid'));
   }
-  return ok({ workspaceId: input.workspaceId.trim(), maxEntries, hashMode, ...(input.path === undefined ? {} : { path: input.path }), ...(input.cursor === undefined ? {} : { cursor: input.cursor }) });
+  if (operation === 'diff' && input.cursor !== undefined) return err(appError('INVALID_INPUT', 'Snapshot diff does not support a cursor'));
+  if (operation === 'diff' && !Array.isArray(input.baseline)) return err(appError('INVALID_INPUT', 'Snapshot diff baseline is required'));
+  if (operation === 'manifest' && input.baseline !== undefined) return err(appError('INVALID_INPUT', 'Snapshot baseline requires operation=diff'));
+  const baseline: WorkspaceSnapshotEntry[] = operation === 'diff' ? [...input.baseline!] : [];
+  if (baseline.length > MAX_ENTRIES || baseline.some((entry) => !isValidBaselineEntry(entry))) return err(appError('INVALID_INPUT', 'Snapshot diff baseline is invalid'));
+  const paths = new Set(baseline.map((entry) => entry.path));
+  if (paths.size !== baseline.length) return err(appError('INVALID_INPUT', 'Snapshot diff baseline contains duplicate paths'));
+  baseline.sort((left, right) => left.path.localeCompare(right.path));
+  return ok({ workspaceId: input.workspaceId.trim(), maxEntries, hashMode, operation, baseline, ...(input.path === undefined ? {} : { path: input.path }), ...(input.cursor === undefined ? {} : { cursor: input.cursor }) });
+}
+
+function isValidBaselineEntry(value: unknown): value is WorkspaceSnapshotEntry {
+  if (!isRecord(value) || typeof value.path !== 'string' || value.path.length === 0 || value.path.length > 4096 || value.path.includes('\0')) return false;
+  if (path.posix.isAbsolute(value.path) || path.win32.isAbsolute(value.path) || value.path.includes('\\') || value.path.split('/').some((part) => part.length === 0 || part === '.' || part === '..')) return false;
+  if (typeof value.bytes !== 'number' || !Number.isSafeInteger(value.bytes) || value.bytes < 0 || typeof value.mtimeMs !== 'number' || !Number.isFinite(value.mtimeMs)) return false;
+  return value.sha256 === undefined || (typeof value.sha256 === 'string' && /^[a-f0-9]{64}$/i.test(value.sha256));
+}
+
+function sameEntry(before: WorkspaceSnapshotEntry, after: WorkspaceSnapshotEntry, hashMode: 'none' | 'sha256'): boolean {
+  if (before.bytes !== after.bytes || before.mtimeMs !== after.mtimeMs) return false;
+  return hashMode === 'none' || before.sha256 === undefined || after.sha256 === undefined || before.sha256 === after.sha256;
 }
 
 async function canonicalRoot(rootPath: string): Promise<Result<string>> {

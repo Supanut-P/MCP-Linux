@@ -161,6 +161,23 @@ try {
     || typeof snapshotValue.truncated !== 'boolean') {
     throw new Error('workspace_snapshot manifest did not return bounded metadata');
   }
+  const snapshotDiff = await callTool(client, 'workspace_snapshot', {
+    workspaceId,
+    operation: 'diff',
+    path: 'scripts',
+    maxEntries: 10,
+    hashMode: 'none',
+    baseline: snapshotValue.entries,
+  });
+  const snapshotDiffValue = readObject(snapshotDiff);
+  if (snapshotDiffValue.operation !== 'diff'
+    || !Array.isArray(snapshotDiffValue.added)
+    || !Array.isArray(snapshotDiffValue.removed)
+    || !Array.isArray(snapshotDiffValue.changed)
+    || typeof snapshotDiffValue.unchanged !== 'number'
+    || typeof snapshotDiffValue.truncated !== 'boolean') {
+    throw new Error('workspace_snapshot diff did not return bounded classifications');
+  }
 
   process.stdout.write(JSON.stringify({
     ok: true,
@@ -179,6 +196,8 @@ try {
     environmentPreflightAdvertised: true,
     snapshotCount: snapshotValue.count,
     snapshotTruncated: snapshotValue.truncated,
+    snapshotDiffUnchanged: snapshotDiffValue.unchanged,
+    snapshotDiffTruncated: snapshotDiffValue.truncated,
   }) + '\n');
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);

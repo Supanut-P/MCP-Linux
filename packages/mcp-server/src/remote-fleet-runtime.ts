@@ -1,7 +1,7 @@
 import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
 import type { CapabilityService } from '@baitonghub-linux-mcp/capabilities';
 
-export type RemoteFleetOperation = 'health' | 'inventory' | 'service-status' | 'snapshot';
+export type RemoteFleetOperation = 'health' | 'inventory' | 'service-status' | 'disk_usage' | 'checksum' | 'snapshot';
 
 export interface RemoteFleetRequest {
   readonly hostIds: readonly string[];
@@ -120,8 +120,9 @@ export class RemoteFleetRuntime {
       const result = await this.executeRemote(remoteRequest, signal, deadline);
       if (result.ok) {
         const durationMs = Date.now() - started;
-        await this.recordAudit({ hostId, operation: request.operation, resultCode: 'OK', durationMs });
-        return { hostId, status: 'ok', value: redactRemoteValue(result.value), durationMs };
+        const bounded = boundValue(redactRemoteValue(result.value));
+        await this.recordAudit({ hostId, operation: request.operation, resultCode: 'OK', durationMs, ...(bounded.truncated ? { truncated: true } : {}) });
+        return { hostId, status: 'ok', value: bounded.value, durationMs, ...(bounded.truncated ? { truncated: true } : {}) };
       }
       return result.error === undefined
         ? await this.failedHost(hostId, request.operation, started, 'CAPABILITY_UNAVAILABLE', 'Remote host inspection failed')
@@ -201,7 +202,7 @@ function parseRequest(input: unknown): Result<RemoteFleetRequest> {
   }
   if (new Set(hostIds).size !== hostIds.length) return err(appError('INVALID_INPUT', 'remote_fleet hostIds must not contain duplicates', false));
   const operation = input.operation;
-  if (operation !== 'health' && operation !== 'inventory' && operation !== 'service-status' && operation !== 'snapshot') return err(appError('INVALID_INPUT', 'remote_fleet operation is invalid', false));
+  if (operation !== 'health' && operation !== 'inventory' && operation !== 'service-status' && operation !== 'disk_usage' && operation !== 'checksum' && operation !== 'snapshot') return err(appError('INVALID_INPUT', 'remote_fleet operation is invalid', false));
   const path = input.path === undefined ? undefined : typeof input.path === 'string' ? input.path : null;
   if (path === null) return err(appError('INVALID_INPUT', 'remote_fleet path is invalid', false));
   const unit = input.unit === undefined ? undefined : typeof input.unit === 'string' ? input.unit : null;

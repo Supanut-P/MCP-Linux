@@ -514,7 +514,7 @@ export const remoteHostCapabilitySchema = z.object({
 const remoteHostIdSchema = z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/);
 export const remoteFleetCapabilitySchema = z.object({
   hostIds: z.array(remoteHostIdSchema).min(1).max(20).refine((ids) => new Set(ids).size === ids.length, 'hostIds must not contain duplicates'),
-  operation: z.enum(['health', 'inventory', 'service-status', 'snapshot']),
+  operation: z.enum(['health', 'inventory', 'service-status', 'disk_usage', 'checksum', 'snapshot']),
   path: pathSchema.optional(),
   unit: z.string().trim().regex(/^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/).optional(),
   maxParallel: z.number().int().min(1).max(4).default(4),

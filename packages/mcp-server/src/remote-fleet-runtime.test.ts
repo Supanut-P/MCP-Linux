@@ -141,4 +141,24 @@ describe('RemoteFleetRuntime', () => {
     expect(audit[0]).toMatchObject({ hostId: 'vm1', operation: 'snapshot', resultCode: 'OK' });
     expect(JSON.stringify(audit)).not.toContain('do-not-audit');
   });
+
+  it('forwards bounded disk usage and checksum operations without remote authority fields', async () => {
+    const calls: Record<string, unknown>[] = [];
+    const runtime = new RemoteFleetRuntime({
+      execute: async (_tool: string, input: unknown): Promise<Result<unknown>> => {
+        calls.push(input as Record<string, unknown>);
+        return ok({ path: (input as Record<string, unknown>).path, checksum: 'a'.repeat(300_000) });
+      },
+    });
+
+    const disk = await runtime.execute({ hostIds: ['vm1'], operation: 'disk_usage', path: '/srv/app', hostname: 'untrusted.example' });
+    const checksum = await runtime.execute({ hostIds: ['vm1'], operation: 'checksum', path: '/srv/app/app.tar', command: 'cat /etc/passwd' });
+
+    expect(disk).toMatchObject({ ok: true, value: { hosts: [{ hostId: 'vm1', status: 'ok', truncated: true }] } });
+    expect(checksum).toMatchObject({ ok: true, value: { hosts: [{ hostId: 'vm1', status: 'ok', truncated: true }] } });
+    expect(calls).toEqual([
+      { hostId: 'vm1', operation: 'disk_usage', path: '/srv/app' },
+      { hostId: 'vm1', operation: 'checksum', path: '/srv/app/app.tar' },
+    ]);
+  });
 });

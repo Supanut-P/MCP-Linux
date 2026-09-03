@@ -1,6 +1,6 @@
 # Baitonghub-Linux-mcp release checklist
 
-**Current version:** `v1.25.0`
+**Current version:** `v1.26.0`
 **Target:** Ubuntu 24.04 LTS x64, headless
 
 **Evidence note:** The product owner waived the seven-day soak on 2026-09-01
@@ -44,6 +44,9 @@ the machine-checked waiver is tracked at
       and optional SBOM without invoking shell, network, apt, dpkg, or install.
 - [ ] `environment_preflight` reports bounded runtime/display/dependency
       readiness without hostnames, paths, commands, environment, or secrets.
+- [ ] `remote_fleet` disk usage and checksum operations stay within registered
+      roots, reject secret-looking checksum paths, and preserve the 256 KiB
+      per-host cap with sanitized partial results.
 - [ ] Multi-workspace ownership and isolation pass.
 
 ## Package evidence

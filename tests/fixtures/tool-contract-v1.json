@@ -6732,7 +6732,8 @@
             "enum": [
               "identity",
               "manifest",
-              "diff"
+              "diff",
+              "usage"
             ],
             "type": "string"
           },

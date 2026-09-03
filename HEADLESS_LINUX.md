@@ -130,6 +130,12 @@ the current registered-root snapshot. The result contains only `added`,
 or the serialized diff must be shortened. Baseline paths must be unique,
 relative POSIX paths; diff never accepts a continuation cursor or writes files.
 
+Set `operation: "usage"` to receive a bounded regular-file `fileCount`,
+`totalBytes`, `scannedEntries`, and `truncated` summary for the selected
+registered root. Usage does not read file contents and accepts no cursor,
+baseline, hash mode, or mutation fields; byte totals saturate safely at the
+maximum JSON-safe integer and mark the result truncated.
+
 `task_events` is a bounded, reconnect-safe lifecycle projection for an owned
 durable shell task or remote rollout. It returns monotonic sequence numbers,
 timestamps, state, sanitized phases/attempts, and terminal result codes. The

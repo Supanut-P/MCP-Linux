@@ -56,6 +56,28 @@ describe('WorkspaceSnapshotService', () => {
     await expect(service.execute(actor, { workspaceId: 'workspace-1', operation: 'manifest' })).resolves.toMatchObject({ ok: false, error: { code: 'WORKSPACE_NOT_FOUND' } });
   });
 
+  it('returns a bounded regular-file usage summary without reading contents', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'baitonghub-linux-mcp-snapshot-usage-'));
+    try {
+      await mkdir(path.join(root, 'nested'));
+      await writeFile(path.join(root, 'a.txt'), '1234');
+      await writeFile(path.join(root, 'nested', 'b.txt'), '12');
+      const service = createService(root);
+      const result = await service.execute(actor, { workspaceId: 'workspace-1', operation: 'usage' });
+      expect(result).toMatchObject({ ok: true, value: {
+        operation: 'usage',
+        workspaceId: 'workspace-1',
+        path: '.',
+        fileCount: 2,
+        totalBytes: 6,
+        scannedEntries: 3,
+        truncated: false,
+      } });
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it('computes a bounded read-only diff against a prior manifest', async () => {
     const root = await mkdtemp(path.join(tmpdir(), 'baitonghub-linux-mcp-snapshot-diff-'));
     try {
@@ -88,6 +110,7 @@ describe('WorkspaceSnapshotService', () => {
     await expect(service.execute(actor, { workspaceId: 'workspace-1', operation: 'diff', baseline: [{ path: '../escape', bytes: 1, mtimeMs: 1 }] })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
     await expect(service.execute(actor, { workspaceId: 'workspace-1', operation: 'diff', baseline: [{ path: 'C:\\secret.txt', bytes: 1, mtimeMs: 1 }] })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
     await expect(service.execute(actor, { workspaceId: 'workspace-1', operation: 'diff', baseline: [{ path: 'same.txt', bytes: 1, mtimeMs: 1 }, { path: 'same.txt', bytes: 2, mtimeMs: 2 }] })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    await expect(service.execute(actor, { workspaceId: 'workspace-1', operation: 'usage', maxEntries: 1 })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
   });
 
   it('marks bounded comparisons truncated instead of inventing removals', async () => {

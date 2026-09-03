@@ -1,6 +1,6 @@
 # Baitonghub-Linux-mcp release checklist
 
-**Current version:** `v1.28.0`
+**Current version:** `v1.29.0`
 **Target:** Ubuntu 24.04 LTS x64, headless
 
 **Evidence note:** The product owner waived the seven-day soak on 2026-09-01
@@ -51,6 +51,8 @@ the machine-checked waiver is tracked at
       interface names, addresses, or other remote topology.
 - [ ] `workspace_snapshot` diff compares only bounded relative manifests and
       reports truncation instead of claiming a complete comparison.
+- [ ] `workspace_snapshot` usage reports bounded regular-file count/bytes and
+      explicit truncation without reading file contents.
 - [ ] Multi-workspace ownership and isolation pass.
 
 ## Package evidence

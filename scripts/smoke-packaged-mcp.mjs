@@ -178,6 +178,19 @@ try {
     || typeof snapshotDiffValue.truncated !== 'boolean') {
     throw new Error('workspace_snapshot diff did not return bounded classifications');
   }
+  const snapshotUsage = await callTool(client, 'workspace_snapshot', {
+    workspaceId,
+    operation: 'usage',
+    path: 'scripts',
+  });
+  const snapshotUsageValue = readObject(snapshotUsage);
+  if (snapshotUsageValue.operation !== 'usage'
+    || typeof snapshotUsageValue.fileCount !== 'number'
+    || typeof snapshotUsageValue.totalBytes !== 'number'
+    || typeof snapshotUsageValue.scannedEntries !== 'number'
+    || typeof snapshotUsageValue.truncated !== 'boolean') {
+    throw new Error('workspace_snapshot usage did not return bounded totals');
+  }
 
   process.stdout.write(JSON.stringify({
     ok: true,
@@ -198,6 +211,8 @@ try {
     snapshotTruncated: snapshotValue.truncated,
     snapshotDiffUnchanged: snapshotDiffValue.unchanged,
     snapshotDiffTruncated: snapshotDiffValue.truncated,
+    snapshotUsageFileCount: snapshotUsageValue.fileCount,
+    snapshotUsageTruncated: snapshotUsageValue.truncated,
   }) + '\n');
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);

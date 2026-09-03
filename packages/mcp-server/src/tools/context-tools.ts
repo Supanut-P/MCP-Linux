@@ -63,11 +63,11 @@ export function contextTools(context: McpToolContext, engine: ContextEngine): Mc
     }),
     defineTool({
       name: 'workspace_snapshot',
-      description: 'Return workspace identity metadata, a bounded regular-file manifest, or a read-only diff against a supplied manifest with optional SHA-256 hashes.',
+      description: 'Return workspace identity metadata, a bounded regular-file manifest, a read-only diff, or a bounded usage summary.',
       permission: 'READ',
       annotations: { readOnlyHint: true, destructiveHint: false },
       inputSchema: workspaceSnapshotSchema,
-      handler: async (input) => input.operation === 'manifest' || input.operation === 'diff'
+      handler: async (input) => input.operation === 'manifest' || input.operation === 'diff' || input.operation === 'usage'
         ? context.services.workspaceSnapshot === undefined
           ? err(appError('CAPABILITY_UNAVAILABLE', 'Workspace snapshot manifest is unavailable', true))
           : context.services.workspaceSnapshot.execute(context.actor, {

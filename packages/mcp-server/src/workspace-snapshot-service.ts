@@ -22,7 +22,7 @@ export interface WorkspaceSnapshotRootProvider {
 
 export interface WorkspaceSnapshotInput {
   readonly workspaceId: string;
-  readonly operation?: 'identity' | 'manifest' | 'diff';
+  readonly operation?: 'identity' | 'manifest' | 'diff' | 'usage';
   readonly path?: string;
   readonly maxEntries?: number;
   readonly hashMode?: 'none' | 'sha256';
@@ -60,7 +60,17 @@ export interface WorkspaceSnapshotDiffOutput {
   readonly truncated: boolean;
 }
 
-export type WorkspaceSnapshotResult = WorkspaceSnapshotOutput | WorkspaceSnapshotDiffOutput;
+export interface WorkspaceSnapshotUsageOutput {
+  readonly operation: 'usage';
+  readonly workspaceId: string;
+  readonly path: string;
+  readonly fileCount: number;
+  readonly totalBytes: number;
+  readonly scannedEntries: number;
+  readonly truncated: boolean;
+}
+
+export type WorkspaceSnapshotResult = WorkspaceSnapshotOutput | WorkspaceSnapshotDiffOutput | WorkspaceSnapshotUsageOutput;
 
 interface SnapshotCursor {
   readonly version: 1;
@@ -84,23 +94,11 @@ export class WorkspaceSnapshotService {
     if (!normalized.ok) return normalized;
     if (signal !== undefined && signal.aborted) return cancelled();
     if (normalized.value.operation === 'diff') return this.executeDiff(actor, normalized.value, signal);
+    if (normalized.value.operation === 'usage') return this.executeUsage(actor, normalized.value, signal);
 
-    const rootResult = await this.roots.info(actor, normalized.value.workspaceId);
-    if (!rootResult.ok) return rootResult;
-    const root = await canonicalRoot(rootResult.value.realRootPath);
-    if (!root.ok) return root;
-    const requested = path.resolve(root.value, normalized.value.path ?? '.');
-    if (!isWithin(root.value, requested)) return err(appError('PATH_OUTSIDE_WORKSPACE', 'Snapshot path is outside the workspace'));
-    let start: string;
-    try {
-      start = await realpath(requested);
-    } catch {
-      return err(appError('FILE_NOT_FOUND', 'Snapshot path was not found'));
-    }
-    if (!isWithin(root.value, start)) return err(appError('PATH_OUTSIDE_WORKSPACE', 'Snapshot path is outside the workspace'));
-    const startStat = await lstat(start).catch(() => undefined);
-    if (startStat === undefined) return err(appError('FILE_NOT_FOUND', 'Snapshot path was not found'));
-    if (!startStat.isDirectory()) return err(appError('INVALID_INPUT', 'Snapshot path must be a directory'));
+    const directory = await this.resolveDirectory(actor, normalized.value);
+    if (!directory.ok) return directory;
+    const { root, start } = directory.value;
 
     let cursor: SnapshotCursor | undefined;
     if (normalized.value.cursor !== undefined) {
@@ -108,7 +106,7 @@ export class WorkspaceSnapshotService {
       if (decoded instanceof Error) return err(appError('INVALID_INPUT', decoded.message));
       cursor = decoded;
     }
-    const candidates = await collectCandidates(root.value, start, signal);
+    const candidates = await collectCandidates(root, start, signal);
     if (!candidates.ok) return candidates;
     const offset = cursor?.offset ?? 0;
     if (offset > candidates.value.entries.length) return err(appError('INVALID_INPUT', 'Snapshot cursor is no longer valid'));
@@ -188,6 +186,53 @@ export class WorkspaceSnapshotService {
     }
     return ok(output);
   }
+
+  private async executeUsage(actor: FileActor, input: NormalizedSnapshotInput, signal?: AbortSignal): Promise<Result<WorkspaceSnapshotUsageOutput>> {
+    const directory = await this.resolveDirectory(actor, input);
+    if (!directory.ok) return directory;
+    const candidates = await collectCandidates(directory.value.root, directory.value.start, signal);
+    if (!candidates.ok) return candidates;
+    let totalBytes = 0;
+    let saturated = false;
+    for (const candidate of candidates.value.entries) {
+      if (signal !== undefined && signal.aborted) return cancelled();
+      if (candidate.bytes > Number.MAX_SAFE_INTEGER - totalBytes) {
+        totalBytes = Number.MAX_SAFE_INTEGER;
+        saturated = true;
+      } else {
+        totalBytes += candidate.bytes;
+      }
+    }
+    return ok({
+      operation: 'usage',
+      workspaceId: input.workspaceId,
+      path: input.path ?? '.',
+      fileCount: candidates.value.entries.length,
+      totalBytes,
+      scannedEntries: candidates.value.scannedEntries,
+      truncated: candidates.value.truncated || saturated,
+    });
+  }
+
+  private async resolveDirectory(actor: FileActor, input: NormalizedSnapshotInput): Promise<Result<{ readonly root: string; readonly start: string }>> {
+    const rootResult = await this.roots.info(actor, input.workspaceId);
+    if (!rootResult.ok) return rootResult;
+    const root = await canonicalRoot(rootResult.value.realRootPath);
+    if (!root.ok) return root;
+    const requested = path.resolve(root.value, input.path ?? '.');
+    if (!isWithin(root.value, requested)) return err(appError('PATH_OUTSIDE_WORKSPACE', 'Snapshot path is outside the workspace'));
+    let start: string;
+    try {
+      start = await realpath(requested);
+    } catch {
+      return err(appError('FILE_NOT_FOUND', 'Snapshot path was not found'));
+    }
+    if (!isWithin(root.value, start)) return err(appError('PATH_OUTSIDE_WORKSPACE', 'Snapshot path is outside the workspace'));
+    const startStat = await lstat(start).catch(() => undefined);
+    if (startStat === undefined) return err(appError('FILE_NOT_FOUND', 'Snapshot path was not found'));
+    if (!startStat.isDirectory()) return err(appError('INVALID_INPUT', 'Snapshot path must be a directory'));
+    return ok({ root: root.value, start });
+  }
 }
 
 type NormalizedSnapshotInput = Required<Pick<WorkspaceSnapshotInput, 'workspaceId' | 'maxEntries' | 'hashMode' | 'operation' | 'baseline'>> & Pick<WorkspaceSnapshotInput, 'path' | 'cursor'>;
@@ -197,7 +242,7 @@ function normalizeInput(input: WorkspaceSnapshotInput): Result<NormalizedSnapsho
     return err(appError('INVALID_INPUT', 'Snapshot workspaceId is invalid'));
   }
   const operation = input.operation ?? 'manifest';
-  if (operation !== 'manifest' && operation !== 'diff') return err(appError('INVALID_INPUT', 'Snapshot operation must be manifest or diff'));
+  if (operation !== 'manifest' && operation !== 'diff' && operation !== 'usage') return err(appError('INVALID_INPUT', 'Snapshot operation must be manifest, diff, or usage'));
   const maxEntries = input.maxEntries ?? (operation === 'diff' ? MAX_ENTRIES : DEFAULT_MAX_ENTRIES);
   if (!Number.isSafeInteger(maxEntries) || maxEntries < 1 || maxEntries > MAX_ENTRIES) return err(appError('INVALID_INPUT', 'Snapshot maxEntries is invalid'));
   const hashMode = input.hashMode ?? 'none';
@@ -211,6 +256,7 @@ function normalizeInput(input: WorkspaceSnapshotInput): Result<NormalizedSnapsho
   if (operation === 'diff' && input.cursor !== undefined) return err(appError('INVALID_INPUT', 'Snapshot diff does not support a cursor'));
   if (operation === 'diff' && !Array.isArray(input.baseline)) return err(appError('INVALID_INPUT', 'Snapshot diff baseline is required'));
   if (operation === 'manifest' && input.baseline !== undefined) return err(appError('INVALID_INPUT', 'Snapshot baseline requires operation=diff'));
+  if (operation === 'usage' && (input.maxEntries !== undefined || input.hashMode !== undefined || input.cursor !== undefined || input.baseline !== undefined)) return err(appError('INVALID_INPUT', 'Snapshot usage accepts only workspaceId and path'));
   const baseline: WorkspaceSnapshotEntry[] = operation === 'diff' ? [...input.baseline!] : [];
   if (baseline.length > MAX_ENTRIES || baseline.some((entry) => !isValidBaselineEntry(entry))) return err(appError('INVALID_INPUT', 'Snapshot diff baseline is invalid'));
   const paths = new Set(baseline.map((entry) => entry.path));

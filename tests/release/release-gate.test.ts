@@ -118,7 +118,7 @@ describe('Baitonghub Linux release verification gate', () => {
     expect(waiver).toContain('SEVEN_DAY_SOAK_GATE: WAIVED');
     expect(waiver).toContain('PRODUCTION_EVIDENCE_CLAIM: NONE');
     expect(waiver).toContain('VM103 soak remains running');
-    const notes = await readFile(path.join(repositoryRoot, 'RELEASE_NOTES_v1.5.0.md'), 'utf8');
+    const notes = await readFile(path.join(repositoryRoot, 'docs/releases/v1.5.0.md'), 'utf8');
     expect(notes).toContain('no production-readiness claim');
     expect(notes).toContain('SEVEN_DAY_SOAK_WAIVER.md');
   });

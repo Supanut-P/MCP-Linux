@@ -158,6 +158,7 @@ seven-day run unless one was actually completed.
 
 See [`VERSION_HISTORY.md`](VERSION_HISTORY.md) for the complete Linux-only
 version sequence, including retroactively published v1.5.0-v1.35.0 milestones.
+Version-specific notes are archived under [`docs/releases/`](docs/releases/).
 
 ## Supported platform
 

@@ -156,6 +156,9 @@ Linux soak recorder is available at `scripts/soak-linux-headless.sh`; its
 output is evidence for an operator-run stability window and does not claim a
 seven-day run unless one was actually completed.
 
+See [`VERSION_HISTORY.md`](VERSION_HISTORY.md) for the complete Linux-only
+version sequence, including retroactively published v1.5.0-v1.35.0 milestones.
+
 ## Supported platform
 
 | Item | v1.36 support |

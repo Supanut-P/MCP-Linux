@@ -97,7 +97,7 @@ Run the command from Task 1. Expected: all service and tool tests pass.
 **Files:**
 - Modify: all version metadata via `corepack pnpm@10.15.0 set-version 1.30.0`
 - Modify: `README.md`, `HEADLESS_LINUX.md`, `.github/RELEASE_CHECKLIST.md`
-- Create: `RELEASE_NOTES_v1.30.0.md`
+- Create: `docs/releases/v1.30.0.md`
 - Modify: `scripts/smoke-packaged-mcp.mjs`, generated catalog, v1 fixture
 - Modify: `docs/superpowers/plans/2026-09-02-v1-12-to-v2-roadmap.md`
 

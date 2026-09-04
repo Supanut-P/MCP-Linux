@@ -74,6 +74,10 @@ docs/architecture/*
 !docs/architecture/TOOL_CONTRACT.md
 !docs/architecture/ROADMAP_PHASE_STATUS.md
 !docs/architecture/MULTI_WORKSPACE_CONCURRENCY.md
+!docs/releases/
+docs/releases/*
+!docs/releases/README.md
+!docs/releases/*.md
 !docs/benchmarks/
 docs/benchmarks/*
 !docs/benchmarks/BASELINE.md

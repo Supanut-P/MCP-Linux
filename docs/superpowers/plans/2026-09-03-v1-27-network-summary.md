@@ -36,7 +36,7 @@
 **Files:**
 - Modify: workspace package versions via `corepack pnpm@10.15.0 set-version 1.27.0`
 - Modify: `README.md`, `HEADLESS_LINUX.md`, `.github/RELEASE_CHECKLIST.md`
-- Create: `RELEASE_NOTES_v1.27.0.md`
+- Create: `docs/releases/v1.27.0.md`
 - Modify: `docs/superpowers/plans/2026-09-02-v1-12-to-v2-roadmap.md`
 
 - [ ] Document the topology-safe summary, its fixed bounds, and the seven-day soak waiver.

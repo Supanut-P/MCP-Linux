@@ -143,7 +143,7 @@ Assert `tools/list` contains `release_verify`; do not pass an installation comma
 **Files:**
 - Modify `package.json` and all workspace package versions via the existing version script.
 - Modify `README.md`, `HEADLESS_LINUX.md`, `.github/RELEASE_CHECKLIST.md`, `docs/superpowers/plans/2026-09-02-v1-12-to-v2-roadmap.md`.
-- Create `RELEASE_NOTES_v1.24.0.md`.
+- Create `docs/releases/v1.24.0.md`.
 
 - [ ] **Step 1: Set version to `1.24.0`**
 
@@ -185,7 +185,7 @@ Expected: DEB and Linux x64 tar pass provenance/checksum, forbidden-file, instal
 - [ ] **Step 5: Commit only after gates pass**
 
 ```bash
-git add packages apps scripts tests README.md HEADLESS_LINUX.md .github RELEASE_NOTES_v1.24.0.md docs/superpowers/plans
+git add packages apps scripts tests README.md HEADLESS_LINUX.md .github docs/releases/v1.24.0.md docs/superpowers/plans
 git commit -m "feat: add offline release verification"
 ```
 

@@ -65,7 +65,7 @@ Expected: all focused runtime and registry tests pass.
 - Modify: `README.md`
 - Modify: `HEADLESS_LINUX.md`
 - Modify: `.github/RELEASE_CHECKLIST.md`
-- Create: `RELEASE_NOTES_v1.26.0.md`
+- Create: `docs/releases/v1.26.0.md`
 - Modify: `docs/superpowers/plans/2026-09-02-v1-12-to-v2-roadmap.md`
 
 - [ ] **Step 1: Bump all package versions and lockfile metadata.** Run `corepack pnpm@10.15.0 set-version 1.26.0` and verify every workspace package reports `1.26.0`.

@@ -118,7 +118,8 @@ describe('public repository hygiene', () => {
     const missing: string[] = [];
     for (const link of localDocLinks) {
       if (link === undefined || tracked.has(link)) continue;
-      if (sourceExport) {
+      if (link.endsWith('/') && Array.from(tracked).some((file) => file.startsWith(link))) continue;
+      if (sourceExport && !link.endsWith('/')) {
         try {
           await access(path.join(repositoryRoot, link));
           continue;

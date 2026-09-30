@@ -1,10 +1,38 @@
-import { readFile } from 'node:fs/promises';
+import { chmod, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
+import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const root = path.resolve(import.meta.dirname, '..', '..');
 
 describe('headless Linux Secure MCP Tunnel packaging', () => {
+  it.skipIf(process.platform !== 'linux')('routes registered-target admin commands through the public launcher', async () => {
+    const builder = await readFile(path.join(root, 'scripts', 'build-headless.mjs'), 'utf8');
+    const template = builder.match(/const launcher = `([\s\S]*?)`;/)?.[1];
+    expect(template).toBeDefined();
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'mcp-launcher-routing-'));
+    try {
+      const launcher = path.join(directory, 'baitonghub-linux-mcp');
+      const node = path.join(directory, 'baitonghub-linux-mcp-node');
+      await writeFile(launcher, template!.replace(/\r\n?/g, '\n').replaceAll('\\${', '${'));
+      await writeFile(node, '#!/bin/sh\nprintf "%s\\n" "$@"\n');
+      await chmod(node, 0o700);
+      for (const command of ['remote-host', 'database', 'status', 'doctor', 'workspace']) {
+        const result = spawnSync('/bin/sh', [launcher, command, 'list', 'argument with spaces'], { encoding: 'utf8' });
+        expect(result.status, `${command}: ${result.stderr}`).toBe(0);
+        expect(result.stdout.trim().split('\n')).toEqual([
+          path.join(directory, 'admin.cjs'), command, 'list', 'argument with spaces',
+        ]);
+      }
+      const unknown = spawnSync('/bin/sh', [launcher, 'unsupported-command'], { encoding: 'utf8' });
+      expect(unknown.status).toBe(2);
+      expect(unknown.stdout).toBe('');
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   it('installs the latest official client only after checksum verification', async () => {
     const installer = await readFile(path.join(root, 'scripts', 'install-linux-tunnel-client.sh'), 'utf8');
     expect(installer).toContain('openai/tunnel-client/releases/latest');

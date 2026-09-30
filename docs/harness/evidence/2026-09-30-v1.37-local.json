@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-09-30",
+  "candidateVersion": "1.37.0",
+  "platform": "win32",
+  "nodeVersion": "24.14.0",
+  "status": "LOCAL_SOURCE_CHECKED_UBUNTU_RELEASE_GATE_OPEN",
+  "baseCommit": "45c940014fe7fb4e7017be8c67c9bdfd75f227a3",
+  "dirtySource": true,
+  "sourceManifest": "dist/v1.37.0-local-20260930/source-manifest.json",
+  "sourceManifestSha256": "ab7ebdbdff4df23639d4545e0c3f0648edbca61be7533e08a9f356a71f9a73c6",
+  "sourceFileCount": 578,
+  "sourceManifestExcludes": [
+    "docs/harness/evidence/**",
+    "ignored/build/runtime artifacts"
+  ],
+  "gates": [
+    {
+      "command": "corepack pnpm@10.15.0 rebrand:check",
+      "exitCode": 0,
+      "status": "passed",
+      "passedTests": 0,
+      "skippedTests": 0,
+      "log": "dist/v1.37.0-local-20260930/rebrand-check.log",
+      "logSha256": "aa05ef6ebbab00e70e6254da9f763b7f023a42b8bc91fcba9f28cbc0a061fa8d"
+    },
+    {
+      "command": "corepack pnpm@10.15.0 typecheck",
+      "exitCode": 0,
+      "status": "passed",
+      "passedTests": 0,
+      "skippedTests": 0,
+      "log": "dist/v1.37.0-local-20260930/typecheck.log",
+      "logSha256": "d6b8b288139601f00c1362366fdd0a531bc89a72705aee0f2cb38efa5748c058"
+    },
+    {
+      "command": "corepack pnpm@10.15.0 lint",
+      "exitCode": 0,
+      "status": "passed",
+      "passedTests": 0,
+      "skippedTests": 0,
+      "log": "dist/v1.37.0-local-20260930/lint.log",
+      "logSha256": "e349f2c5b1ea5f75e443e0d35a7527223ba2ca0307a38720544ef3fa208edc82"
+    },
+    {
+      "command": "corepack pnpm@10.15.0 test",
+      "exitCode": 0,
+      "status": "partial_platform_coverage",
+      "passedTests": 646,
+      "skippedTests": 39,
+      "log": "dist/v1.37.0-local-20260930/test.log",
+      "logSha256": "17dfc69c0f8a604f7a99e1a308fcaa8db83e85e4f7f37c5b66cb95aa4418be7b"
+    },
+    {
+      "command": "corepack pnpm@10.15.0 test:integration",
+      "exitCode": 0,
+      "status": "not_executed",
+      "passedTests": 0,
+      "skippedTests": 3,
+      "log": "dist/v1.37.0-local-20260930/test-integration.log",
+      "logSha256": "daa3872186400452ca7de035f155d0e843069398e8e0b5bc225ec09f9b01e78e"
+    },
+    {
+      "command": "corepack pnpm@10.15.0 test:packaging",
+      "exitCode": 0,
+      "status": "passed",
+      "passedTests": 15,
+      "skippedTests": 0,
+      "log": "dist/v1.37.0-local-20260930/test-packaging.log",
+      "logSha256": "0102878e12e46c71705094eba6897d578e05a2387c9d86d2ffc00d9dd0e52f2e"
+    },
+    {
+      "command": "corepack pnpm@10.15.0 test:release-gate",
+      "exitCode": 0,
+      "status": "partial_platform_coverage",
+      "passedTests": 9,
+      "skippedTests": 1,
+      "log": "dist/v1.37.0-local-20260930/test-release-gate.log",
+      "logSha256": "7600ae7e7b76d3fd01b2650494b155a2d27d4a386b12ef2df15bcbc57d54f944"
+    },
+    {
+      "command": "corepack pnpm@10.15.0 docs:tools:check",
+      "exitCode": 0,
+      "status": "passed",
+      "passedTests": 0,
+      "skippedTests": 0,
+      "log": "dist/v1.37.0-local-20260930/docs-tools-check.log",
+      "logSha256": "3809415bac9389ffea30edbacfb09974e98709ef5f0224ec3f2f3b995d3f8584"
+    },
+    {
+      "command": "corepack pnpm@10.15.0 test:v1",
+      "exitCode": 0,
+      "status": "passed",
+      "passedTests": 5,
+      "skippedTests": 0,
+      "log": "dist/v1.37.0-local-20260930/test-v1.log",
+      "logSha256": "d0055155f82484a955af860a94cfbdc87ab857d3cdf4d455fd3f1fa699230e4e"
+    }
+  ],
+  "diffCheck": {
+    "command": "git diff --check",
+    "log": "dist/v1.37.0-local-20260930/diff-check.log",
+    "exitCode": 0
+  },
+  "journalRegression": {
+    "greenLog": "dist/v1.37.0-local-20260930/journal-green.log",
+    "redPassed": 13,
+    "redLog": "dist/v1.37.0-local-20260930/journal-red.log",
+    "greenPassed": 15,
+    "redFailed": 2
+  },
+  "review": {
+    "qualitySecurity": "passed_by_inspection",
+    "runtimeExecution": false,
+    "specCompliance": "passed_by_inspection",
+    "reviewerModel": "gpt-6.1-sol",
+    "reasoningEffort": "high",
+    "skillsForwardExercise": "read_only_policy_scenario_passed"
+  },
+  "skillsValidation": {
+    "nativeDiscovery": "not_verified_AGENTS_routes_to_files",
+    "bundledPythonValidator": "not_run_missing_PyYAML",
+    "frontmatterAndLinks": "passed_static_checks"
+  },
+  "actualTotalTokens": null,
+  "tokenSavings": null,
+  "soak": "waived_not_passed",
+  "blockedGates": [
+    "Ubuntu24.04 full suite and runtime",
+    "Linux package build/hash/provenance/inspection/install",
+    "upgrade/rollback",
+    "live fleet acceptance"
+  ],
+  "nextMilestone": "1.38_not_started",
+  "externalOperations": [],
+  "remotePreflight": {
+    "target": "approved-ubuntu-test-host",
+    "authorization": "user_approved_isolated_tests_package_install_upgrade_rollback",
+    "sshHostValidation": "strict_existing_known_hosts",
+    "os": "Ubuntu24.04.4LTS",
+    "architecture": "x86_64",
+    "nodeVersion": "22.22.2",
+    "requiredNodeMajor": 24,
+    "rootFilesystemBytes": 25180848128,
+    "rootFilesystemAvailableBytes": 0,
+    "rootLogicalVolumeBytes": 47240445952,
+    "volumeGroupFreeBytes": 0,
+    "remoteWritesPerformed": false,
+    "filesystemGrow": "proposed_resize2fs_pending_explicit_human_approval",
+    "credentialsPersisted": false
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": ["node"]
+  },
+  "references": [
+    { "path": "../application" },
+    { "path": "../capabilities" },
+    { "path": "../domain" },
+    { "path": "../extensions" },
+    { "path": "../permissions" },
+    { "path": "../search" },
+    { "path": "../shared" }
+  ],
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"]
+}

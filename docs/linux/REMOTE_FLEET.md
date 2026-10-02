@@ -1,0 +1,40 @@
+# Registered remote fleet inspection
+
+`remote_fleet` is a read-only facility for checking a bounded set of
+Linux hosts that have already been registered in the remote-host registry. A
+request contains only `hostIds` (1–20), a fixed operation, and optional bounded
+concurrency (`maxParallel`, 1–4):
+
+- `health` — verify the registered SSH connection;
+- `inventory` — list up to 500 entries beneath a registered root (or an
+  explicitly supplied path inside that root);
+- `service-status` — read bounded systemd unit state;
+- `journal` — read bounded, redacted journal lines for an optional validated
+  systemd unit;
+- `snapshot` — collect `health`, `inventory`, and `service-status` for each host
+  in deterministic host-ID order.
+
+Each host is inspected through `remote_host`. The registry supplies the host,
+port, username, pinned fingerprint, key reference, and allowed roots; callers
+cannot provide any of those values and cannot provide a raw SSH command. At
+most four SSH sessions run concurrently (or the requested lower `maxParallel`).
+Snapshot responses return `{ hosts, completed, failed, truncated, maxParallel }`;
+each host has a bounded 256 KiB result and duration. A failed host is returned
+as a sanitized per-host error so one unavailable machine does not hide the rest
+of the result.
+
+Path operations run `realpath --canonicalize-existing` immediately before the
+fixed remote operation and reject paths outside the selected host's registered
+roots or paths that resolve through a symlink escape. Remote output remains
+bounded and credentials are read from Secret Service by the existing
+`remote_host` backend; credentials and private key material are not returned.
+
+The individual `remote_host` tool additionally supports `disk_usage` and
+`checksum` for registered paths. Checksums are SHA-256 and secret-looking files
+are rejected. Remote mutations remain separate preview-plus-confirmation
+operations and are not available through `remote_fleet`.
+
+`journal` accepts `lines` from 1 to 1,000 and uses the existing pinned
+`remote_host` provider. It never accepts a raw journal query, shell fragment, or
+unregistered host/path. Each host remains independently bounded and failures are
+returned as sanitized partial results.

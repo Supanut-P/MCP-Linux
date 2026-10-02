@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security policy
+    url: https://github.com/Supanut-P/MCP-Linux/blob/main/SECURITY.md
+    about: Report security-sensitive findings privately; do not disclose vulnerability details in a public issue.

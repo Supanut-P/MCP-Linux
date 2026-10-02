@@ -1,0 +1,121 @@
+# baitonghub-linux-mcp + MCP Tasks spec (2025-11-25)
+
+> สถานะ: experimental (ตามสเปก MCP Tasks รุ่น 2025-11-25)
+> v1.7.0 เพิ่มการสร้าง task ผ่าน `tools/call` แบบมาตรฐาน
+> v1.11.0 เพิ่ม task-augmented `remote_rollout` พร้อม reconnectable progress
+
+baitonghub-linux-mcp เปิดดู durable background tasks ผ่านเมธอดระดับโปรโตคอลของ MCP Tasks
+เพื่อให้ client ที่รองรับสเปกเรียกดู/เก็บผล/ยกเลิกงานยาวได้โดยไม่ต้องรู้จัก
+ชื่อ tool ของ baitonghub-linux-mcp เอง
+
+## ขอบเขต
+
+- **ครอบคลุม**: durable background tasks ของ `shell` และ task-augmented
+  `remote_rollout` (ใช้ task store ที่รอดการ restart runtime ด้วย task ID)
+- **ไม่รวม**: `process_start` (in-memory ไม่ durable — เป็น legacy path)
+- **การสร้างแบบ legacy** ยังทำผ่าน tool เดิมได้: `shell { execution: "background" }`
+- **การสร้างแบบมาตรฐาน** รองรับ `tools/call` ที่แนบ `task: { ttl }` สำหรับ `shell`
+  operation `run` และ `remote_rollout` operation `execute` และคืน `CreateTaskResult`
+  โดยไม่ส่ง `resume_token`
+- `process_start` และ tool อื่นไม่รองรับ task-augmented call
+- **ไม่ส่ง `notifications/tasks/status`** (optional ตามสเปก) — client ต้อง poll `tasks/get`
+
+## เมธอดที่รองรับ
+
+| เมธอด | พฤติกรรม |
+| --- | --- |
+| `tasks/get { taskId }` | สถานะล่าสุดของ task (ไม่พบ → `-32602`) |
+| `tasks/result { taskId }` | ผลลัพธ์ (snapshot ของ task เป็น JSON text) เมื่อ task ถึง terminal; ติด `_meta['io.modelcontextprotocol/related-task']` ตามสเปก |
+| `tasks/list { cursor? }` | รายการ task เรียงใหม่สุดก่อน + cursor pagination (หน้าละ 50) |
+| `tasks/cancel { taskId }` | ยกเลิกงานที่ยังไม่ terminal; task terminal แล้ว → `-32602` |
+
+Capability ที่ประกาศตอน initialize: `{ tasks: { list: {}, cancel: {}, requests: { tools: { call: {} } } } }`
+
+`tools/list` ใน wire รุ่น 2025-11-25 จะระบุ `shell.execution.taskSupport = "required"`
+และ `remote_rollout.execution.taskSupport = "optional"` เมื่อ remote rollout task
+storage ถูกเปิดใช้; รุ่น 2026-07-28 จะตัดฟิลด์ deprecated นี้ตาม codec ของ SDK
+
+## การแม็ปสถานะ
+
+| สถานะใน baitonghub-linux-mcp (shell-backend / durable store) | สถานะตามสเปก |
+| --- | --- |
+| `running` | `working` |
+| `completed` | `completed` |
+| `failed` | `failed` (+`statusMessage` จาก error) |
+| `timed_out` | `failed` (+`statusMessage`) |
+| `termination_unverified` | `working` (+`statusMessage` เพราะ process อาจยังมีชีวิต) |
+| `cancelled` | `cancelled` |
+
+ฟิลด์สังเคราะห์: `createdAt` = `started_at`, `lastUpdatedAt` = `finished_at ?? started_at`,
+`ttl` = `deadline_at - started_at` (`null` ถ้าไม่มี deadline เช่น task แบบ in-memory)
+
+`pollInterval` ใช้ค่า **MCP Poll / Tool Wait** จาก Settings: ตั้งได้ 5–60 วินาที
+และค่าเริ่มต้นคือ 5 วินาที ค่าเดียวกันนี้ใช้เป็น request window ของ `tasks/result`
+เพื่อให้พฤติกรรมการ poll ของ tool และ MCP Tasks สอดคล้องกัน
+
+## Deviation ที่รู้ไว้ (เจตนา)
+
+สเปกกำหนดให้ `tasks/result` block จนกว่า task จะถึง terminal — แต่ durable tasks
+ของ baitonghub-linux-mcp ออกแบบให้ทำงานยาวเกินระยะเวลารอที่สมเหตุสมผลของ request หนึ่ง ๆ
+ดังนั้น implementation นี้ block ได้สูงสุดตามค่า **MCP Poll / Tool Wait** ที่ผู้ใช้ตั้ง
+(5–60 วินาที, ค่าเริ่มต้น 5 วินาที) แล้วตอบ `-32603` ถ้างานยังไม่ terminal
+พร้อมข้อความชี้ให้กลับไป poll `tasks/get` ภายหลัง
+
+เมื่อยังเป็น `working` หลังตรวจ 1–2 ครั้งใน ChatGPT turn เดียว ไม่ควร tight-poll ต่อเนื่อง
+ให้เก็บ `taskId` ไว้แล้วคืน control ก่อน งาน durable จะยังทำต่อบนเครื่องและรอบถัดไป
+สามารถใช้ task ID เดิมเพื่ออ่านสถานะ/log/result ได้ การหมด wait window ไม่ใช่การ cancel task
+
+(กำกับไว้ในโค้ดที่ `packages/mcp-server/src/tasks-protocol.ts`)
+
+## ความปลอดภัย
+
+- Transport ทั้งหมด (loopback HTTP / stdio / Secure MCP Tunnel) อยู่ในขอบเขต
+  เครื่องเดียวผู้ใช้เดียว — `tasks.list` เปิดใช้บนสมมติฐานนี้
+- Task ID เป็น UUID v4 (random) ตามข้อกำหนด entropy ของสเปก
+- ผลลัพธ์/log ผ่านการ redact ความลับของ shell backend เหมือนเดิม
+
+## การทดสอบ
+
+- Unit: `packages/mcp-server/src/tasks-protocol.test.ts`
+- Integration (client จริงผ่าน HTTP loopback, ยุค 2025):
+  `packages/mcp-server/src/tasks-protocol.integration.test.ts`
+
+## Task-augmented `tools/call` (v1.7.0 / v1.11.0)
+
+client ที่รองรับ MCP Tasks ส่งตัวอย่างนี้ได้:
+
+```json
+{
+  "name": "shell",
+  "arguments": { "executable": "node", "arguments": ["-e", "build()"] },
+  "task": { "ttl": 60000 }
+}
+```
+
+server จะบังคับ `operation=run` และ `execution=background` ผ่าน registry เดิม,
+ผูก owner/permission/audit เดิม และคืนเฉพาะ `taskId`, status, TTL, timestamps และ
+poll interval จาก task snapshot. `tasks/get`, `tasks/result`, `tasks/list` และ
+`tasks/cancel` ใช้ต่อได้หลัง reconnect หรือ runtime restart.
+
+สำหรับ remote rollout ให้ส่ง `operation=execute`, `rolloutId`, `workspaceId`,
+`previewHash` และ `userConfirmed: true` หลังจากสร้าง preview แล้ว:
+
+```json
+{
+  "name": "remote_rollout",
+  "arguments": {
+    "operation": "execute",
+    "rolloutId": "<stored-rollout-id>",
+    "workspaceId": "workspace-1",
+    "previewHash": "<aggregate-sha256>",
+    "userConfirmed": true
+  },
+  "task": {}
+}
+```
+
+task ID จะเท่ากับ rollout ID และผูกกับ `clientId + sessionId` แบบ hash ภายใน
+เท่านั้น actor เดิมจึง reconnect แล้วอ่าน/ยกเลิก/รับผลได้ ส่วน actor อื่นจะได้
+not-found โดยไม่เห็นรายละเอียดแผน. `tasks/get` จะคืน `events` ล่าสุดไม่เกิน 200
+รายการ โดยแต่ละรายการมีเพียง host alias, phase, attempt, status/result code และ
+timestamp; ไม่มี address, credential, key path หรือ raw provider message.

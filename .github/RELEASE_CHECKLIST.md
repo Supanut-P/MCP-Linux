@@ -1,0 +1,91 @@
+# Baitonghub-Linux-mcp release checklist
+
+**Current version:** `v1.42.0`
+**Target:** Ubuntu 24.04 LTS x64, headless
+
+**Evidence note:** The product owner waived the seven-day soak on 2026-09-01
+to continue version development. `v1.5.0` makes no production-readiness claim;
+the machine-checked waiver is tracked at
+`docs/linux/evidence/v1.5.0/SEVEN_DAY_SOAK_WAIVER.md`.
+
+## Source verification
+
+- [ ] Clean install completes with the pinned lockfile.
+- [ ] Branding contract, lint, typecheck, full tests, integration tests,
+      packaging tests, release gate, and generated tool catalog pass.
+- [ ] `git diff --check` passes.
+- [ ] No secret, API key, tunnel key, tunnel ID, private path, or runtime database
+      is tracked.
+
+## Security evidence
+
+- [ ] Registered-root traversal and symlink escape tests fail closed.
+- [ ] `/` is not registered automatically.
+- [ ] Root escalation, shutdown, format, mount, workspace-root deletion, and
+      unowned process termination remain blocked.
+- [ ] Secret redaction covers stdout, logs, audit, diagnostics, and command
+      arguments.
+- [ ] Owned background process group cancellation is verified.
+- [ ] Non-loopback Streamable HTTP requires bearer and Host checks.
+- [ ] Support bundle dry-run/confirmation, redaction, 2 MiB cap, and 200-event
+      cap pass with secret-canary fixtures.
+
+## Ubuntu runtime evidence
+
+- [ ] STDIO MCP handshake and tool listing pass on Ubuntu 24.04 x64.
+- [ ] Streamable HTTP health and MCP calls pass.
+- [ ] MCP Tasks task-augmented `shell` creation, reconnect, result, and cancel
+      pass without exposing a resume token.
+- [ ] File, search, Git, shell, logs, wait, cancel, checkpoint, backup, and audit
+      flows pass inside a disposable workspace.
+- [ ] `audit_query` returns owner-scoped, bounded, redacted summaries without
+      command lines, paths, environments, client identity, or secrets.
+- [ ] `release_verify` validates explicit local artifacts, checksums, metadata,
+      and optional SBOM without invoking shell, network, apt, dpkg, or install.
+- [ ] `environment_preflight` reports bounded runtime/display/dependency
+      readiness without hostnames, paths, commands, environment, or secrets.
+- [ ] `workflow_preflight` composes bounded readiness and optional registered
+      workspace usage without authorizing, executing, or exposing raw provider
+      data.
+- [ ] `workspace_checkpoint` stores only bounded metadata, isolates owners,
+      prunes expired records, enforces per-owner count/byte quotas, and its
+      `diff` operation cannot override the stored workspace/path or baseline.
+- [ ] `workspace_checkpoint compare` accepts only two same-owner, same-scope
+      checkpoint IDs and returns a bounded metadata-only diff.
+- [ ] `workspace_checkpoint prune` removes only expired records for the
+      authenticated owner and is idempotent with a bounded count.
+- [ ] `workspace_checkpoint stats` reports numeric owner quota usage after
+      expiry cleanup without returning IDs, names, entries, or paths.
+- [ ] `workspace_checkpoint summary` returns only bounded numeric change counts
+      and preserves truncation without returning paths or file metadata.
+- [ ] `remote_fleet` disk usage and checksum operations stay within registered
+      roots, reject secret-looking checksum paths, and preserve the 256 KiB
+      per-host cap with sanitized partial results.
+- [ ] `remote_fleet` network summary returns counts only and never exposes
+      interface names, addresses, or other remote topology.
+- [ ] `workspace_snapshot` diff compares only bounded relative manifests and
+      reports truncation instead of claiming a complete comparison.
+- [ ] `workspace_snapshot` usage reports bounded regular-file count/bytes and
+      explicit truncation without reading file contents.
+- [ ] Multi-workspace ownership and isolation pass.
+
+## Package evidence
+
+- [ ] Build the amd64 DEB, Linux x64 tarball, and SHA-256 manifest on Ubuntu.
+- [ ] Verify every checksum.
+- [ ] Inspect both packages and reject `.exe`, `.cmd`, `.bat`, `.ps1`, Electron,
+      Windows OCR, or Windows-native runtime helpers.
+- [ ] Install the DEB on a clean Ubuntu VM.
+- [ ] Run the installed-package smoke without system Node.js.
+
+## Secure MCP Tunnel evidence
+
+- [ ] Initialize with an operator-supplied tunnel ID and runtime key.
+- [ ] Verify the systemd service is `active` and health reports `ready`.
+- [ ] Call `health`, `workspace_list`, and a workspace read tool through ChatGPT.
+- [ ] Restart the service and verify reconnect.
+- [ ] Confirm the runtime key is absent from YAML, argv, stdout, journal, audit,
+      and diagnostics.
+
+Publish only artifacts built from the exact commit referenced by the release
+tag.

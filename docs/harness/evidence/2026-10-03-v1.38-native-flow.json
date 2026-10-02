@@ -1,0 +1,92 @@
+{
+  "milestone": "1.38.0",
+  "status": "native-bugfix-round-passed-ubuntu-package-pending",
+  "taskId": "v138-version-reference-bugfix",
+  "dispatch": "caller_native",
+  "requestedWorker": {
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "attempts": 2,
+    "freshContext": true
+  },
+  "requestedReviewer": {
+    "model": "gpt-6.1-sol",
+    "effort": "medium",
+    "independent": true
+  },
+  "workerPromptBytes": 1937,
+  "tokens": null,
+  "failureRouting": [
+    "reproduced stale current links",
+    "worker patch",
+    "QA failed CRLF plus lint",
+    "lead bounded repair",
+    "worker attempt two",
+    "independent QA passed"
+  ],
+  "handoff": {
+    "taskId": "v138-version-reference-bugfix",
+    "role": "worker",
+    "summary": "Worker attempt two fixes LF/CRLF current headings and release assets. Real-script two-case regression and focused lint passed; no root metadata edit by worker. Local evidence only.",
+    "evidenceReferences": [
+      "dist/v1.37.0-local-20260930/version-fix-prepared.json",
+      "dist/v1.37.0-local-20260930/version-fix-final-green.log",
+      "dist/v1.37.0-local-20260930/v138-full-lint-green.log"
+    ],
+    "workerId": "v138_version_bugfix",
+    "status": "done"
+  },
+  "qa": {
+    "taskId": "v138-version-reference-bugfix",
+    "workerId": "v138_version_bugfix",
+    "reviewerId": "v138_review",
+    "verdict": "passed",
+    "summary": "Independent Sol source/log review found no remaining material findings after CRLF/lint correction. Lead reran both real-script cases and full lint successfully. QA did not execute tests; Ubuntu/package gates remain pending.",
+    "evidenceReferences": [
+      "dist/v1.37.0-local-20260930/version-fix-prepared.json",
+      "dist/v1.37.0-local-20260930/version-fix-final-green.log",
+      "dist/v1.37.0-local-20260930/v138-full-lint-green.log"
+    ],
+    "sourceReference": "sha256:74702abba562e4f358accb8d03e160b847fa440a278f55f15cbdd6f1a7b09852",
+    "diffReference": "Source files and baseline sha256:9486d04961386ba140abdec3bcb459e8b934b5af6a6e3ca294946e6fa23ca7d8",
+    "evidenceVerification": "caller_supplied_not_verified"
+  },
+  "sourceFingerprint": "74702abba562e4f358accb8d03e160b847fa440a278f55f15cbdd6f1a7b09852",
+  "sources": {
+    "scripts/set-version.mjs": "4a66b3fb223729671f35dd4c83e90dcbeef500ccb44a2b793dc56551fa7e63bc",
+    "tests/release/version-sync.test.ts": "68f11196ac3cbe95ab436b326ff7efd5f271abb5b94c8a104af1b682b443bcc5",
+    "packages/codex/src/workflow-contract.ts": "3d954383c7ca146fc0a20842fc7242321e99e522b0035c9730b9ccf3fcd98966",
+    "packages/application/src/workflow-plan-service.ts": "fe57d2fe62d2c867154177958221c456aacdd0b164c8ad6d5191361c30f90cd2",
+    "packages/mcp-server/src/tools/workflow-plan-tools.ts": "88c18fcfc565daa6f197b0541cb0d2f752cc28dc00caefe54e6c565ade9d10fd",
+    "packages/mcp-server/src/tools/schemas.ts": "51d45981430232a5c73079f0567bf226488dafe89839307b6f0ea12ba122b8d2"
+  },
+  "artifacts": {
+    "dist/v1.37.0-local-20260930/version-fix-prepared.json": "b7b0ef2e378d2a18f274119647d693b8e17c6df4893b860a852a89c7f7bd4ed5",
+    "dist/v1.37.0-local-20260930/version-fix-worker-prompt.txt": "de48796e1a116aaceaaa9f0b2f7af3226a154ee3b87fc53511cefcf99d494442",
+    "dist/v1.37.0-local-20260930/version-sync-red.log": "85d7bd2a5241586d4fff1003e650e125eab02ff78e522d8c0ef9ca14a133f913",
+    "dist/v1.37.0-local-20260930/version-fix-green.log": "6c2dfd3b02684894540e44ac3715892da1e633717ae3ca60e3fdb96aba19cfc5",
+    "dist/v1.37.0-local-20260930/version-fix-final-green.log": "c1a4bfc36561110fd65853c322dc30356fbb8b16c2812169d6a6ffd478caca1f",
+    "dist/v1.37.0-local-20260930/version-fix-qa-failed-validated.json": "c275ef5ed472315db754f947d03e847c47f26265cd26fa8989ba349ee9e1f457",
+    "dist/v1.37.0-local-20260930/v138-full-lint-green.log": "e349f2c5b1ea5f75e443e0d35a7527223ba2ca0307a38720544ef3fa208edc82",
+    "dist/v1.37.0-local-20260930/v138-focused-final.log": "ad3c585c0630e1373604109b224bdb435df7790573c5faded6c20a539f529001",
+    "dist/v1.37.0-local-20260930/v138-candidate-typecheck.log": "70b3cbcf270876ae04a25658cb5891e4dd727d4643848d834eec0d383ee1e139",
+    "dist/v1.37.0-local-20260930/v138-v1-contract.log": "bfdfadf2d946521be1ad9a82ae6c6b649946f26c24bf5f9604080f502ddc6785",
+    "dist/v1.37.0-local-20260930/v138-local-gates.log": "4b0a2493dc3f64a704907b7f571be0baf0d8c91203d2bdddc2fd7228b0b2fc79"
+  },
+  "localChecks": {
+    "focusedWorkflow": 12,
+    "versionCases": 2,
+    "lintExit": 0,
+    "typecheckExit": 0,
+    "frozenV1Tools": 227,
+    "catalogTools": 228,
+    "acceptancePackagingReleasePassed": 31,
+    "windowsSkipped": 2
+  },
+  "limits": [
+    "Source and supplied-log independent review; lead executed checks",
+    "Preparation did not launch agents; caller invoked native collaboration tools",
+    "No provider authentication/model/cancellation/resume claim for Codex CLI adapter",
+    "No token savings or Ubuntu/package completion claim"
+  ]
+}

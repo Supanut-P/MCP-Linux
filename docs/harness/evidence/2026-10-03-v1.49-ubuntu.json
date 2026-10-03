@@ -1,0 +1,733 @@
+{
+  "milestone": "1.49.0",
+  "status": "milestone-verification-closed",
+  "sourceCommit": "6a5b4262bdb55d01d19ac716683f09b70702752f",
+  "sourceManifestSha256": "30ada71c065f8146754cb2f96475bbce693da3c943d88165ecafb99b7facec77",
+  "sourceArchiveSha256": "ce23f5fcf981ef5835d1bd56b8dab7efe2220320a73fd75ddd6223268e550f92",
+  "sourceFiles": 765,
+  "ubuntu": "24.04 x64",
+  "runtime": "Node24.14.0",
+  "implementationSources": [
+    {
+      "path": "packages/storage/src/diagnosis-repository.ts",
+      "sha256": "8de90c735fc048bdd3d2ebd4e985c0e4ddd8856d7f7e7319c387d44a1283d8ad"
+    },
+    {
+      "path": "packages/storage/src/diagnosis-repository.test.ts",
+      "sha256": "c2a0260d02d35635be6cbd1b680df6387f86496500f3ed8edcabc886871c29f8"
+    },
+    {
+      "path": "packages/storage/src/migrations/diagnosis-migration.ts",
+      "sha256": "12a3f0a5c6dc3d4a027ebf6c96c344bddd4c030a8ae7377c6ac7365bf3a82759"
+    },
+    {
+      "path": "packages/storage/src/database.ts",
+      "sha256": "495a19c31549e03559320a940c144ff76bfa5d581c99cc20d494168e883773e3"
+    },
+    {
+      "path": "packages/storage/src/index.ts",
+      "sha256": "048cc74f326ad2f6621be0bf7802a25fd7271cec9ed0e28ebcb42c7a11972987"
+    },
+    {
+      "path": "packages/mcp-server/src/diagnosis-service.ts",
+      "sha256": "276023992b0d3377571c9d74bc8347e20f5a0d6f7d1b6f24fcec407276aa2bb9"
+    },
+    {
+      "path": "packages/mcp-server/src/diagnosis-service.test.ts",
+      "sha256": "a5ab8668f1854cf2327ab3bfc60acdce78dd0b125e67842557596eff7af64614"
+    },
+    {
+      "path": "packages/mcp-server/src/diagnosis-contract.ts",
+      "sha256": "59943aab7ac23e062ff021b8def527e9ebd3a9b2289a4a746abfdc88aec2e139"
+    },
+    {
+      "path": "packages/mcp-server/src/diagnosis-contract.test.ts",
+      "sha256": "9e9d2b31540a3c9dddbd726860510ee35bbc1340a1d205a2b7287db4567a6e9b"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-service.ts",
+      "sha256": "80a90dff142436e69f95f62a5f84baa384fece60048354fda58ca4efcb79386a"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-service.test.ts",
+      "sha256": "3e1352adc6f54a484e3170a341bd6e001e9b20820f4540e2452e1aa0c9ae3701"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/diagnosis-tools.ts",
+      "sha256": "e3a7d323c937314511c1d186c83bc6cad5b8fac51a00cbe34dc016c210a21863"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/diagnosis-tools.test.ts",
+      "sha256": "c63e7aba62591dd04bf5f5bafb807bfb9d733ac0959e29b3d55eab00d08231b2"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/tool-types.ts",
+      "sha256": "4b9b703c1a4cf640df1251c9208b7c96398ca94d88396469ba2f6f7b6c385141"
+    },
+    {
+      "path": "packages/mcp-server/src/tool-registry.ts",
+      "sha256": "dce274e1f99d9ffaeebe0db8ed3eb4e12231bc95cebe0c8353e475d07481ffc7"
+    },
+    {
+      "path": "packages/mcp-server/src/server-profile.ts",
+      "sha256": "5e05a45117781753962cb54e20ae283dce1f6802e1a53ae9be339f06a0c04d94"
+    },
+    {
+      "path": "packages/mcp-server/src/index.ts",
+      "sha256": "4425cef5b4e6d9d4446a4f0d1eab90d7a7e9ca5f50ddfff8fa8a66868ff17f59"
+    },
+    {
+      "path": "apps/cli/src/runtime/stdio-mcp-runtime.ts",
+      "sha256": "20c2b1e1964a92f2a17d73471040fbbb2f429f222ceedc1160178bfb842a973d"
+    },
+    {
+      "path": "scripts/generate-tool-catalog.mjs",
+      "sha256": "6a23fe11729b98410d27e1eb5c86ff089682e2d3abc5d3abd39c4b8eb36094b9"
+    }
+  ],
+  "localEvidence": "docs/harness/evidence/2026-10-03-v1.49-local.json",
+  "unitPassed": 922,
+  "unitSkipped": 3,
+  "integrationPassed": 5,
+  "packagingPassed": 16,
+  "releasePassed": 12,
+  "v1AcceptancePassed": 5,
+  "sourceGates": [
+    {
+      "exitCode": 0,
+      "gate": "build-package",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "catalog",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "diff-check",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "install",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "installed-stdio",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "integration",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "lint",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "packaging-tests",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "provenance",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "rebrand",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "release-gate",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "source-fingerprints",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "typecheck",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "unit",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "upgrade-preflight",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "v1-acceptance",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "v1-contract",
+      "origin": "gates.tsv"
+    },
+    {
+      "exitCode": 0,
+      "gate": "verify-package",
+      "origin": "gates.tsv"
+    }
+  ],
+  "catalogTools": 239,
+  "frozenV1Tools": 227,
+  "lifecycle": {
+    "baselineConfigSha256": "d89c549cad8e334b962510e8d56cd6945de8cdfab4b186cf703557f0f611bc0a",
+    "baselineStateSha256": "d0a5e08c4a050f5fd5376a1e53934c74d73a45a7a1ff52fa93779b1745f0eed1",
+    "configFiles": 4,
+    "owner": "adminops",
+    "packageCycleScriptSha256": "892f9423aa795d02c8503ab4a35e0ec72b10c54f98befd9cc9f68a4bbe0f9230",
+    "packageLogs": [
+      {
+        "phase": "upgrade",
+        "sha256": "ac1f37fbcd55f06b3322c33a45055b83aef30e7dd1e18766b75a4b0ba4754cf3"
+      },
+      {
+        "phase": "rollback",
+        "sha256": "d60a9c50c436219c46ee6a78496564102e09936e4f42bc2929e486a45d23ab66"
+      },
+      {
+        "phase": "uninstall",
+        "sha256": "3539da13e4690e62d2dfc2ec2baedccf502b14555c74193efb91d253d3147867"
+      },
+      {
+        "phase": "reinstall",
+        "sha256": "6f38ffc39c41424745abfa3ecb442ac23c2ecea367d449361a80cc3a4dbe8311"
+      }
+    ],
+    "phases": [
+      {
+        "checks": {
+          "config": {
+            "failed": 0,
+            "passed": 4,
+            "result": "OK",
+            "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536"
+          },
+          "state": {
+            "failed": 0,
+            "passed": 95,
+            "result": "OK",
+            "sha256": "0ee96c2b6f18c170ec81c8823f9f9bd64c681993b3e3ffa1961a29cd1259b16a"
+          }
+        },
+        "phase": "upgrade"
+      },
+      {
+        "checks": {
+          "config": {
+            "failed": 0,
+            "passed": 4,
+            "result": "OK",
+            "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536"
+          },
+          "state": {
+            "failed": 0,
+            "passed": 95,
+            "result": "OK",
+            "sha256": "0ee96c2b6f18c170ec81c8823f9f9bd64c681993b3e3ffa1961a29cd1259b16a"
+          }
+        },
+        "phase": "rollback"
+      },
+      {
+        "checks": {
+          "config": {
+            "failed": 0,
+            "passed": 4,
+            "result": "OK",
+            "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536"
+          },
+          "state": {
+            "failed": 0,
+            "passed": 95,
+            "result": "OK",
+            "sha256": "0ee96c2b6f18c170ec81c8823f9f9bd64c681993b3e3ffa1961a29cd1259b16a"
+          }
+        },
+        "phase": "uninstall"
+      },
+      {
+        "checks": {
+          "config": {
+            "failed": 0,
+            "passed": 4,
+            "result": "OK",
+            "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536"
+          },
+          "state": {
+            "failed": 0,
+            "passed": 95,
+            "result": "OK",
+            "sha256": "0ee96c2b6f18c170ec81c8823f9f9bd64c681993b3e3ffa1961a29cd1259b16a"
+          }
+        },
+        "phase": "reinstall"
+      }
+    ],
+    "sourceCommit": "6a5b4262bdb55d01d19ac716683f09b70702752f",
+    "sqliteIntegrity": "ok",
+    "stateFiles": 95,
+    "version": "1.49.0"
+  },
+  "transports": {
+    "stdio": {
+      "diagnosisChecks": 5,
+      "driftChecks": 6,
+      "driftHashedRows": 2,
+      "incidentChecks": 5,
+      "retainedSources": 6,
+      "hashedRows": 6,
+      "workflowChecks": 12,
+      "catalogChecks": 7,
+      "skillsChecks": 15,
+      "defaultTools": 233,
+      "optInTools": 239,
+      "tasksStarted": 0
+    },
+    "http": {
+      "diagnosisChecks": 5,
+      "driftChecks": 6,
+      "driftHashedRows": 2,
+      "incidentChecks": 5,
+      "retainedSources": 6,
+      "hashedRows": 6,
+      "workflowChecks": 12,
+      "catalogChecks": 7,
+      "skillsChecks": 15,
+      "defaultTools": 233,
+      "optInTools": 239,
+      "tasksStarted": 0
+    }
+  },
+  "configured": {
+    "serverVersion": "1.49.0",
+    "servicesActive": true,
+    "nativeBeforeAfterExplicitRestart": true,
+    "registeredSourceVersion": "1.11.0",
+    "nativePreReadRetries": 0
+  },
+  "security": {
+    "knownCredentialMatches": 0,
+    "observedSurfaces": 8,
+    "installedFilesMatchedDebAndTar": 9
+  },
+  "incidentBoundary": "Installed registered loopback/unavailable read fixtures and real local runtime metrics; no successful SSH journal capture or journal text canary injection. Mocked multi-host/canary regressions are separately source-bound. Hashes attest retained bytes, not provider truth; CLI ownership is not tenant authentication; watcher metadata is not deployment history.",
+  "providerBoundary": "Linux Codex absent, authentication unknown, zero provider tasks; previous Windows native evidence is separate. Native Linux model/authentication/cancellation remains final v2 gate.",
+  "benchmarkBoundary": "Exact v1.45 native benchmark replay; no new model calls, measured 25% token goal missed; synthetic returned-answer fixtures are not executable coding/incident recovery proof.",
+  "repairHistory": {
+    "sourceChanged": false,
+    "failures": [
+      {
+        "helper": "installed-drift-check.mjs",
+        "phase": "old-binary",
+        "reason": "Copied assertion expected drift absent in old1.48, although drift was introduced in1.48. Repaired to require the tool and identical immutable snapshot hash across both versions."
+      }
+    ],
+    "reviewedBeforeExecution": "Sol approved diagnosis helper after fixing unavailable journal projection assertions and strengthening observed fact/current support checks.",
+    "localPreparation": "Restored previous1.48 local receipts byte-for-byte from accepted frozen source after candidate preparation accidentally targeted previous receipt filenames. Candidate1.49 receipt finalized before source export; no previous source/package binding changed.",
+    "nativeRetries": 0,
+    "fixtureRetry": "A repeat of the previously completed drift setup was rejected because its registration already existed. Corrected helper uses fresh drift transport fixture directories with r2 suffix, preserving original failed fixtures."
+  },
+  "soak": "seven-day waiver; not passed",
+  "publication": "unapproved",
+  "artifacts": [
+    {
+      "path": "dist/v1.49.0-local-20261003/resume-installed-checks.sh",
+      "sha256": "6a9281ec0f0ca7735d995ccb35ebc06737c1455b4cb9e9c6ebdbeb2728defb25",
+      "bytes": 1037
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-installed-candidate-smoke.sh",
+      "sha256": "c80c502e2d8e07de8a793b51d9b990615bd6dc08f4a9f3f8b3eadcdf07d43bfd",
+      "bytes": 1384
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/build-package.log",
+      "sha256": "8272e8b778de96f41b8bc7fc18e4166e2c00809f9d802f6110fcba736f646cef",
+      "bytes": 2992
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/catalog.log",
+      "sha256": "8b00f01f135d5ce02053a85824a9f3ee8a1c61de24ac8cf5f6c6d58b2d99f7a4",
+      "bytes": 570
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/diff-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/gates.tsv",
+      "sha256": "c251daf432ce56d7a1da109b1285ee853d73530c954b1c60952be09bb4ed1c46",
+      "bytes": 318
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/install.log",
+      "sha256": "d9624ec64ecd9c2ffb204ad55128181ad84e23672e893a0c9720512587c240f7",
+      "bytes": 1859
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/installed-stdio-candidate.log",
+      "sha256": "a2c6f3fbfbfcec6a5a7916bc8ceea012459389325f7ed7775faf74da12fceac9",
+      "bytes": 900
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/installed-stdio-retry.log",
+      "sha256": "dd0182f5b814efb99293ffafb0913defe124373f5f75c1e5fc4980f4dbf6a34b",
+      "bytes": 900
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/integration.log",
+      "sha256": "98ac1a1e1d79457c57a784688a97c0b9b961ecfec5c8c9618957c39ef7897f5a",
+      "bytes": 1172
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/lint.log",
+      "sha256": "14bdee680796e6ec44d79f09795e37f11b10294401df0b3ba530fd18935f7c17",
+      "bytes": 91
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/packaging-tests.log",
+      "sha256": "dae0dd722f3be6e52c722d3aa3356e1a6a136772b6ae5fc915618a5945b67927",
+      "bytes": 564
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/provenance.log",
+      "sha256": "ed06bd663e0b7dd6b4dac76161e622b670166957382b9ce9a78f1aee799ca985",
+      "bytes": 114
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/rebrand.log",
+      "sha256": "acd0959bcffd65fdc29099ad14f4beee00e5ce79355290c1f876ac4225be2517",
+      "bytes": 149
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/release-gate.log",
+      "sha256": "06fe1e4bdfbf21293ac7fa6f498d39ae4ca2dfe1097ccca9f571731119e82cb6",
+      "bytes": 532
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/source-commit.txt",
+      "sha256": "e3735dc2a7681eab708d5920885cb030c64cbda08f7dc0c0c371babad5695c2a",
+      "bytes": 41
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/typecheck.log",
+      "sha256": "4b869653648e5b2aedaa8093a41f193babcc1c1aa0b174139807cb1b5bb10db5",
+      "bytes": 99
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/unit.log",
+      "sha256": "4fcbbd15b78f8b169aa5f03ec0ef1adccc5979af39d2064f1cef9d70e590fb83",
+      "bytes": 27067
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/upgrade-preflight.log",
+      "sha256": "1fcae5c39f037211c2a77e8985f264462886488f2457d0b225e1ddb341241550",
+      "bytes": 507
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/v1-acceptance.log",
+      "sha256": "d647ce1c7fa4f6e5c81866a57ce78e0d39db3f0b2396bada1c7a53e24b0a67f9",
+      "bytes": 1005
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/v1-contract.log",
+      "sha256": "7b568c6e94192f4941aede53dea27463db314c4753b0e69c8481bae046c28a90",
+      "bytes": 565
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-logs/verify-package.log",
+      "sha256": "8054c3ca98fc044c44ebc708a3f75a33c49d49d646e2ae7ae41e8d262b52d11a",
+      "bytes": 2464
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/packages/Baitonghub-Linux-mcp-1.49.0-BUILD-METADATA.json",
+      "sha256": "562b859641755c56f9fda2d45ac47332b27ab320fc41b6d4b5242d99ba8f9c26",
+      "bytes": 918
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/packages/Baitonghub-Linux-mcp-1.49.0-PROVENANCE-SHA256SUMS",
+      "sha256": "a5a9bd8323fbb06582b4850725434bb16aa1f1df2b044edfd58512b615f3c5b8",
+      "bytes": 542
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/packages/Baitonghub-Linux-mcp-1.49.0-SBOM.cdx.json",
+      "sha256": "ecfd6f036b57a233886403b8a50b4fb34a47198b8a4a8a01a3895818b3cb52e4",
+      "bytes": 27989
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/packages/Baitonghub-Linux-mcp-1.49.0-SHA256SUMS",
+      "sha256": "d6123f485e104f0bac0641f27e638df5e542abb3ac17d5fae8d027d15f09f486",
+      "bytes": 215
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/packages/Baitonghub-Linux-mcp-1.49.0-amd64.deb",
+      "sha256": "c372c881b8f082911ff8f07d1388a03005e69de89cc2bd410ee1c750db2411eb",
+      "bytes": 32896540
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/packages/Baitonghub-Linux-mcp-1.49.0-linux-x64.tar.gz",
+      "sha256": "fd4b7f435a1dd32463422d0dd396ba897a3ae1d9226c63ca2c2e533c217301bd",
+      "bytes": 45057526
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/incident-check.json",
+      "sha256": "8a8a37d7fbdc7d7798004606ca96daf476124328b08df8e798d0c950335cd191",
+      "bytes": 502
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-benchmark-report.json",
+      "sha256": "9d9359033d282f9c5698ab98287fbaf8ea2c76754c15a8cb6bf441c4f2e7ef0f",
+      "bytes": 34307
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-codex-http.json",
+      "sha256": "b15c95f8683b1bbde248c779d8ba038fb1e145e26727729fd91f378cfc6bf8a9",
+      "bytes": 564
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-codex-http.stdout.json",
+      "sha256": "ad86ec20193884397d525d207770387d50b8ffbb9615eebd2bbcd7e5667cb32b",
+      "bytes": 693
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-codex-stdio.json",
+      "sha256": "63e967c063dd4a35ed9ae39bbd061736ed2fcfb492e2ca44a367895dfffb0223",
+      "bytes": 565
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-codex-stdio.stdout.json",
+      "sha256": "bd2ac750977647684fa99f78140258d35c0f52f848529963d3d163a1cb5ec45c",
+      "bytes": 694
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-diagnosis-http.json",
+      "sha256": "597c097c2554aab57ce5317a82d86d86cecfcbdc550b622460714e5babb8ef87",
+      "bytes": 1159
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-diagnosis-stdio.json",
+      "sha256": "04cee4a7dba155564d8ea892e4fd9c72b40bb9fe0bf468b895548e29b3b324d9",
+      "bytes": 1160
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-drift-http.json",
+      "sha256": "97a0d5b0d994a7106490ba6ba549ce1889d96e53c996d55490b403ced825165b",
+      "bytes": 856
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-drift-stdio.json",
+      "sha256": "0c18d6a566fe46f292233fd79586e587cbf9085e173654da8c262a5e14c38788",
+      "bytes": 857
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-fleet-catalog-http.json",
+      "sha256": "43e730f850e4f7850efd1bfc6a7f6e7ddf2855aedacb07cce7bef64bd2abd701",
+      "bytes": 642
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-fleet-catalog-stdio.json",
+      "sha256": "908f9d595fa47cd031c4d739cb3a97decbb937d2f3fe91a8e75dd95666b49063",
+      "bytes": 643
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-incident-http.json",
+      "sha256": "5467d06f9688e1adc43f8bf8b3ba155ca121a63099c30b471d90452f3dc1cc1b",
+      "bytes": 855
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-incident-stdio.json",
+      "sha256": "387033015a0e5b30fb1d2a674d1801f674d4c9caa25744e8b14c9cff3204e6cc",
+      "bytes": 856
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-readiness.json",
+      "sha256": "1b6313a1324336d9ea230a33c8f7f0e8855dfb1da18acb390227c9000d3c47c6",
+      "bytes": 192
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-skills-configured-http.json",
+      "sha256": "072c8647fb163760c4e43bf981ddc5ef75dd71f016e1cd5eea349f2f87a810cd",
+      "bytes": 597
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-skills-http.json",
+      "sha256": "67d26857d80ebf625548855b9ec5bc06a0071c8acf508e1c7bc4202f7e869c06",
+      "bytes": 1176
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-skills-stdio.json",
+      "sha256": "aec1c2f51e32ac928313520f5ab4745d23d7466c3068fa115b824a10a7345dba",
+      "bytes": 1177
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-workflow-http.json",
+      "sha256": "74c986e71df79cd236317c61e4f2cbd92691b0bcb468d30c1d143cfb6540eef9",
+      "bytes": 1042
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/installed-workflow-stdio.json",
+      "sha256": "63a31f8d8f904d8bb2ff9e5f90a40b8a83f9cbfeef6155a58d6a9480c70a07f5",
+      "bytes": 1043
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/lifecycle-summary.json",
+      "sha256": "3376cde37a49ea37533536a72848d9ecfe9b33832c5b00f7d63d423fcb653f8a",
+      "bytes": 2778
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/runtime-check.json",
+      "sha256": "24679e0867358c074f10fae9c47e76c1d5877367021c9213a9466d69e09809ac",
+      "bytes": 2851
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/source-gates-summary.json",
+      "sha256": "95b19894eb83a5c6f12f5b25e1698678a94524c447476cd3909fcbc1c7ad55fa",
+      "bytes": 6292
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-logs/workflow-check.json",
+      "sha256": "2a737a3972a2281662a138d37777fa2a555bdc946d3bdd8fd08c41e7be33a57a",
+      "bytes": 539
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/source-manifest.json",
+      "sha256": "30ada71c065f8146754cb2f96475bbce693da3c943d88165ecafb99b7facec77",
+      "bytes": 151770
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/source-candidate.tar.gz",
+      "sha256": "ce23f5fcf981ef5835d1bd56b8dab7efe2220320a73fd75ddd6223268e550f92",
+      "bytes": 3314867
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/source-export-binding.json",
+      "sha256": "c474dbf57ca11fe01715c9b8bd46d43deddfa1995caa734cf15fe150d4bd879e",
+      "bytes": 329
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/native-before-restart.json",
+      "sha256": "e9ca9866d6df18d67f78998401241701595a8d02c379d5e3a58af83561b0a126",
+      "bytes": 2103
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/native-after-restart.json",
+      "sha256": "e9ca9866d6df18d67f78998401241701595a8d02c379d5e3a58af83561b0a126",
+      "bytes": 2103
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-incident-check.mjs",
+      "sha256": "139b535ee02b80d35d4ac55578191d75931182103182a076a5a82961ba5f2fbc",
+      "bytes": 10797
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-workflow-check.mjs",
+      "sha256": "d7a6c7606f3da6002b8d7daaa69ca1fce01d91754e39b25f5453c6b7374f3592",
+      "bytes": 23231
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-fleet-catalog-check.mjs",
+      "sha256": "038c079a70d74d214cb657a14bec80d19cf35c34a7f64f3d8f7c0225a1b480e8",
+      "bytes": 10903
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-skills-check.mjs",
+      "sha256": "0aa02ca8da48939d17d3b640999858f5a05abbedcb88653dc41ccac0adab96fb",
+      "bytes": 9130
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-codex-check.mjs",
+      "sha256": "093ae866c0d539cbef5d0c00d8c55cafb883745f08e04f970691fa43bda3f5e0",
+      "bytes": 6930
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-helper-history.json",
+      "sha256": "65e023099aa13862edeb312109d978abe5ac5efff8563a492f0d347f70e96a75",
+      "bytes": 1012
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/run-installed-checks.sh",
+      "sha256": "d07f24e851f770cf28a2b222a2a41ccea084ce8aea5cbe0b04bc5a518b20ad61",
+      "bytes": 1608
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-drift-check.mjs",
+      "sha256": "1a601cf52128bf303df92cd00670670d8d54f9ab932517560ff50c1f4a362b8f",
+      "bytes": 8824
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/installed-diagnosis-check.mjs",
+      "sha256": "951a4776c42e81b64642fbdf6d5f1a292ba4eb3ea8d9c845c583a9ad9719a042",
+      "bytes": 14836
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-source-gates.sh",
+      "sha256": "978d1e7770500d3141be6ebe047eb88a098c765ba5512b90fba1dae7b534ce50",
+      "bytes": 3305
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/ubuntu-installed-smoke.sh",
+      "sha256": "4e66856344093bba3a89a335f3595dfc5ad5dfe20f1b1b275d4f45d46ed8a0c7",
+      "bytes": 1348
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/vm39-package-cycle.sh",
+      "sha256": "892f9423aa795d02c8503ab4a35e0ec72b10c54f98befd9cc9f68a4bbe0f9230",
+      "bytes": 3820
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/vm39-workflow-check.py",
+      "sha256": "d16a3e88190643e78e54cfdd7c2af0bd90f9198648006139ab12410a338dc31e",
+      "bytes": 5593
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/vm39-runtime-check.py",
+      "sha256": "2b01b325760c520c5b7c338ce88c4bf6e5b7ceebc4a7057167cac89470ba1eed",
+      "bytes": 4671
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/collect-evidence.py",
+      "sha256": "946866631a322c02d33f9a8eaab94e6918f85506d624ca71bd2f3cdf3fc0ff26",
+      "bytes": 11952
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/lead-closure.mjs",
+      "sha256": "4a99efa6585a353bb21ff3ef64f68515248f50b69f0fc5d53ebc21c9223301a7",
+      "bytes": 11078
+    },
+    {
+      "path": "docs/harness/evidence/2026-10-03-v1.49-local.json",
+      "sha256": "d2fffb92d442dec12603b1df8b2c5b6aef7dbb53437793aa156119575f0a551a",
+      "bytes": 7317
+    }
+  ],
+  "diagnosisBoundary": "Installed checks use partial incident fixtures, caller hypotheses and nonexecuting proposals; owned reference/unknown requirements, immutable reopen, registration changes and old1.48 migration compatibility are checked. No calibrated confidence, new SSH authority, model diagnosis or code patch execution.",
+  "driftBoundary": "Installed drift fixtures validate bounded registered loopback/unavailable probes, approval rejection, exact hashed observations, replay/mismatch and reopen/old1.48 compatibility. Complete approval, changed/unchanged, stale and truncated comparisons are verified in source-bound Linux tests, not successful live SSH observations. No automatically approved or replacement baseline, raw content or new execution authority.",
+  "independentClosureReview": {
+    "role": "Sol6.1 independent QA",
+    "approved": true,
+    "sourceFilesVerified": 765,
+    "implementationHashesVerified": 19,
+    "artifactHashesVerified": 74,
+    "archiveMembersVerified": 765,
+    "boundary": "Source/package/evidence review; publication and final native provider gates remain open"
+  },
+  "postFreezeDocumentation": "Closure receipt and status docs written after candidate verification; implementation hashes remain unchanged."
+}

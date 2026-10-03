@@ -1,21 +1,23 @@
+import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, realpath, rename, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SqliteDatabase, SqliteWorkflowRepository } from '@baitonghub-linux-mcp/storage';
 import { permissionProfiles, type PermissionProfile } from '@baitonghub-linux-mcp/permissions';
 import type { Workspace, WorkspaceRepository } from '@baitonghub-linux-mcp/workspace';
 import type { WorkflowTaskContract } from '@baitonghub-linux-mcp/codex';
+import * as workflowQa from './workflow-qa.js';
 import { WorkflowStateService } from './workflow-state-service.js';
 
 const roots: string[] = [];
 const databases: SqliteDatabase[] = [];
-afterEach(async () => { for (const db of databases.splice(0)) db.close(); await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true }))); });
+afterEach(async () => { vi.restoreAllMocks(); for (const db of databases.splice(0)) db.close(); await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true }))); });
 const actor = { clientId: 'trusted-owner', clientName: 'display', sessionId: 'old-session' };
 const contract = (taskId: string, dependencies: string[] = []): WorkflowTaskContract => ({ taskId, goal: 'Scoped fixture', workspaceId: 'ws', allowedFiles: ['new.ts'], dependencies, acceptanceCriteria: ['check'], acceptanceCommands: [{ executable: 'node', args: [], expectedExitCode: 0, timeoutSeconds: 10 }], contextReferences: [], workerRole: 'coding', plannerRequired: false, securitySensitive: false, stopConditions: ['Stop before external writes'] });
 async function fixture(): Promise<{ open(): WorkflowStateService; setProfile(value: PermissionProfile): void; workspaceRoot: string }> {
   const root = await realpath(await mkdtemp(path.join(os.tmpdir(), 'durable-workflow-service-'))); roots.push(root);
-  const workspaceRoot = path.join(root, 'workspace'); await mkdir(workspaceRoot);
+  const workspaceRoot = path.join(root, 'workspace'); await mkdir(workspaceRoot); await writeFile(path.join(workspaceRoot, 'result.log'), 'passed');
   const ws: Workspace = { id: 'ws', displayName: 'fixture', rootPath: workspaceRoot, realRootPath: workspaceRoot, createdAt: new Date(0).toISOString() };
   const workspaces: WorkspaceRepository = { async get(id) { return id === ws.id ? ws : null; }, async list() { return [ws]; }, async insert() {}, async delete() {} };
   let profile: PermissionProfile = permissionProfiles.balanced;
@@ -26,6 +28,13 @@ async function fixture(): Promise<{ open(): WorkflowStateService; setProfile(val
 function value(result: unknown): Record<string, unknown> {
   expect(result).toMatchObject({ ok: true });
   return (result as { value: Record<string, unknown> }).value;
+}
+
+async function review(service: WorkflowStateService, workflowId: string, taskId: string, claimToken: unknown, expectedRevision: number, concurrentAcknowledgement?: unknown): Promise<void> {
+  const status = value(await service.execute(actor, { operation: 'status', workspaceId: 'ws', workflowId }));
+  const lease = (status.leases as Array<{taskId: string; leaseId: string}>).find((entry) => entry.taskId === taskId)!;
+  const qa = (status.qa as Array<{taskId: string; info: {sourceFingerprint: string; diffFingerprint: string}}>).find((entry) => entry.taskId === taskId)!.info;
+  value(await service.execute(actor, { operation: 'review', workspaceId: 'ws', workflowId, taskId, claimToken, expectedRevision, leaseId: lease.leaseId, sourceFingerprint: qa.sourceFingerprint, diffFingerprint: qa.diffFingerprint, ...(concurrentAcknowledgement === undefined ? {} : {concurrentAcknowledgement}), review: { reviewerId: 'independent-qa', independentReview: true, verdict: 'passed', summary: 'Reviewed fixture', verificationBounds: 'Caller-reported test fixture', commands: [{commandIndex: 0, exitCode: 0, artifact: {path: 'result.log', sha256: createHash('sha256').update('passed').digest('hex'), bytes: 6}}], criteria: [{criterionIndex: 0, passed: true}] } }));
 }
 
 describe('WorkflowStateService real SQLite', () => {
@@ -42,6 +51,54 @@ describe('WorkflowStateService real SQLite', () => {
     await rm(path.join(f.workspaceRoot, 'alias')); await symlink(path.join(f.workspaceRoot, 'B'), path.join(f.workspaceRoot, 'alias'), 'junction');
     await writeFile(path.join(f.workspaceRoot, 'B/file.ts'), 'expanded scope');
     expect(await service.execute(actor, {...complete, expectedRevision: 2, state: 'done'})).toMatchObject({ok: false});
+  });
+
+  it('rejects an identical-content root replacement during artifact verification', async () => {
+    const f = await fixture(); const service = f.open();
+    const id = (value(await service.execute(actor, {operation: 'plan', workspaceId: 'ws', contracts: [contract('one')]})).workflow as {id: string}).id;
+    const started = value(await service.execute(actor, {operation: 'start', workspaceId: 'ws', workflowId: id, taskId: 'one', expectedRevision: 0}));
+    const handed = value(await service.execute(actor, {operation: 'complete', workspaceId: 'ws', workflowId: id, taskId: 'one', claimToken: started.claimToken, expectedRevision: 1, state: 'verifying'}));
+    const leaseId = (handed.leases as Array<{leaseId: string}>)[0]!.leaseId;
+    const evidence = handed.sourceEvidence as {sourceFingerprint: string; diffFingerprint: string};
+    const source = {sourceFingerprint: evidence.sourceFingerprint, diffFingerprint: evidence.diffFingerprint};
+    const original = workflowQa.verifyWorkflowQaArtifacts;
+    vi.spyOn(workflowQa, 'verifyWorkflowQaArtifacts').mockImplementationOnce(async (...args) => {
+      const result = await original(...args);
+      await rename(f.workspaceRoot, f.workspaceRoot + '-old'); await mkdir(f.workspaceRoot);
+      await writeFile(path.join(f.workspaceRoot, 'result.log'), 'passed');
+      return result;
+    });
+    expect(await service.execute(actor, {operation: 'review', workspaceId: 'ws', workflowId: id, taskId: 'one', claimToken: started.claimToken, expectedRevision: 2, leaseId, ...source, review: {reviewerId: 'qa', independentReview: true, verdict: 'passed', summary: 'review', verificationBounds: 'fixture', commands: [{commandIndex: 0, exitCode: 0, artifact: {path: 'result.log', sha256: createHash('sha256').update('passed').digest('hex'), bytes: 6}}], criteria: [{criterionIndex: 0, passed: true}]}})).toMatchObject({ok: false});
+    expect(workflowQa.verifyWorkflowQaArtifacts).toHaveBeenCalledOnce();
+  });
+
+  it('rejects self-review and stale artifacts and releases dependencies only after accepted completion', async () => {
+    const f = await fixture(); const service = f.open();
+    const id = (value(await service.execute(actor, {operation: 'plan', workspaceId: 'ws', contracts: [contract('one'), contract('two', ['one'])]})).workflow as {id: string}).id;
+    const started = value(await service.execute(actor, {operation: 'start', workspaceId: 'ws', workflowId: id, taskId: 'one', expectedRevision: 0, workerId: 'worker-a'}));
+    const handed = value(await service.execute(actor, {operation: 'complete', workspaceId: 'ws', workflowId: id, taskId: 'one', claimToken: started.claimToken, expectedRevision: 1, state: 'verifying'}));
+    const evidence = handed.sourceEvidence as {sourceFingerprint: string; diffFingerprint: string};
+    const source = {sourceFingerprint: evidence.sourceFingerprint, diffFingerprint: evidence.diffFingerprint};
+    const request = {operation: 'review', workspaceId: 'ws', workflowId: id, taskId: 'one', claimToken: started.claimToken, expectedRevision: 2, leaseId: (handed.leases as Array<{leaseId: string}>)[0]!.leaseId, ...source, review: {reviewerId: 'worker-a', independentReview: true, verdict: 'passed', summary: 'review', verificationBounds: 'fixture', commands: [{commandIndex: 0, exitCode: 0, artifact: {path: 'result.log', sha256: createHash('sha256').update('passed').digest('hex'), bytes: 6}}], criteria: [{criterionIndex: 0, passed: true}]}};
+    expect(await service.execute(actor, request)).toMatchObject({ok: false});
+    expect(await service.execute(actor, {...request, sourceFingerprint: '0'.repeat(64), review: {...request.review, reviewerId: 'qa'}})).toMatchObject({ok: false});
+    value(await service.execute(actor, {...request, review: {...request.review, reviewerId: 'qa'}}));
+    await writeFile(path.join(f.workspaceRoot, 'result.log'), 'failed');
+    const done = {operation: 'complete', workspaceId: 'ws', workflowId: id, taskId: 'one', claimToken: started.claimToken, expectedRevision: 3, state: 'done'};
+    expect(await service.execute(actor, done)).toMatchObject({ok: false});
+    const status = value(await service.execute(actor, {operation: 'status', workspaceId: 'ws', workflowId: id}));
+    expect(status.workflow).toMatchObject({tasks: [{state: 'verifying'}, {state: 'planned'}]});
+    await writeFile(path.join(f.workspaceRoot, 'result.log'), 'passed');
+    const completed = value(await service.execute(actor, done));
+    expect(completed.workflow).toMatchObject({tasks: [{state: 'done'}, {state: 'ready'}]});
+  });
+
+  it('labels legacy completed tasks as unverified without manufacturing a receipt', async () => {
+    const f = await fixture(); const service = f.open();
+    const id = (value(await service.execute(actor, {operation: 'plan', workspaceId: 'ws', contracts: [contract('one')]})).workflow as {id: string}).id;
+    databases.at(-1)!.connection.prepare("UPDATE durable_workflow_tasks SET state='done' WHERE workflow_id=? AND task_id='one'").run(id);
+    const status = value(await service.execute(actor, {operation: 'result', workspaceId: 'ws', workflowId: id}));
+    expect(status.qa).toMatchObject([{taskId: 'one', verificationState: 'legacy_unverified', info: {attempts: [], receipts: [], acceptedReceiptHash: null}}]);
   });
 
   it('requires digest-bound acknowledgement for concurrent reserved changes, including released history', async () => {
@@ -61,9 +118,10 @@ describe('WorkflowStateService real SQLite', () => {
       const concurrentAcknowledgement = { baselineFingerprint: entry.baselineFingerprint, sourceFingerprint, userConfirmed: true };
       expect(await service.execute(actor, { ...request, concurrentAcknowledgement: { ...concurrentAcknowledgement, sourceFingerprint: '0'.repeat(64) } })).toMatchObject({ ok: false });
       value(await service.execute(actor, { ...request, concurrentAcknowledgement }));
-      const done = value(await service.execute(actor, { ...request, expectedRevision: 2, state: 'done', concurrentAcknowledgement }));
+      await review(service, entry.id, taskId, entry.claimToken, 2, concurrentAcknowledgement);
+      const done = value(await service.execute(actor, { ...request, expectedRevision: 3, state: 'done', concurrentAcknowledgement }));
       const lease = (done.leases as Array<{leaseId: string}>)[0]!;
-      value(await service.execute(actor, { operation: 'reconcile', workspaceId: 'ws', workflowId: entry.id, taskId, expectedRevision: 3, leaseId: lease.leaseId, writerStopped: true, userConfirmed: true, summary: 'Caller reviewed concurrent changes; writers stopped' }));
+      value(await service.execute(actor, { operation: 'reconcile', workspaceId: 'ws', workflowId: entry.id, taskId, expectedRevision: 4, leaseId: lease.leaseId, writerStopped: true, userConfirmed: true, summary: 'Caller reviewed concurrent changes; writers stopped' }));
     };
     await finish(first, 'first'); await finish(second, 'second');
   });
@@ -97,7 +155,9 @@ describe('WorkflowStateService real SQLite', () => {
     await writeFile(path.join(f.workspaceRoot, 'existing.ts'), 'outside change');
     expect(await service.execute(actor, { ...complete, expectedRevision: 2, state: 'done' })).toMatchObject({ ok: false });
     await writeFile(path.join(f.workspaceRoot, 'existing.ts'), 'dirty baseline');
-    value(await service.execute(actor, { ...complete, expectedRevision: 2, state: 'done' }));
+    expect(await service.execute(actor, { ...complete, expectedRevision: 2, state: 'done' })).toMatchObject({ok: false});
+    await review(service, id, 'one', started.claimToken, 2);
+    value(await service.execute(actor, { ...complete, expectedRevision: 3, state: 'done' }));
   });
 
   it('recovers an active claim after reopen/new session without redispatch or granting a new claim', async () => {
@@ -116,7 +176,8 @@ describe('WorkflowStateService real SQLite', () => {
     expect(await service.execute(actor, { operation: 'start', workspaceId: 'ws', workflowId: id, taskId: 'second', expectedRevision: 0 })).toMatchObject({ ok: false });
     expect(await service.execute(actor, { operation: 'complete', workspaceId: 'ws', workflowId: id, taskId: 'first', expectedRevision: 2, claimToken: started.claimToken, state: 'done' })).toMatchObject({ ok: false });
     expect(await service.execute(actor, { operation: 'complete', workspaceId: 'ws', workflowId: id, taskId: 'first', expectedRevision: 2, claimToken: started.claimToken, state: 'verifying' })).toMatchObject({ ok: true });
-    expect(await service.execute(actor, { operation: 'complete', workspaceId: 'ws', workflowId: id, taskId: 'first', expectedRevision: 3, claimToken: started.claimToken, state: 'done' })).toMatchObject({ ok: true });
+    await review(service, id, 'first', started.claimToken, 3);
+    expect(await service.execute(actor, { operation: 'complete', workspaceId: 'ws', workflowId: id, taskId: 'first', expectedRevision: 4, claimToken: started.claimToken, state: 'done' })).toMatchObject({ ok: true });
     const status = value(await service.execute(actor, { operation: 'result', workspaceId: 'ws', workflowId: id }));
     expect(status).toMatchObject({ evidenceVerification: 'caller_supplied_not_verified', workflow: { tasks: [{ state: 'done' }, { state: 'ready' }] } });
   });

@@ -29,11 +29,19 @@ export const optionalWorkspaceIdSchema = workspaceIdSchema.optional();
 const workflowStateBase = { workspaceId: workspaceIdSchema, workflowId: z.string().min(1).max(128) };
 const workflowClaimFields = { ...workflowStateBase, taskId: z.string().min(1).max(128), expectedRevision: z.number().int().min(0).max(1_000_000) };
 const workflowTokenFields = { ...workflowClaimFields, claimToken: z.string().regex(/^[a-f0-9]{64}$/) };
+const workflowQaSubmissionSchema = z.object({
+  reviewerId: z.string().min(1).max(128), independentReview: z.literal(true), verdict: z.enum(['passed', 'failed', 'blocked']),
+  summary: z.string().min(1).max(2048), verificationBounds: z.string().min(1).max(2048),
+  commands: z.array(z.object({ commandIndex: z.number().int().min(0).max(15), exitCode: z.number().int().min(-2147483648).max(2147483647), artifact: z.object({ path: z.string().min(1).max(4096), sha256: z.string().regex(/^[a-f0-9]{64}$/), bytes: z.number().int().min(0).max(2 * 1024 * 1024) }).strict() }).strict()).max(16),
+  criteria: z.array(z.object({ criterionIndex: z.number().int().min(0).max(31), passed: z.boolean() }).strict()).max(32),
+}).strict();
 export const workflowStateSchema = z.discriminatedUnion('operation', [
   z.object({ operation: z.literal('plan'), workspaceId: workspaceIdSchema, contracts: z.array(workflowPlanSchema).min(1).max(16) }).strict(),
-  z.object({ operation: z.literal('start'), ...workflowClaimFields, scopeMode: z.enum(['workspace', 'disjoint']).optional(), leaseSeconds: z.number().int().min(60).max(3600).optional() }).strict(),
+  z.object({ operation: z.literal('start'), ...workflowClaimFields, workerId: z.string().min(1).max(128).optional(), scopeMode: z.enum(['workspace', 'disjoint']).optional(), leaseSeconds: z.number().int().min(60).max(3600).optional() }).strict(),
   z.object({ operation: z.literal('checkpoint'), ...workflowTokenFields, leaseSeconds: z.number().int().min(60).max(3600).optional(), checkpoint: z.object({ summary: z.string().min(1).max(2048), references: z.array(z.string().min(1).max(512)).max(16), executionUncertain: z.boolean() }).strict() }).strict(),
   z.object({ operation: z.literal('complete'), ...workflowTokenFields, state: z.enum(['verifying', 'done', 'blocked', 'failed', 'cancelled']), concurrentAcknowledgement: z.object({ baselineFingerprint: z.string().regex(/^[a-f0-9]{64}$/), sourceFingerprint: z.string().regex(/^[a-f0-9]{64}$/), userConfirmed: z.literal(true) }).strict().optional() }).strict(),
+  z.object({ operation: z.literal('review'), ...workflowTokenFields, leaseId: z.string().min(1).max(128), sourceFingerprint: z.string().regex(/^[a-f0-9]{64}$/), diffFingerprint: z.string().regex(/^[a-f0-9]{64}$/), review: workflowQaSubmissionSchema, concurrentAcknowledgement: z.object({ baselineFingerprint: z.string().regex(/^[a-f0-9]{64}$/), sourceFingerprint: z.string().regex(/^[a-f0-9]{64}$/), userConfirmed: z.literal(true) }).strict().optional() }).strict(),
+  z.object({ operation: z.literal('retry'), ...workflowClaimFields, leaseId: z.string().min(1).max(128) }).strict(),
   z.object({ operation: z.literal('status'), ...workflowStateBase }).strict(),
   z.object({ operation: z.literal('result'), ...workflowStateBase }).strict(),
   z.object({ operation: z.literal('resume'), ...workflowStateBase }).strict(),

@@ -12,6 +12,7 @@ import { REMOTE_ROLLOUT_EVENTS_MIGRATION_SQL } from './migrations/remote-rollout
 import { WORKSPACE_CHECKPOINT_MIGRATION_SQL } from './migrations/workspace-checkpoint-migration.js';
 import { WORKFLOW_STATE_MIGRATION_SQL } from './migrations/workflow-state-migration.js';
 import { WORKFLOW_SCOPE_MIGRATION_SQL } from './migrations/workflow-scope-migration.js';
+import { WORKFLOW_QA_MIGRATION_SQL } from './migrations/workflow-qa-migration.js';
 
 export interface SqliteDatabaseOptions {
   readonly backupDirectory?: string;
@@ -61,6 +62,7 @@ export class SqliteDatabase {
     this.applyMigration({ id: '010_workspace_checkpoints', sql: WORKSPACE_CHECKPOINT_MIGRATION_SQL });
     this.applyMigration({ id: '011_workflow_state', sql: WORKFLOW_STATE_MIGRATION_SQL });
     this.applyMigration({ id: '012_workflow_scope', sql: WORKFLOW_SCOPE_MIGRATION_SQL });
+    this.applyMigration({ id: '013_workflow_qa', sql: WORKFLOW_QA_MIGRATION_SQL });
   }
 
   public applyMigration(migration: Migration): void {

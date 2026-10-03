@@ -54,8 +54,8 @@ semantic-version order.
 | v1.40.0 | Verified skill guidance (Ubuntu, installed transports and independent QA passed) | [notes](docs/releases/v1.40.0.md) |
 | v1.41.0 | Codex selection/results (bounded Windows native, Ubuntu/package and independent QA passed) | [notes](docs/releases/v1.41.0.md) |
 | v1.42.0 | Durable caller-native workflow (Ubuntu/package, installed recovery and independent QA passed) | [notes](docs/releases/v1.42.0.md) |
-| v1.43.0 | Coordinated file scopes and fenced leases (local QA passed; Ubuntu/package open) | [notes](docs/releases/v1.43.0.md) |
-| v1.43.0 | Coordinated file scopes and fenced leases (local QA passed; Ubuntu/package open) | [notes](docs/releases/v1.43.0.md) |
+| v1.43.0 | Coordinated file scopes and fenced leases (Ubuntu/package, installed recovery and independent QA passed) | [notes](docs/releases/v1.43.0.md) |
+| v1.44.0 | Source-bound QA receipts and bounded retry (implementation QA passed; Ubuntu/package open) | [notes](docs/releases/v1.44.0.md) |
 
 The old Windows desktop tags are intentionally not part of this sequence.
 They are not Linux releases and are not published from the Linux-only branch.

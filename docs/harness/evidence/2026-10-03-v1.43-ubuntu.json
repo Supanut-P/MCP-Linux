@@ -1,0 +1,257 @@
+{
+  "milestone": "1.43.0",
+  "status": "milestone-verification-closed",
+  "sourceCommit": "9a3aab7842cff5f9b4f96ad9c3945542a6757a89",
+  "sourceManifestSha256": "5e583c1c956b3e0577720cf6ec8c14643926a59ab317f54e157bb88fc2f6d1ab",
+  "sourceArchiveSha256": "e0c86b0a9ecd5e2cd17f4fd801381ea423686306093b693c821b29e6fa89b919",
+  "sourceFiles": 675,
+  "ubuntu": "24.04 x64",
+  "runtime": "Node24.14.0",
+  "unitPassed": 812,
+  "unitSkipped": 3,
+  "integrationPassed": 3,
+  "packagingPassed": 16,
+  "releasePassed": 12,
+  "v1AcceptancePassed": 5,
+  "catalogTools": 235,
+  "frozenV1Tools": 227,
+  "packagedLinuxTools": 229,
+  "packagedOptInTools": 235,
+  "sourceEvidence": "docs/harness/evidence/2026-10-03-v1.43-ubuntu-source-r4.json",
+  "packageEvidence": "docs/harness/evidence/2026-10-03-v1.43-package-progress-r4.json",
+  "lifecycle": {
+    "phases": [
+      "upgrade",
+      "rollback",
+      "uninstall",
+      "reinstall"
+    ],
+    "stateFileHashesPassedPerStoppedPhase": 85,
+    "configHashesPassedPerStoppedPhase": 4,
+    "sqliteIntegrity": "ok",
+    "owner": "adminops",
+    "afterStartup": "New migration and checkpoint backup may change DB/state; stopped-phase equality does not claim unchanged runtime DB after migration",
+    "sanitizedExecutionReceipt": "dist/v1.43.0-local-20261003-r4/installed-logs/lifecycle-summary.json"
+  },
+  "installedWorkflow": {
+    "stdioChecks": 11,
+    "httpChecks": 11,
+    "claimCheckpointRestart": true,
+    "legacyBinary": "1.42 reads migrated state; guarded writes rejected",
+    "overlapAdmissionRejected": true,
+    "disjointDigestAndReleasedHistory": true
+  },
+  "skills": {
+    "stdio": true,
+    "http": true,
+    "configuredHttp": true
+  },
+  "adapter": {
+    "stdio": true,
+    "http": true,
+    "nativeLinuxProviderUnavailable": true,
+    "authenticationUnknown": true,
+    "boundary": "Negative installed probes; actual Windows native evidence remains v1.41"
+  },
+  "configured": {
+    "serverVersion": "1.43.0",
+    "diagnostics": true,
+    "planning": true,
+    "authorityRejections": true,
+    "servicesAfterRestart": "active",
+    "nativeConnectorBeforeAfterRestart": true,
+    "registeredSourceVersion": "1.11.0"
+  },
+  "security": {
+    "knownCredentialCanaries": "all reported0matches",
+    "installedFileHashesComparedToDeb": 8,
+    "rawStateAndSecretsExported": false
+  },
+  "retainedFailures": [
+    "r1 durable startup race",
+    "r2 PID-prefix validation",
+    "r3 package-relative race fixture paths",
+    "r4 package verification ENOSPC before RAM rerun",
+    "temporary runnerCRLF after successful checks; posthash rechecked0"
+  ],
+  "cleanup": {
+    "historical3Extracts": "explicitly approved, verified and removed",
+    "generated2StagingTrees": "user approved necessary deletion, verified and removed",
+    "retainedPackagesAndRollback": true
+  },
+  "soak": "seven-day waiver; not tested",
+  "publication": "not approved",
+  "boundaries": [
+    "coordination metadata does not provide OS sandbox",
+    "writer termination/physical authorship remains caller-attested",
+    "QA receipt verification deferred v1.44",
+    "Linux native Codex authentication finalv2gate open"
+  ],
+  "artifacts": [
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/local-logs/catalog.log",
+      "sha256": "bd58ab3716596406e5927359657ce1abab978353e01f6ea6f5361642449b9ff4"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/local-logs/contract.log",
+      "sha256": "b14012956b388d447d0e42e346eb9e7328525da887322702942d86405e3a63e5"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/local-logs/focused.log",
+      "sha256": "5adb944358f600f950f24cebb10bbfcafd3f02e8ee54c3857d202221b7804f88"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/local-logs/gates.json",
+      "sha256": "aa4d971683eaf59da979950f6d25288d261644d91b3ab395e38ceeeedddc8ff0"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/local-logs/lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/local-logs/other.log",
+      "sha256": "dc3db27496947907d580e04bafe0df7538642816a471fccb8f666a3b55796971"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/local-logs/typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/local-logs/unit.log",
+      "sha256": "6c47b3a7dad04ee7021b1a2cfbd1c3a4e9a6eef87b5b8ff988fa90b2c310febc"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/ubuntu-logs/durable-probe.log",
+      "sha256": "333e305710cf999546e0ccb44b5fc7b1a85885948fad4b8360575850959e77e9"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/ubuntu-logs/gates.tsv",
+      "sha256": "60060541d7f5921d6f1d5862ae1084c85ab3bc1cf338061b482bc732c7a51d2b"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/ubuntu-logs/source-commit.txt",
+      "sha256": "0d85c8ebe77eaea0189e876a76e78cf2fd146c11602475f57cd1e33319d35a75"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-logs/candidate-workflow-http.log",
+      "sha256": "18e49c31a898153229b5d3b9df39c4af9862dc56e840849387149f0d4b0eb98d"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-logs/candidate-workflow-stdio.log",
+      "sha256": "d221a232f9efcbd28c5a5d07a2f8996d388799845e3d39199651402663e43bf8"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-logs/gates.tsv",
+      "sha256": "fc1efb01ddb608d8373ea8d2583cd06d0b7aee66cb1a5eef1cf7f6ce3eb359ea"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-logs/provenance.log",
+      "sha256": "61633d537c0c069788d92f0bc460e3d69f7ba31749b1af322d849313acdeb337"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-logs/upgrade-preflight.log",
+      "sha256": "a96348e237f5a8aaa1b715e2f1a3b7c6c7eee3757672244b78414a354666d6f8"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-logs/verify-package-ram.log",
+      "sha256": "f14598291a4339046192d95fd2262699a85af345404dd32f86484e3a0b02cfd7"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-artifacts/Baitonghub-Linux-mcp-1.43.0-BUILD-METADATA.json",
+      "sha256": "375817a356ba60623de332231298db9b5d8c5f1b78adbfec2afe6110fa7983e7"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-artifacts/Baitonghub-Linux-mcp-1.43.0-PROVENANCE-SHA256SUMS",
+      "sha256": "28d3e2a33038412174e1e62f1794fa11d3a56e9d192cef945a4e0689efec4caa"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-artifacts/Baitonghub-Linux-mcp-1.43.0-SBOM.cdx.json",
+      "sha256": "43e8b47d5eb99c6ae5d34a1af8c26753bbdd9423cbea6000bae1de7db34a3d61"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-artifacts/Baitonghub-Linux-mcp-1.43.0-SHA256SUMS",
+      "sha256": "2523f72e96b37593177e52621fffde3ad92c89670baad42b53d2307e357e25a8"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-artifacts/Baitonghub-Linux-mcp-1.43.0-amd64.deb",
+      "sha256": "2df0562213219d07f3fee122c2a7b8449d69c83a1f317ffb7422d8e879e3a9c5"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-artifacts/Baitonghub-Linux-mcp-1.43.0-linux-x64.tar.gz",
+      "sha256": "ef594ed634b8b211252c2ee283f8c47f4a47b8306db4572f1b05f48fd6bac774"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/installed-logs/incident-check.json",
+      "sha256": "189602512cf4cbbbc6166a5ee9d136da3ebfd2fa225728f9b42f20d0fd0b3e74"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/installed-logs/installed-codex-http-stdout.log",
+      "sha256": "64a0e15f99abac84bcae9e44a6eb3c86cbad0cf442b8d67963108a021fef4458"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/installed-logs/installed-codex-stdio-stdout.log",
+      "sha256": "820c47e1701a9ee3b24976ac59f849b6db3a9b3929374759854fef8647c45aca"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/installed-logs/installed-skills-configured-http.log",
+      "sha256": "bef5dd54e893b4ee58e179750774c12b46f6561faac2e946427fb70c0baaa3b7"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/installed-logs/installed-skills-http.log",
+      "sha256": "46224de4b3df78dfc083dfb6df3e2a99cb32df971aded27e3416349c9d5a18d1"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/installed-logs/installed-skills-stdio.log",
+      "sha256": "9c4a4a605dc9c647b38675123ac3ffb9e685622a85513e40151a904f04a1bb42"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/installed-logs/installed-stdio-retry.log",
+      "sha256": "eb09ca0021f896a561ba00765fb0a2dfc1330986ffd7a276e0589a27831a21fd"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/installed-logs/installed-workflow-http.log",
+      "sha256": "7c4ef6103b3ee1cdbeeafc66f6fc11bc36fdc6aad0695007e974b60514c99956"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/installed-logs/installed-workflow-stdio.log",
+      "sha256": "d221a232f9efcbd28c5a5d07a2f8996d388799845e3d39199651402663e43bf8"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/installed-logs/runtime-check.json",
+      "sha256": "ec1db4154d5e47f7ab41519695c0f5bf34d0b310e78fe26da186fd6fcaba546b"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/installed-logs/workflow-check.json",
+      "sha256": "a9f1a3e011932deda4b59e2723c61a9fe13d487efadf8e748b3731ede31ed5bd"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/native-connector-check.json",
+      "sha256": "5048f21119ac43a9944f277c8586f4599125585a1e9cb88d465a81c91f4a2dfa"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/installed-workflow-check.mjs",
+      "sha256": "d4c73d1e57a57060ec8644e6cd86d65e668d16ec6b8bbeae36b12796e617fa15"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/vm39-package-cycle.sh",
+      "sha256": "069eae82e0c0b62badd29540c079c80ee062baeb28ee43808f5e11ca8271d305"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/vm39-runtime-check.py",
+      "sha256": "d4a528fa791e14be8dc8cfacef7e3ddaeb3bd7792d749af77705c5368b364a6a"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/installed-logs/lifecycle-summary.json",
+      "sha256": "e0455b1abc7c12f6416588d38e2b64720472e762e8ea810463e857d597508853"
+    }
+  ],
+  "independentClosure": {
+    "reviewer": "v143_scope_review: gpt-6.1-sol high",
+    "result": "approved; no material missing closure proof",
+    "verifiedFrozenSourceFiles": 675,
+    "verifiedImplementationHashes": 17,
+    "verifiedReceiptArtifacts": 39,
+    "boundary": "Lead executed VM/native calls; reviewer independently audited retained packages, receipts and hashes. Remote raw logs assessed through sanitized aggregates and hashes.",
+    "postVerificationEdits": "closure documentation only; frozen snapshot preserved"
+  }
+}

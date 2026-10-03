@@ -4,11 +4,16 @@ import { prepareWorkflowContract } from '@baitonghub-linux-mcp/codex';
 import { DefaultPermissionEngine, permissionProfiles, type PermissionProfile } from '@baitonghub-linux-mcp/permissions';
 import { WorkspacePathGuard, type WorkspaceRepository } from '@baitonghub-linux-mcp/workspace';
 import type { FileActor } from './file-service.js';
+import { parseWorkflowQaSubmission, verifyWorkflowQaArtifacts } from './workflow-qa.js';
 import { captureWorkflowScope, compareWorkflowSnapshots, type WorkflowSourceSnapshot } from './workflow-scope.js';
 
-export type WorkflowOperation = 'plan' | 'start' | 'status' | 'events' | 'result' | 'resume' | 'checkpoint' | 'complete' | 'cancel' | 'reconcile';
+export type WorkflowOperation = 'plan' | 'start' | 'status' | 'events' | 'result' | 'resume' | 'checkpoint' | 'complete' | 'cancel' | 'reconcile' | 'review' | 'retry';
 interface Request {
   readonly operation: WorkflowOperation;
+  readonly workerId?: string;
+  readonly review?: unknown;
+  readonly sourceFingerprint?: string;
+  readonly diffFingerprint?: string;
   readonly workspaceId: string;
   readonly workflowId?: string;
   readonly contracts?: readonly unknown[];
@@ -49,7 +54,7 @@ export class WorkflowStateService {
       if (workspace === null) return err(appError('WORKSPACE_NOT_FOUND', 'Registered workspace was not found'));
       const read = this.authorize(request, 'READ');
       if (!read.ok) return read;
-      const mutating = ['plan', 'start', 'checkpoint', 'complete', 'cancel', 'reconcile'].includes(request.operation);
+      const mutating = ['plan', 'start', 'checkpoint', 'complete', 'cancel', 'reconcile', 'review', 'retry'].includes(request.operation);
       if (mutating) {
         const write = this.authorize(request, 'WRITE');
         if (!write.ok) return write;
@@ -92,7 +97,7 @@ export class WorkflowStateService {
       let sourceEvidence: unknown;
       let now = new Date().toISOString();
       const expiresAt = new Date(Date.parse(now) + (request.leaseSeconds ?? 300) * 1000).toISOString();
-      if (['start', 'checkpoint', 'complete', 'reconcile'].includes(request.operation)) {
+      if (['start', 'checkpoint', 'complete', 'reconcile', 'review'].includes(request.operation)) {
         const allowedFiles = contracts.get(request.taskId ?? '');
         if (allowedFiles === undefined) return conflict();
         const lease = request.operation === 'start' ? null : this.repository.getLease(ownerKey, workflow.id, request.taskId ?? '');
@@ -123,8 +128,40 @@ export class WorkflowStateService {
             concurrentChangesAcknowledged = true;
           }
           if (!delta.ok) return err({ ...appError('INVALID_INPUT', 'Source delta is outside scope or requires a digest-bound concurrent-change acknowledgement'), details: { baselineFingerprint: baseline.fingerprint, sourceFingerprint: captured.value.snapshot.fingerprint } });
-          verification = { sourceFingerprint: delta.value.sourceFingerprint, expiresAt };
+          verification = { sourceFingerprint: delta.value.sourceFingerprint, diffFingerprint: delta.value.diffFingerprint, expiresAt };
           sourceEvidence = concurrentChangesAcknowledged ? { sourceFingerprint: delta.value.sourceFingerprint, diffFingerprint: delta.value.diffFingerprint, concurrentChangesAcknowledged: true, physicalAuthorship: 'unverified' } : delta.value;
+        }
+      }
+      const qaArtifactPaths: string[] = [];
+      let reviewInput: import('@baitonghub-linux-mcp/domain').WorkflowQAReceiptInput | undefined;
+      if (request.operation === 'review' || (request.operation === 'complete' && request.state === 'done')) {
+        const task = workflow.tasks.find((item) => item.taskId === request.taskId);
+        const lease = this.repository.getLease(ownerKey, workflow.id, request.taskId ?? '');
+        const info = this.repository.qaInfo(ownerKey, workflow.id, request.taskId ?? '');
+        if (task === undefined || lease === null || info === null || verification === undefined) return conflict();
+        const prepared = prepareWorkflowContract(JSON.parse(task.contractJson) as unknown);
+        if (!prepared.ok) return invalid();
+        const submission = request.operation === 'review' ? parseWorkflowQaSubmission(request.review, prepared.value.contract) : info.receipts.find((receipt) => receipt.canonicalHash === info.acceptedReceiptHash);
+        if (submission == null) return invalid();
+        if (request.operation === 'complete') {
+          const receipt = submission as import('@baitonghub-linux-mcp/domain').WorkflowQAReceipt;
+          if (receipt.contractSha256 !== createHash('sha256').update(task.contractJson).digest('hex') || receipt.baselineFingerprint !== (JSON.parse(lease.reservation.baselineJson) as WorkflowSourceSnapshot).fingerprint || receipt.leaseId !== lease.id || receipt.sourceFingerprint !== verification.sourceFingerprint || receipt.diffFingerprint !== verification.diffFingerprint) return conflict();
+        }
+        for (const command of submission.commands) {
+          const permission = this.authorize(request, 'READ', command.artifact.path);
+          if (!permission.ok) return permission;
+          qaArtifactPaths.push(command.artifact.path);
+        }
+        if (!await verifyWorkflowQaArtifacts(workspace, submission, signal)) return invalid();
+        const fresh = await captureWorkflowScope(workspace, contracts.get(task.taskId) ?? [], lease.reservation.mode, signal);
+        if (!fresh.ok || fresh.value.snapshot.fingerprint !== verification.sourceFingerprint || fresh.value.workspaceFingerprint !== lease.reservation.workspaceFingerprint || JSON.stringify(fresh.value.scopes.map((scope) => scope.path)) !== JSON.stringify(lease.reservation.scopes.map((scope) => scope.path)) || JSON.stringify(fresh.value.canonicalAllowedFiles) !== JSON.stringify((JSON.parse(lease.reservation.baselineJson) as {canonicalAllowedFiles?: readonly string[]}).canonicalAllowedFiles)) return conflict();
+        if (request.operation === 'review') {
+          const attempt = info.attempts.at(-1);
+          if (attempt === undefined || request.sourceFingerprint !== verification.sourceFingerprint || request.diffFingerprint !== verification.diffFingerprint || info.sourceFingerprint !== verification.sourceFingerprint || info.diffFingerprint !== verification.diffFingerprint || info.verificationRevision === null) return conflict();
+          reviewInput = { ...submission, workerId: attempt.workerId, contractSha256: createHash('sha256').update(task.contractJson).digest('hex'), baselineFingerprint: (JSON.parse(lease.reservation.baselineJson) as WorkflowSourceSnapshot).fingerprint, sourceFingerprint: verification.sourceFingerprint, diffFingerprint: verification.diffFingerprint, verificationRevision: info.verificationRevision };
+        } else {
+          if (info.acceptedReceiptHash === null) return conflict();
+          verification = { ...verification, acceptedReceiptHash: info.acceptedReceiptHash };
         }
       }
       // Lease lifetime begins at admission, after bounded filesystem capture.
@@ -139,11 +176,15 @@ export class WorkflowStateService {
         const currentWrite = this.authorize(request, 'WRITE');
         if (!currentWrite.ok) return currentWrite;
       }
+      for (const artifactPath of qaArtifactPaths) {
+        const permission = this.authorize(request, 'READ', artifactPath);
+        if (!permission.ok) return permission;
+      }
       if (signal?.aborted) return cancelled();
       if (request.operation === 'plan') this.repository.create(workflow);
       if (request.operation === 'start') {
         const token = randomBytes(32).toString('hex');
-        if (!this.repository.claim(ownerKey, workflow.id, request.taskId ?? '', request.expectedRevision ?? -1, token, now, reservation)) return conflict();
+        if (!this.repository.claim(ownerKey, workflow.id, request.taskId ?? '', request.expectedRevision ?? -1, token, now, reservation, request.workerId)) return conflict();
         return ok({ operation: 'start', workflowId: workflow.id, taskId: request.taskId, claimToken: token, revision: (request.expectedRevision ?? 0) + 1, baselineFingerprint: reservation === undefined ? null : (JSON.parse(reservation.baselineJson) as WorkflowSourceSnapshot).fingerprint, executionStarted: false, dispatch: 'caller_native' });
       }
       if (request.operation === 'checkpoint' || request.operation === 'complete') {
@@ -152,6 +193,8 @@ export class WorkflowStateService {
         const state = request.operation === 'checkpoint' ? task.state : request.state;
         if (state === undefined || !this.repository.update(ownerKey, workflow.id, task.taskId, request.expectedRevision ?? -1, request.claimToken ?? '', state, request.checkpoint ?? task.checkpoint, now, verification)) return conflict();
       }
+      if (request.operation === 'review' && (reviewInput === undefined || this.repository.review(ownerKey, workflow.id, request.taskId ?? '', request.expectedRevision ?? -1, request.claimToken ?? '', request.leaseId ?? '', reviewInput, now) === null)) return conflict();
+      if (request.operation === 'retry' && !this.repository.retry(ownerKey, workflow.id, request.taskId ?? '', request.leaseId ?? '', request.expectedRevision ?? -1, now)) return conflict();
       if (request.operation === 'reconcile' && !this.repository.reconcile(ownerKey, workflow.id, request.taskId ?? '', request.leaseId ?? '', request.expectedRevision ?? -1, now)) return conflict();
       if (request.operation === 'cancel' && !this.repository.cancel(ownerKey, workflow.id, now)) return conflict();
       if (request.operation === 'events') {
@@ -167,14 +210,14 @@ export class WorkflowStateService {
         const lease = this.repository.getLease(ownerKey, workflow.id, task.taskId);
         return lease === null ? [] : [{ taskId: task.taskId, leaseId: lease.id, state: lease.state === 'active' && Date.parse(lease.expiresAt) <= Date.now() ? 'quarantined' : lease.state, expiresAt: lease.expiresAt, lastSourceFingerprint: lease.lastSourceFingerprint }];
       });
-      return ok({ operation: request.operation, workflow: view, leases, sourceEvidence, scopeVerification: 'bounded_nonignored_source', terminationVerification: 'caller_attested_only', executionStarted: false, executionControl: 'metadata_only', dispatch: 'caller_native', evidenceVerification: 'caller_supplied_not_verified', interruptedExecution: current.tasks.some((task) => task.state === 'running' || task.state === 'verifying'), executionUncertain: current.tasks.some((task) => task.checkpoint?.executionUncertain === true || task.state === 'running' || task.state === 'verifying'), resumeDispatches: false });
+      return ok({ operation: request.operation, workflow: view, leases, sourceEvidence, qa: current.tasks.map((task) => { const info = this.repository.qaInfo(ownerKey, workflow.id, task.taskId); return { taskId: task.taskId, info, verificationState: info === null ? 'unavailable' : task.state === 'done' && info.attempts.length === 0 ? 'legacy_unverified' : info.acceptedReceiptHash === null ? 'pending' : task.state === 'done' ? 'completed_evidence_retained' : 'evidence_bound_caller_reported' }; }), reviewerIdentityVerification: 'caller_attested_only', commandExecutionVerification: 'caller_reported_only', artifactVerification: 'bounded_registered_root_hash', scopeVerification: 'bounded_nonignored_source', terminationVerification: 'caller_attested_only', executionStarted: false, executionControl: 'metadata_only', dispatch: 'caller_native', evidenceVerification: 'caller_supplied_not_verified', interruptedExecution: current.tasks.some((task) => task.state === 'running' || task.state === 'verifying'), executionUncertain: current.tasks.some((task) => task.checkpoint?.executionUncertain === true || task.state === 'running' || task.state === 'verifying'), resumeDispatches: false });
     } catch {
       return err(appError('INVALID_INPUT', 'Workflow state operation failed validation, quota or storage checks'));
     }
   }
 
-  private authorize(request: Request, level: 'READ' | 'WRITE'): Result<void> {
-    const decision = this.permissions.decide(this.profileProvider(), { action: `workflow_${request.operation}`, level, workspaceId: request.workspaceId, target: '.', destructive: false });
+  private authorize(request: Request, level: 'READ' | 'WRITE', target = '.'): Result<void> {
+    const decision = this.permissions.decide(this.profileProvider(), { action: `workflow_${request.operation}`, level, workspaceId: request.workspaceId, target, destructive: false });
     return decision === 'ALLOW' ? ok(undefined) : err(appError(decision === 'ASK' ? 'PERMISSION_REQUIRED' : 'PERMISSION_DENIED', 'Workflow state access requires current policy permission'));
   }
 }
@@ -185,10 +228,12 @@ function parse(input: unknown): Request | null {
   if (!text(value.workspaceId, 128) || typeof value.operation !== 'string') return null;
   const operation = value.operation;
   const keys: Record<string, readonly string[]> = {
-    plan: ['contracts'], start: ['workflowId', 'taskId', 'expectedRevision', 'scopeMode', 'leaseSeconds'],
+    plan: ['contracts'], start: ['workflowId', 'taskId', 'expectedRevision', 'scopeMode', 'leaseSeconds', 'workerId'],
     checkpoint: ['workflowId', 'taskId', 'expectedRevision', 'claimToken', 'checkpoint', 'leaseSeconds'],
     complete: ['workflowId', 'taskId', 'expectedRevision', 'claimToken', 'state', 'concurrentAcknowledgement'],
     status: ['workflowId'], result: ['workflowId'], resume: ['workflowId'], cancel: ['workflowId'], events: ['workflowId', 'after', 'limit'],
+    review: ['workflowId', 'taskId', 'expectedRevision', 'claimToken', 'leaseId', 'review', 'sourceFingerprint', 'diffFingerprint', 'concurrentAcknowledgement'],
+    retry: ['workflowId', 'taskId', 'expectedRevision', 'leaseId'],
     reconcile: ['workflowId', 'taskId', 'expectedRevision', 'leaseId', 'writerStopped', 'userConfirmed', 'summary'],
   };
   const allowed = keys[operation];
@@ -196,11 +241,14 @@ function parse(input: unknown): Request | null {
   if (operation === 'plan') {
     if (!Array.isArray(value.contracts) || value.contracts.length < 1 || value.contracts.length > 16) return null;
   } else if (!text(value.workflowId, 128)) return null;
-  if (['start', 'checkpoint', 'complete', 'reconcile'].includes(operation) && (!text(value.taskId, 128) || !integer(value.expectedRevision, 0, 1_000_000))) return null;
+  if (['start', 'checkpoint', 'complete', 'reconcile', 'review', 'retry'].includes(operation) && (!text(value.taskId, 128) || !integer(value.expectedRevision, 0, 1_000_000))) return null;
+  if (value.workerId !== undefined && !text(value.workerId, 128)) return null;
+  if (['review', 'retry'].includes(operation) && !text(value.leaseId, 128)) return null;
+  if (operation === 'review' && ![value.sourceFingerprint, value.diffFingerprint].every((digest) => typeof digest === 'string' && /^[a-f0-9]{64}$/.test(digest))) return null;
   if (value.scopeMode !== undefined && !['workspace', 'disjoint'].includes(String(value.scopeMode))) return null;
   if (value.leaseSeconds !== undefined && !integer(value.leaseSeconds, 60, 3600)) return null;
   if (operation === 'reconcile' && (!text(value.leaseId, 128) || value.writerStopped !== true || value.userConfirmed !== true || !text(value.summary, 2048))) return null;
-  if (['checkpoint', 'complete'].includes(operation) && (typeof value.claimToken !== 'string' || !/^[a-f0-9]{64}$/.test(value.claimToken))) return null;
+  if (['checkpoint', 'complete', 'review'].includes(operation) && (typeof value.claimToken !== 'string' || !/^[a-f0-9]{64}$/.test(value.claimToken))) return null;
   if (operation === 'complete' && !['verifying', 'done', 'blocked', 'failed', 'cancelled'].includes(String(value.state))) return null;
   if (value.concurrentAcknowledgement !== undefined) {
     const acknowledgement = value.concurrentAcknowledgement;

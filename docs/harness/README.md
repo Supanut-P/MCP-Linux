@@ -57,13 +57,22 @@ gate. v1.42 durable state verification is closed under its
 [caller guide](DURABLE_WORKFLOW.md) and
 [Ubuntu/recovery receipt](evidence/2026-10-03-v1.42-ubuntu.md). Independent closure
 QA verified 660 source hashes and 62 artifacts. The configured VM now runs
-accepted 1.42.0. v1.43 file-scope coordination is active under its
-[contract](contracts/v1.43-file-scope.md) and [usage guide](COORDINATED_SCOPE.md).
-Local implementation QA and full local checks passed; Ubuntu/package acceptance
-remains open. Publication is unapproved.
-The [r3 checkpoint](evidence/2026-10-03-v1.43-local-r3.md) records two
-durable-shell defects exposed by the retained failed Ubuntu snapshots and their
-reviewed regressions. Fresh r3 Ubuntu evidence is required before closure.
+accepted 1.42.0. v1.43 file-scope coordination verification is closed under its
+[contract](contracts/v1.43-file-scope.md), [usage guide](COORDINATED_SCOPE.md), and
+[Ubuntu closure receipt](evidence/2026-10-03-v1.43-ubuntu.md). Independent QA
+verified 675 frozen source files, 17 implementation hashes and 39 retained
+artifacts. Full Ubuntu gates, installed STDIO/HTTP workflows, upgrade/rollback/
+reinstall, and native connector calls before/after restart passed. The configured
+VM runs accepted 1.43.0. Historical r1-r4 failures and repairs remain linked in
+that receipt; the seven-day soak is waived, and Linux native provider
+authentication remains a final v2 gate. Publication remains unapproved.
+v1.44 source-bound QA receipts and bounded failure routing are active under the
+[contract](contracts/v1.44-qa-receipts.md) and [caller guide](QA_RECEIPTS.md).
+Independent implementation QA passed 30 focused tests. Source candidate is
+1.44.0; [full local gates](evidence/2026-10-03-v1.44-local.md) passed.
+Ubuntu/package and installed acceptance remain open before v1.45. The approved [root capacity expansion](evidence/2026-10-03-vm39-root-capacity.md)
+uses existing unallocated disk space and leaves approximately 17.2 GiB available
+for test work. Home LV size is unchanged.
 
 The [2026-10-01 tunnel follow-up](evidence/2026-10-01-existing-tunnel.md)
 verified the previously configured host through the native connector: MCP and

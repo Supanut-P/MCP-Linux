@@ -1,7 +1,8 @@
 # Incident workspace
 
-The v1.47 candidate adds `incident` to the fleet and full profiles. Verification
-is in progress; implementation alone does not close the milestone.
+v1.47 adds `incident` to fleet/full profiles. Verification is closed under the
+[Ubuntu receipt](evidence/2026-10-03-v1.47-ubuntu.md), with explicit fixture and
+native-provider boundaries. Publication is unapproved.
 
 ```json
 {"operation":"collect","incidentId":"outage-20261003-01","workspaceId":"registered-workspace","hostIds":["registered-host"],"unit":"app.service"}

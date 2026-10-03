@@ -1,10 +1,13 @@
 # MCP-Linux harness state
 
-v1.47 incident workspace implementation is in progress under its
-[contract](contracts/v1.47-incident-workspace.md) and
-[caller guide](INCIDENT_WORKSPACE.md). The configured VM remains accepted 1.46.0
-until v1.47 full Ubuntu/package and installed acceptance close. v1.48 remains
-planned. No publication is approved.
+v1.47 incident workspace verification is closed under its
+[contract](contracts/v1.47-incident-workspace.md), [caller guide](INCIDENT_WORKSPACE.md)
+and [Ubuntu receipt](evidence/2026-10-03-v1.47-ubuntu.md). Independent QA verified
+733 source files, 20 implementation hashes and 67 artifacts. The configured VM
+runs accepted 1.47.0. v1.48 approved baseline drift is an implementation candidate
+under its [contract](contracts/v1.48-approved-drift.md) and
+[caller guide](APPROVED_DRIFT.md); local and Ubuntu/package closure remain open.
+No publication is approved.
 
 The authoritative [v2 roadmap](../superpowers/plans/2026-09-30-mcp-linux-v2-roadmap.md)
 defines the accepted product and model-routing policy. Root `AGENTS.md` routes

@@ -18,6 +18,7 @@ const registry = new ToolRegistry({
   workflowState: { execute: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Catalog schema provider only', recoverable: false } }) },
   fleetCatalog: { execute: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Catalog schema provider only', recoverable: false } }) },
   incident: { execute: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Incident schema provider only', recoverable: false } }) },
+  drift: { execute: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Drift schema provider only', recoverable: false } }) },
   contextFile: { readContextFile: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Catalog schema provider only', recoverable: false } }) },
   targetCatalog: {
     list: async () => ({ ok: true, value: [] }),

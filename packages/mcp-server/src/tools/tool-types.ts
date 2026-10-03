@@ -60,6 +60,7 @@ export interface McpRuntimeTiming {
 }
 
 export interface McpApplicationServices {
+  readonly drift?: Pick<import('../drift-service.js').DriftService, 'execute'>;
   readonly incident?: Pick<import('../incident-service.js').IncidentService, 'execute'>;
   readonly fleetCatalog?: Pick<import('@baitonghub-linux-mcp/application').FleetCatalogService, 'execute'>;
   /** Stateless caller-native task preparation; never launches workers or commands. */

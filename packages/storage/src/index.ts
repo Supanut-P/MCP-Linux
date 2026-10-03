@@ -10,6 +10,7 @@ export * from './workspace-checkpoint-repository.js';
 export * from './workflow-repository.js';
 export * from './fleet-catalog-repository.js';
 export * from './incident-repository.js';
+export * from './drift-repository.js';
 
 export * from './checkpoint-cipher.js';
 export * from './backup-service.js';

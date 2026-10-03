@@ -50,3 +50,4 @@ export * from './tools/workspace-checkpoint-tools.js';
 export * from './tools/policy-explain-tools.js';
 export * from './task-creation.js';
 export * from './incident-service.js';
+export * from './drift-service.js';

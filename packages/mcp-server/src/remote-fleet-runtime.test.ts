@@ -1,0 +1,281 @@
+import { describe, expect, it } from 'vitest';
+import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
+import { RemoteFleetRuntime } from './remote-fleet-runtime.js';
+import { mapResult } from './result-mapper.js';
+
+describe('RemoteFleetRuntime', () => {
+  it('fans out only registered host IDs with a maximum of four concurrent calls', async () => {
+    const calls: Record<string, unknown>[] = [];
+    let active = 0;
+    let maximum = 0;
+    const runtime = new RemoteFleetRuntime({
+      execute: async (_tool: string, input: unknown): Promise<Result<unknown>> => {
+        calls.push(input as Record<string, unknown>);
+        active += 1;
+        maximum = Math.max(maximum, active);
+        await new Promise<void>((resolve) => setTimeout(resolve, 5));
+        active -= 1;
+        return ok({ host: (input as Record<string, unknown>).hostId, output: 'healthy' });
+      },
+    });
+    const hostIds = Array.from({ length: 10 }, (_, index) => `vm${index + 1}`);
+    const result = await runtime.execute({ hostIds, operation: 'health', hostname: 'untrusted.example', command: 'cat /etc/passwd' });
+
+    expect(result).toMatchObject({ ok: true, value: { summary: { requested: 10, completed: 10, failed: 0, maxConcurrency: 4 } } });
+    expect(maximum).toBeLessThanOrEqual(4);
+    expect(calls).toHaveLength(10);
+    expect(calls.every((call) => Object.keys(call).sort().join(',') === 'hostId,operation')).toBe(true);
+  });
+
+  it('preserves per-host failures while redacting sensitive output', async () => {
+    const runtime = new RemoteFleetRuntime({
+      execute: async (_tool: string, input: unknown): Promise<Result<unknown>> => (input as Record<string, unknown>).hostId === 'vm2'
+        ? err(appError('CAPABILITY_UNAVAILABLE', 'apiKey=super-secret', true))
+        : ok({ output: 'service=ready' }),
+    });
+    const result = await runtime.execute({ hostIds: ['vm1', 'vm2'], operation: 'service-status', unit: 'baitonghub.service' });
+
+    expect(result).toMatchObject({
+      ok: true,
+      value: {
+        hosts: [
+          { hostId: 'vm1', status: 'ok', value: { output: 'service=ready' } },
+          { hostId: 'vm2', status: 'error', error: { code: 'CAPABILITY_UNAVAILABLE', message: 'apiKey=[redacted]' } },
+        ],
+        summary: { failed: 1 },
+      },
+    });
+    expect(JSON.stringify(result)).not.toContain('super-secret');
+  });
+
+  it('rejects duplicate, malformed, or oversized host lists before dispatch', async () => {
+    let calls = 0;
+    const runtime = new RemoteFleetRuntime({ execute: async (): Promise<Result<unknown>> => { calls += 1; return ok({}); } });
+    await expect(runtime.execute({ hostIds: ['vm1', 'vm1'], operation: 'health' })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    await expect(runtime.execute({ hostIds: ['../etc'], operation: 'health' })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    await expect(runtime.execute({ hostIds: Array.from({ length: 21 }, (_, index) => `vm${index}`), operation: 'health' })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    expect(calls).toBe(0);
+  });
+
+  it('builds a deterministic bounded snapshot from fixed read operations', async () => {
+    const calls: string[] = [];
+    let active = 0;
+    let maximum = 0;
+    const runtime = new RemoteFleetRuntime({
+      execute: async (_tool: string, input: unknown): Promise<Result<unknown>> => {
+        const request = input as Record<string, unknown>;
+        calls.push(`${String(request.hostId)}:${String(request.operation)}`);
+        active += 1;
+        maximum = Math.max(maximum, active);
+        await new Promise<void>((resolve) => setTimeout(resolve, 3));
+        active -= 1;
+        return ok({ operation: request.operation, value: 'ready' });
+      },
+    });
+    const result = await runtime.execute({ hostIds: ['vm2', 'vm1'], operation: 'snapshot', unit: 'baitonghub.service', maxParallel: 1 });
+    expect(result).toMatchObject({ ok: true, value: {
+      operation: 'snapshot',
+      completed: 2,
+      failed: 0,
+      truncated: false,
+      maxParallel: 1,
+      hosts: [
+        { hostId: 'vm1', status: 'ok', value: { health: { operation: 'health' }, inventory: { operation: 'inventory' }, 'service-status': { operation: 'service-status' } } },
+        { hostId: 'vm2', status: 'ok' },
+      ],
+    } });
+    expect(maximum).toBe(1);
+    expect(calls).toEqual(['vm1:health', 'vm1:inventory', 'vm1:service-status', 'vm2:health', 'vm2:inventory', 'vm2:service-status']);
+  });
+
+  it('keeps partial snapshot failures and enforces the per-host byte cap', async () => {
+    const runtime = new RemoteFleetRuntime({
+      execute: async (_tool: string, input: unknown): Promise<Result<unknown>> => {
+        const operation = (input as Record<string, unknown>).operation;
+        if (operation === 'inventory') return ok({ huge: 'x'.repeat(300_000) });
+        if ((input as Record<string, unknown>).hostId === 'vm2' && operation === 'service-status') return err(appError('CAPABILITY_UNAVAILABLE', 'remote failed', true));
+        return ok({ operation });
+      },
+    });
+    const result = await runtime.execute({ hostIds: ['vm1', 'vm2'], operation: 'snapshot' });
+    expect(result).toMatchObject({ ok: true, value: { completed: 1, failed: 1, truncated: true, hosts: [
+      { hostId: 'vm1', status: 'ok', truncated: true },
+      { hostId: 'vm2', status: 'error', error: { code: 'CAPABILITY_UNAVAILABLE' } },
+    ] } });
+  });
+
+  it('rejects an invalid snapshot concurrency before dispatch', async () => {
+    const runtime = new RemoteFleetRuntime({ execute: async (): Promise<Result<unknown>> => ok({}) });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'snapshot', maxParallel: 5 })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', lines: 0 })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', lines: 1_001 })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+  });
+
+  it('validates and trims journal units before dispatch', async () => {
+    let calls = 0;
+    const runtime = new RemoteFleetRuntime({ execute: async (): Promise<Result<unknown>> => { calls += 1; return ok({}); } });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', unit: ' api.service ' })).resolves.toMatchObject({ ok: true });
+    for (const unit of ['', '   ', 'api\n.service', 'api;touch /tmp/pwned.service', 'api.service?query', 'api.log', `${'a'.repeat(257)}.service`]) {
+      await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', unit })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    }
+    expect(calls).toBe(1);
+  });
+
+  it('accepts the journal line boundaries and rejects values outside them before dispatch', async () => {
+    const calls: Record<string, unknown>[] = [];
+    const runtime = new RemoteFleetRuntime({ execute: async (_tool: string, input: unknown): Promise<Result<unknown>> => { calls.push(input as Record<string, unknown>); return ok({}); } });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', lines: 1 })).resolves.toMatchObject({ ok: true });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', lines: 1_000 })).resolves.toMatchObject({ ok: true });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', lines: 0 })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', lines: 1_001 })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    expect(calls.map((call) => call.lines)).toEqual([1, 1_000]);
+  });
+
+  it('returns a bounded timeout when one host provider does not settle', async () => {
+    const runtime = new RemoteFleetRuntime({
+      execute: async (): Promise<Result<unknown>> => new Promise<Result<unknown>>(() => undefined),
+    }, undefined, { hostTimeoutMs: 5 });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'health' })).resolves.toMatchObject({
+      ok: true,
+      value: { hosts: [{ hostId: 'vm1', status: 'error', error: { code: 'PROCESS_TIMEOUT' } }], summary: { failed: 1, cancelled: 1 } },
+    });
+  });
+
+  it('cancels an in-flight host without waiting for the provider promise', async () => {
+    const controller = new AbortController();
+    const runtime = new RemoteFleetRuntime({
+      execute: async (): Promise<Result<unknown>> => new Promise<Result<unknown>>(() => undefined),
+    }, undefined, { hostTimeoutMs: 10_000 });
+    const pending = runtime.execute({ hostIds: ['vm1'], operation: 'health' }, controller.signal);
+    controller.abort();
+    await expect(pending).resolves.toMatchObject({
+      ok: true,
+      value: { hosts: [{ hostId: 'vm1', status: 'error', error: { code: 'PROCESS_TIMEOUT' } }], summary: { failed: 1, cancelled: 1 } },
+    });
+  });
+
+  it('emits sanitized per-host audit metadata without remote connection details', async () => {
+    const audit: Array<{ readonly hostId: string; readonly operation: string; readonly resultCode: string; readonly durationMs: number }> = [];
+    const runtime = new RemoteFleetRuntime({
+      execute: async (): Promise<Result<unknown>> => ok({ secret: 'do-not-audit' }),
+    }, async (event) => { audit.push(event); });
+    await runtime.execute({ hostIds: ['vm1'], operation: 'snapshot' });
+    expect(audit).toHaveLength(1);
+    expect(audit[0]).toMatchObject({ hostId: 'vm1', operation: 'snapshot', resultCode: 'OK' });
+    expect(JSON.stringify(audit)).not.toContain('do-not-audit');
+  });
+
+  it('forwards bounded disk usage and checksum operations without remote authority fields', async () => {
+    const calls: Record<string, unknown>[] = [];
+    const runtime = new RemoteFleetRuntime({
+      execute: async (_tool: string, input: unknown): Promise<Result<unknown>> => {
+        calls.push(input as Record<string, unknown>);
+        return ok({ path: (input as Record<string, unknown>).path, checksum: 'a'.repeat(300_000) });
+      },
+    });
+
+    const disk = await runtime.execute({ hostIds: ['vm1'], operation: 'disk_usage', path: '/srv/app', hostname: 'untrusted.example' });
+    const checksum = await runtime.execute({ hostIds: ['vm1'], operation: 'checksum', path: '/srv/app/app.tar', command: 'cat /etc/passwd' });
+
+    expect(disk).toMatchObject({ ok: true, value: { hosts: [{ hostId: 'vm1', status: 'ok', truncated: true }] } });
+    expect(checksum).toMatchObject({ ok: true, value: { hosts: [{ hostId: 'vm1', status: 'ok', truncated: true }] } });
+    expect(calls).toEqual([
+      { hostId: 'vm1', operation: 'disk_usage', path: '/srv/app' },
+      { hostId: 'vm1', operation: 'checksum', path: '/srv/app/app.tar' },
+    ]);
+  });
+
+  it('forwards only bounded journal fields and redacts per-host log output', async () => {
+    const calls: Record<string, unknown>[] = [];
+    const runtime = new RemoteFleetRuntime({
+      execute: async (_tool: string, input: unknown): Promise<Result<unknown>> => {
+        calls.push(input as Record<string, unknown>);
+        return ok({ output: 'unit=api.service token=super-secret\nready' });
+      },
+    });
+
+    const result = await runtime.execute({
+      hostIds: ['vm1'],
+      operation: 'journal',
+      unit: ' api.service ',
+      lines: 25,
+      path: '/etc/shadow',
+      command: 'cat /etc/shadow',
+      hostname: 'untrusted.example',
+    });
+
+    expect(result).toMatchObject({ ok: true, value: {
+      hosts: [{ status: 'ok', value: { output: 'unit=api.service token=[redacted]\nready' } }],
+    } });
+    expect(calls).toEqual([{ hostId: 'vm1', operation: 'journal', unit: 'api.service', lines: 25 }]);
+    expect(JSON.stringify(result)).not.toContain('super-secret');
+  });
+
+  it('removes secret canaries from both MCP result representations', async () => {
+    const canaries = 'Authorization: Bearer bearer-canary sk-testcanary ghp_testcanary xoxb-testcanary AIzatestcanary';
+    const runtime = new RemoteFleetRuntime({
+      execute: async (): Promise<Result<unknown>> => ok({ output: canaries, details: { Authorization: 'Bearer object-canary' } }),
+    });
+    const result = await runtime.execute({ hostIds: ['vm1'], operation: 'journal' });
+    const mapped = mapResult(result);
+    const text = mapped.content.map((entry) => entry.type === 'text' ? entry.text : '').join('');
+    const structured = JSON.stringify(mapped.structuredContent);
+    for (const representation of [text, structured]) {
+      for (const canary of ['bearer-canary', 'object-canary', 'sk-testcanary', 'ghp_testcanary', 'xoxb-testcanary', 'AIzatestcanary']) {
+        expect(representation).not.toContain(canary);
+      }
+    }
+  });
+
+  it('rejects option-shaped units for journal, service status, and snapshots before dispatch', async () => {
+    let calls = 0;
+    const runtime = new RemoteFleetRuntime({ execute: async (): Promise<Result<unknown>> => { calls += 1; return ok({}); } });
+    for (const unit of ['-Hfoo.service', '-Mfoo.service']) {
+      await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', unit })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+      await expect(runtime.execute({ hostIds: ['vm1'], operation: 'service-status', unit })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+      await expect(runtime.execute({ hostIds: ['vm1'], operation: 'snapshot', unit })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    }
+    expect(calls).toBe(0);
+  });
+
+  it('dispatches valid service and socket units for service status', async () => {
+    const calls: Record<string, unknown>[] = [];
+    const runtime = new RemoteFleetRuntime({ execute: async (_tool: string, input: unknown): Promise<Result<unknown>> => { calls.push(input as Record<string, unknown>); return ok({}); } });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'service-status', unit: 'api.service' })).resolves.toMatchObject({ ok: true });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'service-status', unit: 'api.socket' })).resolves.toMatchObject({ ok: true });
+    expect(calls).toEqual([
+      { hostId: 'vm1', operation: 'service-status', unit: 'api.service' },
+      { hostId: 'vm1', operation: 'service-status', unit: 'api.socket' },
+    ]);
+  });
+
+  it('projects remote network data into a topology-safe summary', async () => {
+    const calls: Record<string, unknown>[] = [];
+    const runtime = new RemoteFleetRuntime({
+      execute: async (_tool: string, input: unknown): Promise<Result<unknown>> => {
+        calls.push(input as Record<string, unknown>);
+        return ok({ output: JSON.stringify([
+          { ifname: 'eth0', operstate: 'UP', addr_info: [{ local: '192.0.2.10' }] },
+          { ifname: 'lo', operstate: 'UNKNOWN', addr_info: [{ local: '127.0.0.1' }] },
+        ]) });
+      },
+    });
+
+    const result = await runtime.execute({ hostIds: ['vm1'], operation: 'network' });
+
+    expect(result).toMatchObject({ ok: true, value: { hosts: [{ status: 'ok', value: {
+      network: { interfaceCount: 2, upCount: 1, addressCount: 2 },
+    } }] } });
+    expect(JSON.stringify(result)).not.toContain('192.0.2.10');
+    expect(calls).toEqual([{ hostId: 'vm1', operation: 'network' }]);
+  });
+
+  it('returns a truthful unavailable summary for malformed network provider output', async () => {
+    const runtime = new RemoteFleetRuntime({
+      execute: async (): Promise<Result<unknown>> => ok({ output: 'interface=eth0 address=192.0.2.10' }),
+    });
+    const result = await runtime.execute({ hostIds: ['vm1'], operation: 'network' });
+    expect(result).toMatchObject({ ok: true, value: { hosts: [{ status: 'ok', value: { network: { status: 'unavailable' } } }] } });
+    expect(JSON.stringify(result)).not.toContain('192.0.2.10');
+  });
+});

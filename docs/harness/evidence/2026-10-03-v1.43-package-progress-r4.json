@@ -1,0 +1,166 @@
+{
+  "version": "1.43.0",
+  "status": "source-package-candidate-transports-passed-installed-lifecycle-pending",
+  "sourceCommit": "9a3aab7842cff5f9b4f96ad9c3945542a6757a89",
+  "sourceFiles": 675,
+  "debSha256": "2df0562213219d07f3fee122c2a7b8449d69c83a1f317ffb7422d8e879e3a9c5",
+  "tarSha256": "ef594ed634b8b211252c2ee283f8c47f4a47b8306db4572f1b05f48fd6bac774",
+  "attempts": [
+    {
+      "name": "install",
+      "exitCode": 0
+    },
+    {
+      "name": "rebrand",
+      "exitCode": 0
+    },
+    {
+      "name": "lint",
+      "exitCode": 0
+    },
+    {
+      "name": "typecheck",
+      "exitCode": 0
+    },
+    {
+      "name": "unit",
+      "exitCode": 0
+    },
+    {
+      "name": "integration",
+      "exitCode": 0
+    },
+    {
+      "name": "packaging-tests",
+      "exitCode": 0
+    },
+    {
+      "name": "release-gate",
+      "exitCode": 0
+    },
+    {
+      "name": "catalog",
+      "exitCode": 0
+    },
+    {
+      "name": "v1-contract",
+      "exitCode": 0
+    },
+    {
+      "name": "v1-acceptance",
+      "exitCode": 0
+    },
+    {
+      "name": "build-package",
+      "exitCode": 0
+    },
+    {
+      "name": "verify-package",
+      "exitCode": 2
+    },
+    {
+      "name": "verify-package-ram",
+      "exitCode": 0
+    },
+    {
+      "name": "provenance",
+      "exitCode": 0
+    },
+    {
+      "name": "upgrade-preflight",
+      "exitCode": 0
+    },
+    {
+      "name": "diff-check",
+      "exitCode": 0
+    }
+  ],
+  "rerun": {
+    "failedGate": "verify-package",
+    "exitCode": 2,
+    "cause": "No space left on device while extracting TAR; original log retained on VM",
+    "replacement": "verify-package-ram",
+    "exitCodeAfterRerun": 0,
+    "method": "Unchanged frozen verifier in private mount namespace with512MiB RAM/tmp; hostmounts/services unchanged"
+  },
+  "wrapperRepair": "All4remaining gates exited0; trailing CRLF heredoc caused NameError. Corrected localLF and independently reran all675post-sourcehash assertions exit0.",
+  "candidateWorkflow": {
+    "stdioChecks": 11,
+    "httpChecks": 11,
+    "exitCodes": [
+      0,
+      0
+    ],
+    "boundary": "Candidate build bundle with isolated fixture; deployed binary remains1.42. STDIO rawlabel inherited Installed; actuallaunch candidate path and thisreceiptcorrect boundary."
+  },
+  "cleanup": {
+    "approvedPaths": [
+      "/tmp/mcp-v137-verify-10lp8qvd",
+      "/tmp/mcp-v137-verify-uboffa14",
+      "/tmp/mcp-v137-verify-eg0lgqci"
+    ],
+    "verifiedRemoved": true,
+    "retainedDebs": true,
+    "pendingNewGeneratedPaths": [
+      "/var/tmp/mcp-linux-v143-20261003-r4/source/dist/headless-package",
+      "/var/tmp/mcp-linux-v143-20261003-r4/source/dist/headless-deb"
+    ],
+    "verifiedEntryCounts": [
+      20,
+      23
+    ],
+    "approval": "pending"
+  },
+  "artifacts": [
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-logs/candidate-workflow-http.log",
+      "sha256": "18e49c31a898153229b5d3b9df39c4af9862dc56e840849387149f0d4b0eb98d"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-logs/candidate-workflow-stdio.log",
+      "sha256": "d221a232f9efcbd28c5a5d07a2f8996d388799845e3d39199651402663e43bf8"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-logs/gates.tsv",
+      "sha256": "fc1efb01ddb608d8373ea8d2583cd06d0b7aee66cb1a5eef1cf7f6ce3eb359ea"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-logs/provenance.log",
+      "sha256": "61633d537c0c069788d92f0bc460e3d69f7ba31749b1af322d849313acdeb337"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-logs/upgrade-preflight.log",
+      "sha256": "a96348e237f5a8aaa1b715e2f1a3b7c6c7eee3757672244b78414a354666d6f8"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-logs/verify-package-ram.log",
+      "sha256": "f14598291a4339046192d95fd2262699a85af345404dd32f86484e3a0b02cfd7"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-artifacts/Baitonghub-Linux-mcp-1.43.0-BUILD-METADATA.json",
+      "sha256": "375817a356ba60623de332231298db9b5d8c5f1b78adbfec2afe6110fa7983e7"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-artifacts/Baitonghub-Linux-mcp-1.43.0-PROVENANCE-SHA256SUMS",
+      "sha256": "28d3e2a33038412174e1e62f1794fa11d3a56e9d192cef945a4e0689efec4caa"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-artifacts/Baitonghub-Linux-mcp-1.43.0-SBOM.cdx.json",
+      "sha256": "43e8b47d5eb99c6ae5d34a1af8c26753bbdd9423cbea6000bae1de7db34a3d61"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-artifacts/Baitonghub-Linux-mcp-1.43.0-SHA256SUMS",
+      "sha256": "2523f72e96b37593177e52621fffde3ad92c89670baad42b53d2307e357e25a8"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-artifacts/Baitonghub-Linux-mcp-1.43.0-amd64.deb",
+      "sha256": "2df0562213219d07f3fee122c2a7b8449d69c83a1f317ffb7422d8e879e3a9c5"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/package-artifacts/Baitonghub-Linux-mcp-1.43.0-linux-x64.tar.gz",
+      "sha256": "ef594ed634b8b211252c2ee283f8c47f4a47b8306db4572f1b05f48fd6bac774"
+    }
+  ],
+  "installedLifecycle": "pending",
+  "publication": "unapproved"
+}

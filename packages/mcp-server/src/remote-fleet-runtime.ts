@@ -1,13 +1,14 @@
 import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
 import type { CapabilityService } from '@baitonghub-linux-mcp/capabilities';
 
-export type RemoteFleetOperation = 'health' | 'inventory' | 'service-status' | 'disk_usage' | 'checksum' | 'network' | 'snapshot';
+export type RemoteFleetOperation = 'health' | 'inventory' | 'service-status' | 'journal' | 'disk_usage' | 'checksum' | 'network' | 'snapshot';
 
 export interface RemoteFleetRequest {
   readonly hostIds: readonly string[];
   readonly operation: RemoteFleetOperation;
   readonly path?: string;
   readonly unit?: string;
+  readonly lines?: number;
   readonly maxParallel?: number;
 }
 
@@ -114,8 +115,9 @@ export class RemoteFleetRuntime {
     const deadline = started + this.hostTimeoutMs;
     if (request.operation === 'snapshot') return this.snapshotHost(hostId, request, signal, started, deadline);
     const remoteRequest: Record<string, unknown> = { hostId, operation: request.operation };
-    if (request.path !== undefined) remoteRequest.path = request.path;
+    if (request.operation !== 'journal' && request.path !== undefined) remoteRequest.path = request.path;
     if (request.unit !== undefined) remoteRequest.unit = request.unit;
+    if (request.lines !== undefined) remoteRequest.lines = request.lines;
     try {
       const result = await this.executeRemote(remoteRequest, signal, deadline);
       if (result.ok) {
@@ -202,14 +204,24 @@ function parseRequest(input: unknown): Result<RemoteFleetRequest> {
   }
   if (new Set(hostIds).size !== hostIds.length) return err(appError('INVALID_INPUT', 'remote_fleet hostIds must not contain duplicates', false));
   const operation = input.operation;
-  if (operation !== 'health' && operation !== 'inventory' && operation !== 'service-status' && operation !== 'disk_usage' && operation !== 'checksum' && operation !== 'network' && operation !== 'snapshot') return err(appError('INVALID_INPUT', 'remote_fleet operation is invalid', false));
+  if (operation !== 'health' && operation !== 'inventory' && operation !== 'service-status' && operation !== 'journal' && operation !== 'disk_usage' && operation !== 'checksum' && operation !== 'network' && operation !== 'snapshot') return err(appError('INVALID_INPUT', 'remote_fleet operation is invalid', false));
   const path = input.path === undefined ? undefined : typeof input.path === 'string' ? input.path : null;
   if (path === null) return err(appError('INVALID_INPUT', 'remote_fleet path is invalid', false));
-  const unit = input.unit === undefined ? undefined : typeof input.unit === 'string' ? input.unit : null;
+  const rawUnit = input.unit === undefined ? undefined : typeof input.unit === 'string' ? input.unit : null;
+  if (rawUnit === null) return err(appError('INVALID_INPUT', 'remote_fleet unit is invalid', false));
+  const unit = requestUnit(operation, rawUnit);
   if (unit === null) return err(appError('INVALID_INPUT', 'remote_fleet unit is invalid', false));
+  const lines = input.lines === undefined ? undefined : input.lines;
+  if (lines !== undefined && (typeof lines !== 'number' || !Number.isInteger(lines) || lines < 1 || lines > 1_000)) return err(appError('INVALID_INPUT', 'remote_fleet lines must be between 1 and 1000', false));
   const maxParallel = input.maxParallel === undefined ? MAX_CONCURRENCY : input.maxParallel;
   if (typeof maxParallel !== 'number' || !Number.isInteger(maxParallel) || maxParallel < 1 || maxParallel > MAX_CONCURRENCY) return err(appError('INVALID_INPUT', 'remote_fleet maxParallel must be between 1 and 4', false));
-  return ok({ hostIds, operation, ...(path === undefined ? {} : { path }), ...(unit === undefined ? {} : { unit }), maxParallel });
+  return ok({ hostIds, operation, ...(path === undefined ? {} : { path }), ...(unit === undefined ? {} : { unit }), ...(lines === undefined ? {} : { lines }), maxParallel });
+}
+
+function requestUnit(operation: RemoteFleetOperation, unit: string | undefined): string | undefined | null {
+  if (operation !== 'journal' || unit === undefined) return unit;
+  const trimmed = unit.trim();
+  return /^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/.test(trimmed) ? trimmed : null;
 }
 
 function redactRemoteValue(value: unknown, depth = 0): unknown {

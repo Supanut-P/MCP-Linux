@@ -45,10 +45,10 @@ if [ "\${1:-}" = "mcp" ] && [ "\${2:-}" = "--http" ]; then
   shift 2
   exec "$NODE_BIN" "$BASE/mcp-http.cjs" "$@"
 fi
-if [ "\${1:-}" = "status" ] || [ "\${1:-}" = "doctor" ] || [ "\${1:-}" = "workspace" ]; then
+if [ "\${1:-}" = "status" ] || [ "\${1:-}" = "doctor" ] || [ "\${1:-}" = "workspace" ] || [ "\${1:-}" = "database" ] || [ "\${1:-}" = "remote-host" ]; then
   exec "$NODE_BIN" "$BASE/admin.cjs" "$@"
 fi
-echo "Usage: baitonghub-linux-mcp status|doctor|workspace add <path>|workspace list|mcp --stdio|--http [--workspace PATH]" >&2
+echo "Usage: baitonghub-linux-mcp status|doctor|workspace|database|remote-host|mcp --stdio|--http [--workspace PATH]" >&2
 exit 2
 `;
 const launcherPath = path.join(output, 'baitonghub-linux-mcp');

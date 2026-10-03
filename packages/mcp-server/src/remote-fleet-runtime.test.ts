@@ -106,6 +106,28 @@ describe('RemoteFleetRuntime', () => {
   it('rejects an invalid snapshot concurrency before dispatch', async () => {
     const runtime = new RemoteFleetRuntime({ execute: async (): Promise<Result<unknown>> => ok({}) });
     await expect(runtime.execute({ hostIds: ['vm1'], operation: 'snapshot', maxParallel: 5 })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', lines: 0 })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', lines: 1_001 })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+  });
+
+  it('validates and trims journal units before dispatch', async () => {
+    let calls = 0;
+    const runtime = new RemoteFleetRuntime({ execute: async (): Promise<Result<unknown>> => { calls += 1; return ok({}); } });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', unit: ' api.service ' })).resolves.toMatchObject({ ok: true });
+    for (const unit of ['', '   ', 'api\n.service', 'api;touch /tmp/pwned.service', 'api.service?query', 'api.log', `${'a'.repeat(257)}.service`]) {
+      await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', unit })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    }
+    expect(calls).toBe(1);
+  });
+
+  it('accepts the journal line boundaries and rejects values outside them before dispatch', async () => {
+    const calls: Record<string, unknown>[] = [];
+    const runtime = new RemoteFleetRuntime({ execute: async (_tool: string, input: unknown): Promise<Result<unknown>> => { calls.push(input as Record<string, unknown>); return ok({}); } });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', lines: 1 })).resolves.toMatchObject({ ok: true });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', lines: 1_000 })).resolves.toMatchObject({ ok: true });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', lines: 0 })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', lines: 1_001 })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    expect(calls.map((call) => call.lines)).toEqual([1, 1_000]);
   });
 
   it('returns a bounded timeout when one host provider does not settle', async () => {
@@ -160,6 +182,32 @@ describe('RemoteFleetRuntime', () => {
       { hostId: 'vm1', operation: 'disk_usage', path: '/srv/app' },
       { hostId: 'vm1', operation: 'checksum', path: '/srv/app/app.tar' },
     ]);
+  });
+
+  it('forwards only bounded journal fields and redacts per-host log output', async () => {
+    const calls: Record<string, unknown>[] = [];
+    const runtime = new RemoteFleetRuntime({
+      execute: async (_tool: string, input: unknown): Promise<Result<unknown>> => {
+        calls.push(input as Record<string, unknown>);
+        return ok({ output: 'unit=api.service token=super-secret\nready' });
+      },
+    });
+
+    const result = await runtime.execute({
+      hostIds: ['vm1'],
+      operation: 'journal',
+      unit: ' api.service ',
+      lines: 25,
+      path: '/etc/shadow',
+      command: 'cat /etc/shadow',
+      hostname: 'untrusted.example',
+    });
+
+    expect(result).toMatchObject({ ok: true, value: {
+      hosts: [{ status: 'ok', value: { output: 'unit=api.service token=[redacted]\nready' } }],
+    } });
+    expect(calls).toEqual([{ hostId: 'vm1', operation: 'journal', unit: 'api.service', lines: 25 }]);
+    expect(JSON.stringify(result)).not.toContain('super-secret');
   });
 
   it('projects remote network data into a topology-safe summary', async () => {

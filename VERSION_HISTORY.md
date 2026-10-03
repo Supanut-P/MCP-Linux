@@ -48,6 +48,7 @@ semantic-version order.
 | v1.34.0 | Workspace checkpoint prune | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.34.0) |
 | v1.35.0 | Workspace checkpoint stats | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.35.0) |
 | v1.36.0 | Workspace checkpoint summary and stable v1 contract | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.36.0) |
+| v1.37.0 | Bounded remote fleet journal reads | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.37.0) |
 
 The old Windows desktop tags are intentionally not part of this sequence.
 They are not Linux releases and are not published from the Linux-only branch.

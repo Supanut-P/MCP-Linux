@@ -3669,6 +3669,11 @@
             "minItems": 1,
             "type": "array"
           },
+          "lines": {
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          },
           "maxParallel": {
             "default": 4,
             "maximum": 4,
@@ -3687,6 +3692,7 @@
               "health",
               "inventory",
               "service-status",
+              "journal",
               "disk_usage",
               "checksum",
               "network",

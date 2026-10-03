@@ -70,12 +70,16 @@ read query. `remote_host` read operations stay inside registered roots; remote
 mutations additionally require `workspaceId`, a matching dry-run hash, and
 `userConfirmed: true`. The CLI accepts references only; never put a secret
 value or private key on the command line. `remote_fleet` can fan out
-read-only `health`, bounded `inventory`, `service-status`, `disk_usage`,
+read-only `health`, bounded `inventory`, `service-status`, `journal`, `disk_usage`,
 `checksum`, or topology-safe `network` summary checks to 1–20 registered hosts,
 with at most four SSH sessions in flight. Snapshot combines the safe
 health/inventory/service-status checks.
 `maxParallel` is 1–4, host ordering is deterministic for snapshots, each host
 result is capped at 256 KiB, and partial results are sanitized.
+
+The fleet `journal` operation accepts 1–1,000 lines and an optional validated
+systemd unit. It reuses the pinned remote journal provider, redacts
+credential-shaped fields, and returns sanitized partial failures.
 
 The `network` operation parses the registered host's JSON interface response
 and returns only interface/up/address counts; interface names, addresses, and

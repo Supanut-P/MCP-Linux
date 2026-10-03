@@ -1,6 +1,6 @@
 # Registered remote fleet inspection
 
-`remote_fleet` is a read-only v1.15 facility for checking a bounded set of
+`remote_fleet` is a read-only facility for checking a bounded set of
 Linux hosts that have already been registered in the remote-host registry. A
 request contains only `hostIds` (1–20), a fixed operation, and optional bounded
 concurrency (`maxParallel`, 1–4):
@@ -9,6 +9,8 @@ concurrency (`maxParallel`, 1–4):
 - `inventory` — list up to 500 entries beneath a registered root (or an
   explicitly supplied path inside that root);
 - `service-status` — read bounded systemd unit state;
+- `journal` — read bounded, redacted journal lines for an optional validated
+  systemd unit;
 - `snapshot` — collect `health`, `inventory`, and `service-status` for each host
   in deterministic host-ID order.
 
@@ -31,3 +33,8 @@ The individual `remote_host` tool additionally supports `disk_usage` and
 `checksum` for registered paths. Checksums are SHA-256 and secret-looking files
 are rejected. Remote mutations remain separate preview-plus-confirmation
 operations and are not available through `remote_fleet`.
+
+`journal` accepts `lines` from 1 to 1,000 and uses the existing pinned
+`remote_host` provider. It never accepts a raw journal query, shell fragment, or
+unregistered host/path. Each host remains independently bounded and failures are
+returned as sanitized partial results.

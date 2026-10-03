@@ -86,6 +86,22 @@ docs/benchmarks/*
 !docs/benchmarks/PHASE-03.md
 !docs/benchmarks/PHASE-05.md
 
+# Compact, versioned development harness (raw logs remain ignored).
+!docs/skills/
+docs/skills/*
+!docs/skills/mcp-linux-development/
+!docs/skills/mcp-linux-incident/
+!docs/skills/mcp-linux-release/
+docs/skills/*/*
+!docs/skills/*/SKILL.md
+!docs/harness/
+docs/harness/*
+!docs/harness/README.md
+!docs/harness/evidence/
+docs/harness/evidence/*
+!docs/harness/evidence/*.md
+!docs/harness/evidence/*.json
+
 # IDE & Editor Settings
 .cursor/
 .vscode/*

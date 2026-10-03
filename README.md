@@ -24,7 +24,7 @@ Baitonghub-Linux-mcp lets an MCP client work with a Linux machine through a
 controlled local runtime. It is intended for repository maintenance, coding,
 testing, Git workflows, command execution, and long-running development tasks.
 
-The v1.36.0 release is **headless**. It does not require Electron, a desktop
+The v1.37.0 release is **headless**. It does not require Electron, a desktop
 session, Chrome, Wayland, X11, or a system-installed Node.js runtime.
 
 ### What it can do
@@ -80,10 +80,11 @@ session, Chrome, Wayland, X11, or a system-installed Node.js runtime.
 - Verify file artifacts, probe HTTP endpoints, and inspect registered storage
   usage with bounded read-only operator tools.
 - Inventory up to 20 explicitly registered remote hosts with `remote_fleet`,
-  including bounded health, inventory, service-status, disk-usage, checksum,
+  including bounded health, inventory, service-status, journal, disk-usage, checksum,
   topology-safe network summary, and aggregate snapshot operations. Each host
   result is capped and sanitized; the network summary returns only interface,
-  up, and address counts.
+  up, and address counts. Journal reads accept only a bounded line count and
+  validated systemd unit, and redact credential-shaped fields.
 - Plan and execute a confirmed canary-first restart of one service across registered SSH hosts with `remote_rollout`,
   using bounded concurrency and per-host sanitized results.
 - preview and resume failed or interrupted rollouts with `remote_rollout_resume`
@@ -146,7 +147,7 @@ They are redacted from stdout, application logs, audit records, and diagnostics.
 
 ## v1 stable contract
 
-The v1.36.0 MCP names, schemas, permission annotations, and compatibility rules
+The v1.37.0 MCP names, schemas, permission annotations, and compatibility rules
 are frozen in [`docs/mcp/STABLE_TOOL_CONTRACT_V1.md`](docs/mcp/STABLE_TOOL_CONTRACT_V1.md)
 and checked against the canonical fixture in CI. The live `tools/list` response
 is provider-filtered for the headless Linux environment, so its observed count
@@ -162,7 +163,7 @@ Version-specific notes are archived under [`docs/releases/`](docs/releases/).
 
 ## Supported platform
 
-| Item | v1.36 support |
+| Item | v1.37 support |
 | --- | --- |
 | Operating system | Ubuntu 24.04 LTS |
 | Architecture | x86_64 / amd64 |
@@ -172,13 +173,13 @@ Version-specific notes are archived under [`docs/releases/`](docs/releases/).
 | Packages | DEB, Linux x64 tarball (no AppImage) |
 
 ARM64, RPM, GUI automation, Windows migration, and unrestricted root access are
-outside the v1.36 release contract.
+outside the v1.37 release contract.
 
 ## Install
 
 Download the latest package from
 [GitHub Releases](https://github.com/Supanut-P/MCP-Linux/releases/latest).
-The v1.36.0 links below become downloadable when the Ubuntu package gate and
+The v1.37.0 links below become downloadable when the Ubuntu package gate and
 release approval are complete.
 
 The v1 administration tools add bounded, explicitly confirmed mutations. They
@@ -198,17 +199,17 @@ bounded soak run; it does not claim that a seven-day run has completed.
 ### Ubuntu DEB
 
 ```sh
-  curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.36.0/Baitonghub-Linux-mcp-1.36.0-amd64.deb
-  curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.36.0/Baitonghub-Linux-mcp-1.36.0-SHA256SUMS
-  sha256sum --check --ignore-missing Baitonghub-Linux-mcp-1.36.0-SHA256SUMS
-  sudo apt install ./Baitonghub-Linux-mcp-1.36.0-amd64.deb
+  curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.37.0/Baitonghub-Linux-mcp-1.37.0-amd64.deb
+  curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.37.0/Baitonghub-Linux-mcp-1.37.0-SHA256SUMS
+  sha256sum --check --ignore-missing Baitonghub-Linux-mcp-1.37.0-SHA256SUMS
+  sudo apt install ./Baitonghub-Linux-mcp-1.37.0-amd64.deb
 ```
 
 ### Linux x64 tarball
 
 ```sh
-  curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.36.0/Baitonghub-Linux-mcp-1.36.0-linux-x64.tar.gz
-  tar -xzf Baitonghub-Linux-mcp-1.36.0-linux-x64.tar.gz
+  curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.37.0/Baitonghub-Linux-mcp-1.37.0-linux-x64.tar.gz
+  tar -xzf Baitonghub-Linux-mcp-1.37.0-linux-x64.tar.gz
 ```
 
 ## Quick start: local STDIO

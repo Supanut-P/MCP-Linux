@@ -1,5 +1,11 @@
 # MCP-Linux harness state
 
+v1.47 incident workspace implementation is in progress under its
+[contract](contracts/v1.47-incident-workspace.md) and
+[caller guide](INCIDENT_WORKSPACE.md). The configured VM remains accepted 1.46.0
+until v1.47 full Ubuntu/package and installed acceptance close. v1.48 remains
+planned. No publication is approved.
+
 The authoritative [v2 roadmap](../superpowers/plans/2026-09-30-mcp-linux-v2-roadmap.md)
 defines the accepted product and model-routing policy. Root `AGENTS.md` routes
 to three compact repo-local skills; it does not install global configuration or
@@ -114,9 +120,10 @@ document edits are not part of the verified Ubuntu source snapshot.
 
 v1.46 fleet selection metadata is active under the
 [catalog contract](contracts/v1.46-fleet-catalog.md). Local focused storage,
-service, MCP boundary and unchanged fleet tests pass (24 tests); independent
-implementation review and full source/package gates remain open. The accepted
-installed VM version remains 1.45.0. Selection metadata provides no execution
+service, MCP boundary and unchanged fleet tests pass (28 tests); independent
+implementation review and [Ubuntu/package closure](evidence/2026-10-03-v1.46-ubuntu.md)
+passed after 717 source files, 15 implementation hashes and 62 artifacts were
+independently verified. The configured VM runs accepted 1.46.0. v1.47 may begin. Selection metadata provides no execution
 authority and does not isolate the existing global host registrations.
 
 Evidence must name its source snapshot, command, exit status, artifacts, and

@@ -14,6 +14,7 @@ import { WORKFLOW_STATE_MIGRATION_SQL } from './migrations/workflow-state-migrat
 import { WORKFLOW_SCOPE_MIGRATION_SQL } from './migrations/workflow-scope-migration.js';
 import { WORKFLOW_QA_MIGRATION_SQL } from './migrations/workflow-qa-migration.js';
 import { FLEET_CATALOG_MIGRATION_SQL } from './migrations/fleet-catalog-migration.js';
+import { INCIDENT_MIGRATION_SQL } from './migrations/incident-migration.js';
 
 export interface SqliteDatabaseOptions {
   readonly backupDirectory?: string;
@@ -65,6 +66,7 @@ export class SqliteDatabase {
     this.applyMigration({ id: '012_workflow_scope', sql: WORKFLOW_SCOPE_MIGRATION_SQL });
     this.applyMigration({ id: '013_workflow_qa', sql: WORKFLOW_QA_MIGRATION_SQL });
     this.applyMigration({ id: '014_fleet_catalog', sql: FLEET_CATALOG_MIGRATION_SQL });
+    this.applyMigration({ id: '015_incident', sql: INCIDENT_MIGRATION_SQL });
   }
 
   public applyMigration(migration: Migration): void {

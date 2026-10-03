@@ -1,5 +1,5 @@
 {
-  "milestone": "1.45.0",
+  "milestone": "1.46.0",
   "status": "implementation-approved-local-passed-ubuntu-open",
   "reviewer": "v143_scope_review: gpt-6.1-sol high",
   "reviewerFocusedPassed": 28,
@@ -201,5 +201,6 @@
       "sha256": "8d5e5014a1497e75124942d970413bc8586c9c41c1133072cb3a7c52b3c269f0"
     }
   ],
-  "boundary": "Windows source checks; Linux link/launcher and package acceptance remain separate. Primary dirty process-manager EOF whitespace is preserved; private Ubuntu snapshot diff check is a distinct gate."
+  "boundary": "Windows source checks; Linux link/launcher and package acceptance remain separate. Primary dirty process-manager EOF whitespace is preserved; private Ubuntu snapshot diff check is a distinct gate.",
+  "postFreezeErratum": "Receipt milestone label corrected from inherited 1.45.0 to 1.46.0 after source export; source fingerprints, gate logs and candidate package metadata unchanged. Frozen source retains initial label; correction is separate closure documentation."
 }

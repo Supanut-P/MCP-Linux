@@ -61,13 +61,13 @@ export class FleetCatalogService {
         for (const id of ids) {
           const host = await this.hosts.get(id);
           if (host === null) return err(appError('INVALID_INPUT', 'Registered host was not found'));
-          bindings.push({ hostId: id, fingerprint: hostHash(host) });
+          bindings.push({ hostId: id, fingerprint: fleetHostFingerprint(host) });
         }
         let payload: Payload = { hosts: bindings };
         if (request.operation === 'put_mapping') {
           const workspace = await this.workspaces.get(request.workspaceId!);
           if (workspace === null || workspace.archivedAt) return err(appError('WORKSPACE_NOT_FOUND', 'Registered workspace was not found'));
-          payload = { ...payload, serviceUnit: request.serviceUnit!, workspaceId: workspace.id, workspaceFingerprint: workspaceHash(workspace) };
+          payload = { ...payload, serviceUnit: request.serviceUnit!, workspaceId: workspace.id, workspaceFingerprint: fleetWorkspaceFingerprint(workspace) };
         }
         if (signal?.aborted) return cancelled();
         const currentPermission = authorize();
@@ -87,13 +87,13 @@ export class FleetCatalogService {
           const members = [];
           for (const binding of payload.hosts) {
             const current = await this.hosts.get(binding.hostId);
-            const status = current === null ? 'unavailable' : hostHash(current) !== binding.fingerprint ? 'stale' : 'resolved';
+            const status = current === null ? 'unavailable' : fleetHostFingerprint(current) !== binding.fingerprint ? 'stale' : 'resolved';
             members.push({ hostId: binding.hostId, status });
           }
           let workspaceStatus: 'resolved' | 'unavailable' | 'stale' | undefined;
           if (stored.kind === 'mapping') {
             const workspace = await this.workspaces.get(payload.workspaceId!);
-            workspaceStatus = workspace === null || workspace.archivedAt ? 'unavailable' : workspaceHash(workspace) !== payload.workspaceFingerprint ? 'stale' : 'resolved';
+            workspaceStatus = workspace === null || workspace.archivedAt ? 'unavailable' : fleetWorkspaceFingerprint(workspace) !== payload.workspaceFingerprint ? 'stale' : 'resolved';
           }
           if (signal?.aborted) return cancelled();
           const currentPermission = authorize();
@@ -120,8 +120,8 @@ export class FleetCatalogService {
 }
 
 function hash(value: string): string { return createHash('sha256').update(value).digest('hex'); }
-function hostHash(host: Host): string { return hash(JSON.stringify([host.id, host.host, host.port, host.username, host.secretRef, host.pinnedFingerprint, [...host.roots], host.createdAt])); }
-function workspaceHash(workspace: Workspace): string { return hash(JSON.stringify([workspace.id, workspace.rootPath, workspace.realRootPath, workspace.createdAt])); }
+export function fleetHostFingerprint(host: Host): string { return hash(JSON.stringify([host.id, host.host, host.port, host.username, host.secretRef, host.pinnedFingerprint, [...host.roots], host.createdAt])); }
+export function fleetWorkspaceFingerprint(workspace: Workspace): string { return hash(JSON.stringify([workspace.id, workspace.rootPath, workspace.realRootPath, workspace.createdAt])); }
 function record(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null && !Array.isArray(value); }
 function parseRequest(value: unknown): Request | null {
   if (!record(value) || typeof value.operation !== 'string') return null;

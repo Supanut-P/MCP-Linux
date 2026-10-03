@@ -41,7 +41,7 @@ const OPERATOR_TOOLS = new Set([
 ]);
 
 const FLEET_TOOLS = new Set([
-  'remote_host', 'remote_fleet', 'fleet_catalog', 'remote_rollout', 'remote_rollout_resume',
+  'remote_host', 'remote_fleet', 'fleet_catalog', 'incident', 'remote_rollout', 'remote_rollout_resume',
 ]);
 
 export function parseServerProfile(value: string | null | undefined): Result<ServerProfileName> {

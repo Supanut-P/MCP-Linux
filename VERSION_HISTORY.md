@@ -56,7 +56,7 @@ semantic-version order.
 | v1.42.0 | Durable caller-native workflow (Ubuntu/package, installed recovery and independent QA passed) | [notes](docs/releases/v1.42.0.md) |
 | v1.43.0 | Coordinated file scopes and fenced leases (Ubuntu/package, installed recovery and independent QA passed) | [notes](docs/releases/v1.43.0.md) |
 | v1.44.0 | Source-bound QA receipts and bounded retry (verification closed; publication unapproved) | [notes](docs/releases/v1.44.0.md) |
-| v1.46.0 | Registered fleet groups and service mappings (implementation QA passed; Ubuntu/package open) | [notes](docs/releases/v1.46.0.md) |
+| v1.46.0 | Registered fleet groups and service mappings (Ubuntu/package verification closed) | [notes](docs/releases/v1.46.0.md) |
 | v1.45.0 | Bounded usage reports and native fixture benchmarks (Ubuntu/package verification closed; token goal missed) | [notes](docs/releases/v1.45.0.md) |
 
 The old Windows desktop tags are intentionally not part of this sequence.

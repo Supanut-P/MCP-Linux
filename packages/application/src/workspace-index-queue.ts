@@ -56,7 +56,7 @@ export class WorkspaceIndexQueue {
   private readonly history: WorkspaceChangeEvent[] = [];
   private readonly pendingHistory = new Map<string, WorkspaceChangeEvent>();
   private timer: ReturnType<typeof setTimeout> | undefined;
-  private wake: (() => void) | undefined;
+  private readonly waiters = new Set<() => void>();
   private activeWorkers = 0;
   private enqueuedEvents = 0;
   private coalescedEvents = 0;
@@ -140,7 +140,7 @@ export class WorkspaceIndexQueue {
     await this.flush();
     if (this.pending.size > 0 || this.activeWorkers > 0 || this.timer !== undefined) {
       await new Promise<void>((resolve) => {
-        this.wake = resolve;
+        this.waiters.add(resolve);
       });
       await this.drain();
     }
@@ -165,11 +165,12 @@ export class WorkspaceIndexQueue {
       workers.push(this.run(next[1]));
     }
     if (workers.length > 0) await Promise.all(workers);
-    if (this.pending.size > 0) await this.flush();
+    // A concurrent flush already owns saturated slots and will drain pending work.
+    if (this.pending.size > 0 && this.activeWorkers < this.concurrency) await this.flush();
     if (this.pending.size === 0 && this.activeWorkers === 0) {
-      const wake = this.wake;
-      this.wake = undefined;
-      wake?.();
+      const waiters = [...this.waiters];
+      this.waiters.clear();
+      for (const wake of waiters) wake();
     }
   }
 

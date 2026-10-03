@@ -2,6 +2,22 @@ import { describe, expect, it, vi } from 'vitest';
 import { WorkspaceIndexQueue } from './workspace-index-queue.js';
 
 describe('WorkspaceIndexQueue', () => {
+  it('waits without recursive spinning when another drain owns all worker slots', async () => {
+    const seen: string[] = [];
+    let release: (() => void) | undefined;
+    const queue = new WorkspaceIndexQueue(async event => {
+      seen.push(event.relativePath);
+      if (event.relativePath === 'first.ts') await new Promise<void>(resolve => { release = resolve; });
+    }, { concurrency: 1, debounceMs: 1000 });
+    queue.enqueue({ relativePath: 'first.ts', kind: 'change' });
+    const first = queue.drain();
+    queue.enqueue({ relativePath: 'second.ts', kind: 'change' });
+    const both = Promise.all([first, queue.drain(), queue.drain()]);
+    release?.();
+    await both;
+    expect(seen).toEqual(['first.ts', 'second.ts']);
+    expect(queue.status()).toMatchObject({ pendingEvents: 0, activeWorkers: 0, completedEvents: 2 });
+  });
   it('coalesces duplicate paths without dropping distinct paths', async () => {
     const seen: string[] = [];
     const queue = new WorkspaceIndexQueue(async (event) => {

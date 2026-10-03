@@ -49,3 +49,4 @@ export * from './tools/workflow-preflight-tools.js';
 export * from './tools/workspace-checkpoint-tools.js';
 export * from './tools/policy-explain-tools.js';
 export * from './task-creation.js';
+export * from './incident-service.js';

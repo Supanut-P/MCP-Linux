@@ -1,0 +1,206 @@
+{
+  "milestone": "1.46.0",
+  "status": "implementation-approved-local-passed-ubuntu-open",
+  "reviewer": "v143_scope_review: gpt-6.1-sol high",
+  "reviewerFocusedPassed": 28,
+  "reviewerFocusedSkipped": 0,
+  "sources": [
+    {
+      "path": "packages/storage/src/fleet-catalog-repository.ts",
+      "sha256": "5b53d43f29bca4aaa37319c675d59bc25cb4be6ff3618ad183136f6a45e9376b"
+    },
+    {
+      "path": "packages/storage/src/fleet-catalog-repository.test.ts",
+      "sha256": "e0a9528b4496f37d8c62cbc8198c419a64612139e28b99dce12409ddff1dcca7"
+    },
+    {
+      "path": "packages/storage/src/migrations/fleet-catalog-migration.ts",
+      "sha256": "42bdde7ebbcc6afd8bef1f43c73b9570a613c400abeb08527dc6525c262e8bc6"
+    },
+    {
+      "path": "packages/storage/src/database.ts",
+      "sha256": "c86f1d3b0f809d148d497c82f5ddc4e0d6497c57834569ccc0114a32c7657c46"
+    },
+    {
+      "path": "packages/storage/src/index.ts",
+      "sha256": "5e61e197d4b2ea17463b40a382c36dd22687aa4c61391d49df3bb5aef95d6da0"
+    },
+    {
+      "path": "packages/application/src/fleet-catalog-service.ts",
+      "sha256": "429a35eae11f162148f17b9922e016be565e372babcb29502f38c20769a80518"
+    },
+    {
+      "path": "packages/application/src/fleet-catalog-service.test.ts",
+      "sha256": "9421c65f6195d771ac355bab1933cf30e099fc473b9ce570ac247f21c3c4ce8c"
+    },
+    {
+      "path": "packages/application/src/index.ts",
+      "sha256": "c3cd9d1f9804ac668ecd277f1a946a2af612d17cb08e64ffe985e6489c9c12a2"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/fleet-catalog-tools.ts",
+      "sha256": "020a59b38c5ca52ab1cf0a7175797063f458193e13410656f800effacbfcb4c4"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/fleet-catalog-tools.test.ts",
+      "sha256": "ba53398046e5b67061206c2f7f905c8496959db6e917e7b8b3ef8a45d2c22f24"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/tool-types.ts",
+      "sha256": "c1f01ed4cb30a8b573e4756ffe0757c00c7c38e8828eb32f057003eb9af8cbaf"
+    },
+    {
+      "path": "packages/mcp-server/src/tool-registry.ts",
+      "sha256": "68ee8930b632b0596f3aeba561e0434243386d260bfef76f07703e8c488263d0"
+    },
+    {
+      "path": "packages/mcp-server/src/server-profile.ts",
+      "sha256": "d4d9fd3ccf4860338df547dde190d1c2c8a69775f2dbc1ab04f390725f9d0a39"
+    },
+    {
+      "path": "apps/cli/src/runtime/stdio-mcp-runtime.ts",
+      "sha256": "2cb90f0079206cde5b4d6304b6f41991b74e3551b559a79022aa3507b2e986f0"
+    },
+    {
+      "path": "scripts/generate-tool-catalog.mjs",
+      "sha256": "35fb5cad7b978e93529aa7925b03f56d6a5bd2e326c0de64447949ca443ebd41"
+    }
+  ],
+  "gates": [
+    {
+      "name": "typecheck",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--build"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 2354
+    },
+    {
+      "name": "lint",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "."
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 4941
+    },
+    {
+      "name": "focused",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages/storage/src/fleet-catalog-repository.test.ts",
+        "packages/application/src/fleet-catalog-service.test.ts",
+        "packages/mcp-server/src/tools/fleet-catalog-tools.test.ts",
+        "packages/mcp-server/src/remote-fleet-runtime.test.ts"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 2477
+    },
+    {
+      "name": "unit",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages",
+        "apps"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 13631
+    },
+    {
+      "name": "other",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/integration",
+        "tests/packaging",
+        "tests/release",
+        "tests/acceptance"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 3284
+    },
+    {
+      "name": "catalog",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-catalog.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 348
+    },
+    {
+      "name": "contract",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-contract-v1.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 348
+    }
+  ],
+  "focused": {
+    "passed": 28,
+    "skipped": 0
+  },
+  "unit": {
+    "passed": 799,
+    "skipped": 47
+  },
+  "other": {
+    "passed": 35,
+    "skipped": 6
+  },
+  "artifacts": [
+    {
+      "path": "dist/v1.46.0-local-20261003/full-local-logs/typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.46.0-local-20261003/full-local-logs/lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.46.0-local-20261003/full-local-logs/focused.log",
+      "sha256": "5c0849b3b76277674bc767d89d97e72cb3f4d3fe94a48ddc343579a0f51146f6"
+    },
+    {
+      "path": "dist/v1.46.0-local-20261003/full-local-logs/unit.log",
+      "sha256": "b3647f336bc2269322285d301aac0fff337c51c2904c754743bfaedfff396ba4"
+    },
+    {
+      "path": "dist/v1.46.0-local-20261003/full-local-logs/other.log",
+      "sha256": "a44301f81ba84cdf89f470fd68f94e522cc6138b29357554319c6bcb3d033dd5"
+    },
+    {
+      "path": "dist/v1.46.0-local-20261003/full-local-logs/catalog.log",
+      "sha256": "afe215b0a90977a9740890f07b16f71ba20eee827a6426d8c995f00ceeb39c09"
+    },
+    {
+      "path": "dist/v1.46.0-local-20261003/full-local-logs/contract.log",
+      "sha256": "93167620bd12c5c23fc602383cf8fca74cfe30827ee61c0db0fea9f4a2d5a1ec"
+    },
+    {
+      "path": "dist/v1.46.0-local-20261003/full-local-logs/gates.json",
+      "sha256": "8d5e5014a1497e75124942d970413bc8586c9c41c1133072cb3a7c52b3c269f0"
+    }
+  ],
+  "boundary": "Windows source checks; Linux link/launcher and package acceptance remain separate. Primary dirty process-manager EOF whitespace is preserved; private Ubuntu snapshot diff check is a distinct gate.",
+  "postFreezeErratum": "Receipt milestone label corrected from inherited 1.45.0 to 1.46.0 after source export; source fingerprints, gate logs and candidate package metadata unchanged. Frozen source retains initial label; correction is separate closure documentation."
+}

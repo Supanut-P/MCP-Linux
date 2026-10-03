@@ -1,0 +1,293 @@
+{
+  "milestone": "1.45.0",
+  "status": "actual-native-microbenchmark-complete-goal-missed",
+  "cliVersion": "0.146.0",
+  "sourceMatchedFixtures": 6,
+  "variantRuns": 12,
+  "roleInvocations": 18,
+  "provider": "existing logged-in Windows Codex subscription",
+  "explicitModelOverrides": [
+    "gpt-5.6-sol",
+    "gpt-5.6-luna"
+  ],
+  "defaultModelsVerified": false,
+  "report": {
+    "status": "missed",
+    "reasons": [
+      "token_reduction_below_goal"
+    ],
+    "single": {
+      "completePairs": 6,
+      "passedRuns": 4,
+      "observedTokenSubtotal": 115332,
+      "medianTotalTokens": 19217,
+      "medianContextBytes": 8676,
+      "totalElapsedMs": 45538,
+      "totalToolCalls": 0,
+      "totalRetries": 0,
+      "telemetryComplete": true
+    },
+    "routed": {
+      "completePairs": 6,
+      "passedRuns": 4,
+      "observedTokenSubtotal": 208472,
+      "medianTotalTokens": 34673.5,
+      "medianContextBytes": 1243,
+      "totalElapsedMs": 95048,
+      "totalToolCalls": 0,
+      "totalRetries": 0,
+      "telemetryComplete": true
+    },
+    "medianTokenReductionPercent": -80.43138887443409,
+    "medianContextByteReductionPercent": 85.67312125403411,
+    "successRegression": false,
+    "safetyFailures": 0
+  },
+  "artifacts": [
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/acceptance-bugfix.json",
+      "sha256": "ffedc9cfa40599e2363c41b5b2342cbe8f060cf16fb287714f0c04a3c9aa9d9b"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/acceptance-context_retrieval.json",
+      "sha256": "f08d99eeaf5899f0d7d12d83612ff215258a9097d8ff254711f58e68934a91bc"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/acceptance-incident_diagnosis.json",
+      "sha256": "c4583249c432e24fa8997a07b9005538beec845e54d865a03d0a738d7aa46a65"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/acceptance-refactor.json",
+      "sha256": "fbd23b3ba8a6263e022ab764a5354d426944c739a2134c8ae7420daea6d6269e"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/acceptance-resume.json",
+      "sha256": "4b52b13fbdc528d9402f714d5953fd8a438456d903093ffeee2ac764cad5b303"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/acceptance-small_edit.json",
+      "sha256": "e2c70d946798481c3e747cc21e9a298e3a0ffda785b2bfc54d5241aba2fb0897"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/bugfix-routed-lead-1.context.txt",
+      "sha256": "321a2e298e32c8c395633b313d2edc2ed5d833305ad1a4c51951ca6c348e3ce6"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/bugfix-routed-lead-1.jsonl",
+      "sha256": "2dcdbf1ebd5b9430b292499fc5dbd22c0ef4306d2628dec19e195d8472f02dc8"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/bugfix-routed-qa-1.context.txt",
+      "sha256": "3b41807bc361f783be6eba55f897de0e7359841d50909533601a3c4be7d7066e"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/bugfix-routed-qa-1.jsonl",
+      "sha256": "34515b59a25cc6e5db19fa1f8303a0986aef32f7aa9fd1498893c34ff070365f"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/bugfix-routed-worker-1.context.txt",
+      "sha256": "8909576505322c859e8cd411c09d2436831dac94fe28b4e85184125fee5e75fc"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/bugfix-routed-worker-1.jsonl",
+      "sha256": "f3837c843cca996a1d24e3a20fe818d0c90b51542b626c1699af82c75d8b1d06"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/bugfix-single-lead-1.context.txt",
+      "sha256": "e63097dd5e7005146f7bb93b21e42ea902a40e732a0de739d31bb6135a08c36e"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/bugfix-single-lead-1.jsonl",
+      "sha256": "9a56d97bb7750551df49f9725909b54deddee74f6da3c77b08134c46bd91bac9"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/context_retrieval-routed-lead-1.context.txt",
+      "sha256": "ad503958694caf911eaa3261f23d47e5b25484cb321b4c0f717ff0274ceb71a4"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/context_retrieval-routed-lead-1.jsonl",
+      "sha256": "06cb6fdc25605530d797e3a331159e7a0e60264bba08462d226a0bea0708a224"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/context_retrieval-single-lead-1.context.txt",
+      "sha256": "54a61ebcd88c7d0342dcc16b77bb9ed9f246e7bff449912ad8d23250d57b8d25"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/context_retrieval-single-lead-1.jsonl",
+      "sha256": "c11a4bbe80c523eb339ea300952fea92c9e4ac76d037fb12935dadb8ac736413"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/effective-config.json",
+      "sha256": "e7154e6fda9587a2142837648d30ce70bf481b176b8b27079d67778d3e995793"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/incident_diagnosis-routed-lead-1.context.txt",
+      "sha256": "168bb6156136464aa1ceb5c30c9f63d4ba831c9e480c5a7425bfd7a06077cff5"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/incident_diagnosis-routed-lead-1.jsonl",
+      "sha256": "f1c970b39f49574ebc3498c0f3eabde984f7199c733019b375eed469fa1ff90a"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/incident_diagnosis-routed-qa-1.context.txt",
+      "sha256": "5612fca3591a98e6bc8171e78e6f1b37212ddfc48f3d4e43db5dcc6c332243bb"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/incident_diagnosis-routed-qa-1.jsonl",
+      "sha256": "d7b994632727bce0c3a33f8ee869279b827bbce89d6eb5b5828bc18ae6a67255"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/incident_diagnosis-routed-worker-1.context.txt",
+      "sha256": "d512f18e917662909878c18718af9e503053b777ebe4afd5da80ace36b0fb113"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/incident_diagnosis-routed-worker-1.jsonl",
+      "sha256": "fac52ccd8a39d7296e9dc9dd9ba52fae32428650ed0ecbbc743b84fd4b1e8fca"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/incident_diagnosis-single-lead-1.context.txt",
+      "sha256": "0cb0d344aa480e7b2e61faf7c02b1477d6b2563c0dea1fa43e83bb4b7b717d82"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/incident_diagnosis-single-lead-1.jsonl",
+      "sha256": "26eb1a5273a25deb582880dc0ac273ace957e99ea72ba73996476dbdd22ae102"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/manifest.json",
+      "sha256": "c101d5f610cb93b563c4309bb1c65eb6dbcbcb158511ce36645614011faeec51"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/native-evidence.json",
+      "sha256": "46aa85cd37af6491501a74d9ab8c646c14e70906faf8f47ac93b1890f9534ac9"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/refactor-routed-lead-1.context.txt",
+      "sha256": "b865f319861e32f7f3ab77424a0c3298f9805a7eb85c01cf78b83260ef87e41d"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/refactor-routed-lead-1.jsonl",
+      "sha256": "06809be1c3fe1e7e2d357c1867cbccd51503f344b0a9f58e3eb5dc4c3d156e19"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/refactor-routed-qa-1.context.txt",
+      "sha256": "bb7f07f06b8b859e66445bbd00806ff8df39c14b34df80f838256405823d05dd"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/refactor-routed-qa-1.jsonl",
+      "sha256": "9b388307d4908d433806abec52c6862162c27e241cca8486a588954968fba3fa"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/refactor-routed-worker-1.context.txt",
+      "sha256": "edfd0b3f9b2da287ec07bd5e41776960c6670b2d88f18fe6d5bb3d63e3e578bd"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/refactor-routed-worker-1.jsonl",
+      "sha256": "227e5620ac41df46f3b9f7e9fa1ada5486990b6584e14dc7e8cb8950cea6e5f7"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/refactor-single-lead-1.context.txt",
+      "sha256": "55ec8cec777ae8d378260ccce03b811849b5f9ae639a581922133785cae996bd"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/refactor-single-lead-1.jsonl",
+      "sha256": "6bdd7abf1434291829e361695acfc5696b4f568b08b13c4341087a62d6f37282"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/report-final.json",
+      "sha256": "9d9359033d282f9c5698ab98287fbaf8ea2c76754c15a8cb6bf441c4f2e7ef0f"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/report-first.json",
+      "sha256": "70837a306b182cba6289f557514ad51c1547e34c1504ddd57b00071cad63303f"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/report-parser-repaired.json",
+      "sha256": "03c6ec5a7585ada4811ea4b21be57910ecc6450a1e0e84d71e805ee3a878e6fe"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/resume-routed-lead-1.context.txt",
+      "sha256": "860314ba67909361b8ef862efcec2b0fa51e64b6323f3e2fa7c5545f3b12e165"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/resume-routed-lead-1.jsonl",
+      "sha256": "3e515ac4587e2f775ea98e4d59314936d4d05c28fd7cf5e444382b197c9bdce8"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/resume-single-lead-1.context.txt",
+      "sha256": "c0e0750d8364ab6ff8d1a2b4e06e97912ad8eb459dec1e3c63599d5c36e73800"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/resume-single-lead-1.jsonl",
+      "sha256": "7de6bc8c5f44041a284e4a56dd5913629edae7ad25932594b11351f77d80887a"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/runs.json",
+      "sha256": "e12b62d160efceaac660b1e79fec8f7fb98bf00344eb01d78e063774c81a8cda"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/small_edit-routed-lead-1.context.txt",
+      "sha256": "8fd2d6ff6eb4615f7e64f67f3a5b6f03d20eaeb756977bd088ff53b710879c80"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/small_edit-routed-lead-1.jsonl",
+      "sha256": "6555ed29d6366f15ec2d07489cb33ad59f7243d1a401facc2351f9b36a5716e5"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/small_edit-single-lead-1.context.txt",
+      "sha256": "a9e71f0f519be7e4488c0fd78d4813c6e5da30317d2b2447d741120206b0ba53"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/small_edit-single-lead-1.jsonl",
+      "sha256": "45af856cf58b525c1f0faacde0e0e1f174052491b6c33d0b06daad921fc74b41"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/source-bugfix.json",
+      "sha256": "c92c060d6b543f3aeaa4a47142dbefb0ff8a40b0bec4ab41136e60f9a6e4606b"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/source-context_retrieval.json",
+      "sha256": "7819e6ea68ad8c6b86a4189f9ee7ef616fe6a84867d9b3df8c4bf6061e713319"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/source-incident_diagnosis.json",
+      "sha256": "389daf51621013d483ba2bb93f3ac9b8845ced887345f6186936a5f0fe6381a6"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/source-refactor.json",
+      "sha256": "bc5ef652317a1738d39dbf25c3d2d00fb493d329082ac07cf09320c61a5727c3"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/source-resume.json",
+      "sha256": "54b5b4245b3a9c036a6d840467d6fd47fc263b389fe846ee87d16e1674e129cb"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark-r2/source-small_edit.json",
+      "sha256": "77251563ac25b2cb44948468d02c4e16092df8df5d2bad1d35fb786c6a87686a"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark.mjs",
+      "sha256": "20d56649f8c54f0aea87b27dd0d2c6ed7bfdd0c4579baff0ebb169179b1f7806"
+    },
+    {
+      "path": "dist/v1.45.0-local-20261003/native-benchmark/preflight-failure.json",
+      "sha256": "5d4a6bcc08b21b988bf4f61bfa6b9085620e122cd556764ae67867872eee9269"
+    }
+  ],
+  "sourceInputs": [
+    {
+      "path": "packages/codex/src/workflow-benchmark.ts",
+      "sha256": "de47b835a3abd5d0e12e7457ee7bb22e9ad2d0a71751476a2f4fa84dc03b23ff"
+    },
+    {
+      "path": "scripts/report-workflow-benchmark.mjs",
+      "sha256": "c5b68885d7d38552920a5133c5603487d144e273533534e600d7f1033508084f"
+    },
+    {
+      "path": "tests/fixtures/workflow-benchmark/cases.json",
+      "sha256": "448e5ef1098d07eba4329923a05e3a6de063c0896fd1d247532c12541c3183bc"
+    }
+  ],
+  "historical": "Initial helper module path/preflight errors dispatched no models. Original report-first invalidated telemetry because current CLI has five usage fields; raw execution logs were preserved and reprocessed after repair.",
+  "routingDecision": "Keep fully deterministic small returned-answer tasks with one Lead plus checks; do not open worker/QA calls merely to complete the topology. Stateful/security changes retain independent QA. No additional provider run used to manufacture savings.",
+  "boundary": "Returned-answer microbenchmark with synthetic reviewable source and archived context; strict answer/format matching is not executable patch regression or real incident/recovery proof. Every original role call and failed verdict remains counted. Context bytes exclude hidden/system/reasoning context. Usage is log-derived, not authenticated billing. No Linux provider, default alias, Windows tree cancellation or production proof."
+}

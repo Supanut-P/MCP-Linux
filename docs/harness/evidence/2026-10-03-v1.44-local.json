@@ -1,0 +1,209 @@
+{
+  "milestone": "1.44.0",
+  "status": "implementation-approved-local-passed-ubuntu-open",
+  "reviewer": "v143_scope_review: gpt-6.1-sol high",
+  "reviewerFocusedPassed": 30,
+  "sources": [
+    {
+      "path": "packages/domain/src/workflow-state.ts",
+      "sha256": "6d7a25926e49c7fe0be8189d53a0de3c2b398f6b94e2d0533095de699da979e2"
+    },
+    {
+      "path": "packages/storage/src/workflow-repository.ts",
+      "sha256": "dd4afedfc742b2fbb82c8eabaf92e7eb4519846bad713e4513be90e5b00e8fc2"
+    },
+    {
+      "path": "packages/storage/src/database.ts",
+      "sha256": "29987ccf687502130b44fa6eb18e8aa47ccbbd85ff8bd9cf1c0c3177aaa00bde"
+    },
+    {
+      "path": "packages/storage/src/migrations/workflow-qa-migration.ts",
+      "sha256": "3cabdaae951050cc3fd98152d71467849e7f1e31576035a00692e8e3be2fd942"
+    },
+    {
+      "path": "packages/storage/src/workflow-repository.integration.test.ts",
+      "sha256": "b8a83ff3f0e92b26b5d0cfad26bbcd379f1a71cdd3550c4b2cde6237b7f512aa"
+    },
+    {
+      "path": "packages/application/src/workflow-state-service.ts",
+      "sha256": "93d0d2e4ecf97135383d132fa1185eace1ce5fe97fa5cba32abe2ce7d92400d8"
+    },
+    {
+      "path": "packages/application/src/workflow-state-service.test.ts",
+      "sha256": "fbcd422a27615374e1f4ae9342e813194dfc0a75111c26fd23a48752a2ae9218"
+    },
+    {
+      "path": "packages/application/src/workflow-qa.ts",
+      "sha256": "a5dbe2edaad197cf5b7f2d572a1b727999e3a605aab93d45a28387a37e1eadeb"
+    },
+    {
+      "path": "packages/application/src/workflow-qa.test.ts",
+      "sha256": "34ff7f45141277dabb8491b99116f740bbf90da34eb0c66f7130a65a64859565"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/schemas.ts",
+      "sha256": "b2c19c62c4be2655b7cfa3ebd7574579b7d0880c4de46b5cb5f05d58c070f6b6"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/workflow-state-tools.ts",
+      "sha256": "6818592a4b485d1da8f2cd57158844f0975d4e7ceef752ac624a13f4bdd68d11"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/workflow-state-tools.test.ts",
+      "sha256": "4ac3815c152907e1308f1e01a4437c91c7b0f36387c5fa133391abdd8fb1255a"
+    }
+  ],
+  "gates": [
+    {
+      "name": "typecheck",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--build"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 2490
+    },
+    {
+      "name": "lint",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "."
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 4676
+    },
+    {
+      "name": "focused",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages/storage/src/workflow-repository.integration.test.ts",
+        "packages/application/src/workflow-state-service.test.ts",
+        "packages/application/src/workflow-qa.test.ts",
+        "packages/application/src/workflow-scope.test.ts",
+        "packages/capabilities/src/durable-shell-task-store.test.ts",
+        "packages/mcp-server/src/tools/workflow-state-tools.test.ts"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 3349
+    },
+    {
+      "name": "unit",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages",
+        "apps"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 13380
+    },
+    {
+      "name": "other",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/integration",
+        "tests/packaging",
+        "tests/release",
+        "tests/acceptance"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 2756
+    },
+    {
+      "name": "catalog",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-catalog.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 324
+    },
+    {
+      "name": "contract",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-contract-v1.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 343
+    }
+  ],
+  "counts": {
+    "focused": {
+      "passed": 37,
+      "skipped": 14
+    },
+    "unit": {
+      "passed": 780,
+      "skipped": 47
+    },
+    "other": {
+      "passed": 34,
+      "skipped": 5
+    }
+  },
+  "artifacts": [
+    {
+      "path": "dist/v1.44.0-local-20261003/full-local-logs-r2/catalog.log",
+      "sha256": "3b1de70cd5f2454bbd9cfe291d3b39bd888ae87be9252d469aeb984d1f02a11b"
+    },
+    {
+      "path": "dist/v1.44.0-local-20261003/full-local-logs-r2/contract.log",
+      "sha256": "a24b2dfa13b9418c028aa6a891d6b48cfd616a3e199054a156ec6b404544e17b"
+    },
+    {
+      "path": "dist/v1.44.0-local-20261003/full-local-logs-r2/focused.log",
+      "sha256": "17d09389eadaaa0e22c8d0fb1da1d4381989d23f38272575c50b8251f17efd9a"
+    },
+    {
+      "path": "dist/v1.44.0-local-20261003/full-local-logs-r2/gates.json",
+      "sha256": "f6bc5296f095c99fa6f723564645ae29da5d0e30ef8d47568c924bd15887fbba"
+    },
+    {
+      "path": "dist/v1.44.0-local-20261003/full-local-logs-r2/lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.44.0-local-20261003/full-local-logs-r2/other.log",
+      "sha256": "61575a252f7d5b636b43eb9000b03c418252fa8f4fbaf84704ea880590e1269c"
+    },
+    {
+      "path": "dist/v1.44.0-local-20261003/full-local-logs-r2/typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.44.0-local-20261003/full-local-logs-r2/unit.log",
+      "sha256": "f2d25d4af38cbbae05deb2d8967d93b4d05c68e758769d8686b9d630f10b1608"
+    }
+  ],
+  "catalogTools": 235,
+  "frozenV1Tools": 227,
+  "repairHistory": [
+    "Luna implementation and bounded QA repair",
+    "Sol repair: historical receipts, review fence and terminal evidence retention after contract clarification"
+  ],
+  "limits": [
+    "Caller identity/model/execution/termination attestations",
+    "After-final-check filesystem TOCTOU; coordination is not OS containment",
+    "Ubuntu/package/installed acceptance pending",
+    "Linux native provider authentication remains final v2 gate",
+    "Seven-day soak waived, not passed",
+    "Publication unapproved"
+  ]
+}

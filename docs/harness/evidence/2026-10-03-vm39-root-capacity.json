@@ -1,0 +1,55 @@
+{
+  "status": "verified-approved-expansion",
+  "target": "192.168.1.39",
+  "authorization": "User approved existing 18 GiB root expansion",
+  "exitCode": 0,
+  "root": {
+    "beforeTotalBytes": 15740116992,
+    "beforeAvailableBytes": 244289536,
+    "afterTotalBytes": 34755887104,
+    "afterAvailableBytes": 18487087104,
+    "logicalVolumeBytes": 35429285888
+  },
+  "home": {
+    "logicalVolumeBytesBefore": 16106127360,
+    "logicalVolumeBytesAfter": 16106127360
+  },
+  "partitionVerification": "sfdisk --verify: No errors detected",
+  "services": [
+    "MCP active",
+    "tunnel active"
+  ],
+  "nativeConnector": "workspace_list succeeded after expansion",
+  "backupDirectory": "/var/tmp/mcp-linux-disk-20261003",
+  "boundary": "Live ext4 growth and capacity verified; no shrink rollback exercised; product source evidence unchanged",
+  "artifacts": [
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/disk-logs/df-after.txt",
+      "sha256": "2eca450605ff8f3d8cda1f80feb393823ff446f3813c3067bd00df5c8e5b118f"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/disk-logs/df-before.txt",
+      "sha256": "9734ff15a48947e4af373b60b8caf46fe232f7fc3b4aea9489a77aa1de539f72"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/disk-logs/partition-after.sfdisk",
+      "sha256": "1bb5e501cbceedc214f4e96965a43f06380a45ed51c113a7e5acc0966a5e614b"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/disk-logs/partition-before.sfdisk",
+      "sha256": "e1ef6dfcbc8db17958e9919b24d32462631276bf46902bf6a419f8e6ac0afa1a"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/disk-logs/resize2fs.txt",
+      "sha256": "cc8de6cae003daa3bcad1781ecd9306e3557e4b58e28f7610266441d4e06d396"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/disk-logs/services.txt",
+      "sha256": "54233fea09439225592caba48eaef86204f35acbd98a0a8b8672f03f9ddc8cce"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/expand-vm39-root.sh",
+      "sha256": "12d42c82713f688e9d21e079611d49ba2c0a585dc61d88328e7c4970c0313378"
+    }
+  ]
+}

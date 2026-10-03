@@ -1,0 +1,89 @@
+{
+  "milestone": "1.37.0",
+  "status": "milestone-verification-closed",
+  "independentQa": {
+    "reviewer": "Sol v137_review",
+    "result": "no remaining material findings",
+    "boundary": "Read-only independent evidence and script review; runtime checks executed by lead"
+  },
+  "sourceCommit": "bbd47e10c0575f9ddb9312d8c61e752f1a8858c9",
+  "sourceManifestSha256": "c216a5486d7dd6a1a800850bc6e79c309675a07d3f9b2d9d0a709e2e2486dac8",
+  "candidateDebSha256": "1a01ef081970d34d19831163e2877d8e57435e1ff1de47bb98f9db4604902de5",
+  "rollbackDebSha256": "16d73d1811d55d13c7060063369f7d67a5fc5091062923b1ef37b89daf724888",
+  "target": {
+    "os": "Ubuntu24.04",
+    "arch": "x86_64",
+    "identityLabel": "codex-vm103-mcp-20260825",
+    "account": "root",
+    "serviceOwner": "adminops"
+  },
+  "installedVersion": "1.37.0",
+  "checks": {
+    "packageChecksums": true,
+    "preAndPostSQLiteIntegrity": "ok",
+    "stateOwner": "adminops",
+    "profileCredentialsEffectiveTunnelUnitUnchanged": true,
+    "mcpActive": true,
+    "tunnelActive": true,
+    "healthzHttp": 200,
+    "readyzHttp": 200,
+    "explicitRestartReconnect": true,
+    "installedEightFilesByteEqualPackage": true,
+    "incidentDiagnostics": {
+      "serverVersion": "1.37.0",
+      "tool": "diagnostics_snapshot",
+      "isError": false,
+      "responseBytes": 1735,
+      "knownCredentialMatches": 0,
+      "knownCredentialCount": 3,
+      "utc": "2026-10-02T16:49:49.847896+00:00"
+    }
+  },
+  "nativeConnectorAfterRestart": {
+    "time": "2026-10-02 16:40:39 UTC",
+    "phase": "after-explicit-tunnel-restart",
+    "health": {
+      "isError": false,
+      "serverProfile": "full",
+      "shellReady": true,
+      "platform": "linux"
+    },
+    "workspaceList": {
+      "isError": false,
+      "count": 1,
+      "expectedPresent": true
+    },
+    "read": {
+      "isError": false,
+      "path": "package.json",
+      "startLine": 1,
+      "endLine": 8,
+      "workspaceSourceVersion": "1.11.0",
+      "installedRuntimeVersion": "1.37.0",
+      "boundary": "workspace version is historical source, not installed runtime"
+    }
+  },
+  "retained": {
+    "installSummary": {
+      "path": "dist/v1.37.0-local-20260930/install-summary.log",
+      "sha256": "ccdb4700e3fa228df69aa5391c87dd59501e2b7652161b58297fd017a22373ed"
+    },
+    "runtimeCheck": {
+      "path": "dist/v1.37.0-local-20260930/runtime-check.json",
+      "sha256": "80f13e89ee83daf15aa8c1e01fa8d026952ce611d22d3ef53f5622371cde26a8"
+    },
+    "installScriptSha256": "ee797ec119cc8987d7c5e595309ff50ebe12e16fdd30479439a717fb5d9f204d",
+    "runtimeCheckScriptSha256": "cfc1bd24795f5b48bc89e5f24ccb3815e0e6af89dbd8489327f23fca90cf1fb1",
+    "incidentCheck": {
+      "path": "dist/v1.37.0-local-20260930/incident-check.json",
+      "sha256": "bdb978bc9f4ff96d5753ea6353e2b9c9762c13857706e0a69caab2f41d31ad91"
+    },
+    "incidentCheckScriptSha256": "0f387e8586f7664e047540cc551adebea879a344540fbede26e973de2fbd815b"
+  },
+  "boundaries": [
+    "Stopped-state backups retained root-only on approved test VM; not downloaded",
+    "Known credential values and encoded forms scanned in bounded post-upgrade observations; no arbitrary-secret completeness claim",
+    "Historical workspace checkout version is distinct from installed runtime",
+    "No credential/profile modifications, publication or seven-day soak; soak waiver remains"
+  ]
+}

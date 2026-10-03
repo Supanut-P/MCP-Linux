@@ -1,5 +1,5 @@
 export const APP_NAME = 'baitonghub-linux-mcp';
-export const APP_VERSION = '1.49.0';
+export const APP_VERSION = '1.50.0';
 export { isUnrestricted, unrestrictedFromEnv, unrestrictedFromSetting, UNRESTRICTED_SETTING_KEY, type ProcessEnvLike } from './unrestricted.js';
 
 export {

@@ -16,6 +16,7 @@ interface LeaseRow { lease_id: string; workflow_id: string; task_id: string; sta
 interface AttemptRow { attempt_no: number; worker_id: string; requested_preset: string; lease_id: string; claim_revision: number; verification_revision: number | null; source_fingerprint: string | null; diff_fingerprint: string | null; state: string; created_at: string; }
 interface ReceiptRow { receipt_id:string;canonical_hash:string;receipt_json:string;verdict:string;source_fingerprint:string;diff_fingerprint:string;verification_revision:number;attempt_no:number;lease_id:string;created_at:string; }
 class EventLimitError extends Error {}
+class WorkflowQuotaError extends Error {}
 
 /** Durable caller workflow metadata. Claim tokens are deliberately omitted from every read. */
 export class SqliteWorkflowRepository implements WorkflowRepository {
@@ -27,16 +28,23 @@ export class SqliteWorkflowRepository implements WorkflowRepository {
 
   public create(workflow: DurableWorkflow): void {
     validateWorkflow(workflow);
-    this.tx((db) => {
-      const count = db.prepare('SELECT COUNT(*) AS count FROM durable_workflows WHERE owner_key = ?').get(workflow.ownerKey) as { count: number | bigint };
-      if (Number(count.count) >= 32) throw new Error('Workflow quota exceeded');
-      db.prepare('INSERT INTO durable_workflows(id, owner_key, workspace_id, created_at) VALUES (?, ?, ?, ?)')
-        .run(workflow.id, workflow.ownerKey, workflow.workspaceId, workflow.createdAt);
-      const put = db.prepare('INSERT INTO durable_workflow_tasks(workflow_id, task_id, contract_json, dependencies_json, state, revision) VALUES (?, ?, ?, ?, ?, 0)');
-      for (const t of workflow.tasks) put.run(workflow.id, t.taskId, t.contractJson, JSON.stringify(t.dependencies), t.dependencies.length === 0 ? 'ready' : 'planned');
-      this.append(db, workflow.id, null, 'created', workflow.createdAt, null);
-      for (const t of workflow.tasks) this.append(db, workflow.id, t.taskId, t.dependencies.length === 0 ? 'ready' : 'planned', workflow.createdAt, 0);
-    });
+    this.tx((db) => this.insertValidatedWorkflow(db, workflow));
+  }
+
+  /** Insert a workflow and a trusted linked row in one transaction. */
+  public createLinked(workflow: DurableWorkflow, insertLinked: (db: DatabaseSync) => void): boolean {
+    validateWorkflow(workflow);
+    try {
+      return this.tx((db) => {
+        if (db.prepare('SELECT 1 FROM durable_workflows WHERE id=?').get(workflow.id)) return false;
+        this.insertValidatedWorkflow(db, workflow);
+        insertLinked(db);
+        return true;
+      });
+    } catch (error) {
+      if (error instanceof WorkflowQuotaError) return false;
+      throw error;
+    }
   }
 
   public get(ownerKey: string, id: string): DurableWorkflow | null {
@@ -431,6 +439,17 @@ export class SqliteWorkflowRepository implements WorkflowRepository {
   private append(db: DatabaseSync, id: string, taskId: string | null, type: string, timestamp: string, revision: number | null): void {
     const x = db.prepare('SELECT COALESCE(MAX(sequence), 0)+1 AS next FROM durable_workflow_events WHERE workflow_id=?').get(id) as {next:number};
     db.prepare('INSERT INTO durable_workflow_events(workflow_id,sequence,task_id,type,timestamp,revision) VALUES(?,?,?,?,?,?)').run(id, x.next, taskId, type, timestamp, revision);
+  }
+
+  private insertValidatedWorkflow(db: DatabaseSync, workflow: DurableWorkflow): void {
+    const count = db.prepare('SELECT COUNT(*) AS count FROM durable_workflows WHERE owner_key = ?').get(workflow.ownerKey) as { count: number | bigint };
+    if (Number(count.count) >= 32) throw new WorkflowQuotaError('Workflow quota exceeded');
+    db.prepare('INSERT INTO durable_workflows(id, owner_key, workspace_id, created_at) VALUES (?, ?, ?, ?)')
+      .run(workflow.id, workflow.ownerKey, workflow.workspaceId, workflow.createdAt);
+    const put = db.prepare('INSERT INTO durable_workflow_tasks(workflow_id, task_id, contract_json, dependencies_json, state, revision) VALUES (?, ?, ?, ?, ?, 0)');
+    for (const task of workflow.tasks) put.run(workflow.id, task.taskId, task.contractJson, JSON.stringify(task.dependencies), task.dependencies.length === 0 ? 'ready' : 'planned');
+    this.append(db, workflow.id, null, 'created', workflow.createdAt, null);
+    for (const task of workflow.tasks) this.append(db, workflow.id, task.taskId, task.dependencies.length === 0 ? 'ready' : 'planned', workflow.createdAt, 0);
   }
   private tx<T>(fn: (db: DatabaseSync) => T): T {
     const db = this.database.connection;

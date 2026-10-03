@@ -20,6 +20,7 @@ const registry = new ToolRegistry({
   incident: { execute: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Incident schema provider only', recoverable: false } }) },
   drift: { execute: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Drift schema provider only', recoverable: false } }) },
   diagnosis: { execute: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Diagnosis schema provider only', recoverable: false } }) },
+  incidentFix: { execute: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Incident fix schema provider only', recoverable: false } }) },
   contextFile: { readContextFile: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Catalog schema provider only', recoverable: false } }) },
   targetCatalog: {
     list: async () => ({ ok: true, value: [] }),

@@ -52,3 +52,4 @@ export * from './task-creation.js';
 export * from './incident-service.js';
 export * from './drift-service.js';
 export * from './diagnosis-service.js';
+export * from './incident-fix-service.js';

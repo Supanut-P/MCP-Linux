@@ -64,6 +64,30 @@ export class IncidentService {
 
   /** Internal evidence access; no probes, public-page scanning or ownership override. */
   public async resolveEvidence(actor: FileActor, workspaceId: string, references: readonly IncidentEvidenceReference[], userConfirmed = false, signal?: AbortSignal, outerDeadline?: number): Promise<Result<readonly ResolvedIncidentEvidence[]>> {
+    return this.resolveOwnedEvidence(actor,workspaceId,references,userConfirmed,signal,outerDeadline);
+  }
+
+  /** Registered mapping constraint, checked against the validated pinned header. */
+  public async resolveFixEvidence(actor: FileActor, workspaceId: string, references: readonly IncidentEvidenceReference[], required: {readonly hostId:string;readonly serviceUnit:string;readonly hostFingerprint:string;readonly workspaceFingerprint:string}, userConfirmed=false, signal?:AbortSignal, outerDeadline?:number):Promise<Result<readonly ResolvedIncidentEvidence[]>> {
+    if(!ID.test(required.hostId)||!UNIT.test(required.serviceUnit)||required.serviceUnit.startsWith('-')||!SHA.test(required.hostFingerprint)||!SHA.test(required.workspaceFingerprint))return invalid();
+    return this.resolveOwnedEvidence(actor,workspaceId,references,userConfirmed,signal,outerDeadline,required);
+  }
+
+  /** Synchronous owned-source fence after later mapping/context awaits. */
+  public verifyFixEvidence(actor:FileActor,workspaceId:string,facts:readonly ResolvedIncidentEvidence[],required:{readonly hostId:string;readonly serviceUnit:string;readonly hostFingerprint:string;readonly workspaceFingerprint:string},userConfirmed=false):Result<void>{
+    try{
+      if(!ID.test(workspaceId)||facts.length<1||facts.length>32||typeof actor.clientId!=='string'||!actor.clientId.trim()||actor.clientId.includes('\0')||Buffer.byteLength(actor.clientId)>512)return invalid();
+      const owner=hash(actor.clientId);
+      for(const incidentId of new Set(facts.map(fact=>fact.reference.incidentId))){
+        const entry=this.options.repository.get(owner,incidentId),header=entry===null?null:parseHeader(entry.header),retained=entry===null||header===null?null:readRetained(this.options.repository,entry,header);
+        if(entry===null||header===null||retained===null||retained.state==='collecting'||header.workspaceId!==workspaceId||header.unit!==required.serviceUnit||header.workspaceFingerprint!==required.workspaceFingerprint||!header.hosts.some(host=>host.hostId===required.hostId&&host.fingerprint===required.hostFingerprint))return invalid();
+        if(facts.filter(fact=>fact.reference.incidentId===incidentId).some(fact=>fact.incidentRequestFingerprint!==entry.requestFingerprint||fact.incidentHeaderHash!==hash(canonicalMetadata(header))||fact.incidentState!==retained.state||fact.missingSources!==retained.expected-retained.rows.length||!retained.rows.some(row=>row.sequence===fact.reference.sequence&&row.hash===fact.reference.hash)))return invalid();
+        const permission=this.authorize({operation:'report',incidentId,workspaceId,userConfirmed});if(!permission.ok)return permission;
+      }return ok(undefined);
+    }catch{return invalid();}
+  }
+
+  private async resolveOwnedEvidence(actor: FileActor, workspaceId: string, references: readonly IncidentEvidenceReference[], userConfirmed = false, signal?: AbortSignal, outerDeadline?: number, required?:{readonly hostId:string;readonly serviceUnit:string;readonly hostFingerprint:string;readonly workspaceFingerprint:string}): Promise<Result<readonly ResolvedIncidentEvidence[]>> {
     const deadline = Math.min(Date.now() + this.deadlineMs, outerDeadline ?? Infinity);
     try {
       if (!ID.test(workspaceId) || references.length < 1 || references.length > 32 || new Set(references.map(ref => ref.incidentId)).size > 8 || references.some(ref => !ID.test(ref.incidentId) || !Number.isInteger(ref.sequence) || ref.sequence < 1 || ref.sequence > 128 || !SHA.test(ref.hash)) || typeof actor.clientId !== 'string' || !actor.clientId.trim() || actor.clientId.includes('\0') || Buffer.byteLength(actor.clientId) > 512) return invalid();
@@ -74,12 +98,14 @@ export class IncidentService {
       for (const incidentId of new Set(references.map(ref => ref.incidentId))) {
         const entry = this.options.repository.get(owner, incidentId), header = entry === null ? null : parseHeader(entry.header);
         if (entry === null || header === null || header.workspaceId !== workspaceId) return invalid();
+        if(required!==undefined&&(header.unit!==required.serviceUnit||header.workspaceFingerprint!==required.workspaceFingerprint||!header.hosts.some(host=>host.hostId===required.hostId&&host.fingerprint===required.hostFingerprint)))return invalid();
         const retained = readRetained(this.options.repository, entry, header);
         if (retained === null || retained.state === 'collecting') return invalid();
         const headerHash = hash(canonicalMetadata(header));
         const wanted = references.filter(ref => ref.incidentId === incidentId);
         const rows = wanted.map(ref => retained.rows.find(row => row.sequence === ref.sequence && row.hash === ref.hash));
         if (rows.some(row => row === undefined)) return invalid();
+        if(required!==undefined&&rows.some(row=>{const hostId=(row!.payload as Record<string,unknown>).hostId;return hostId!==undefined&&hostId!==required.hostId;}))return invalid();
         const workspaceStatus = await this.bindingStatus(header, undefined, deadline, signal);
         const hostIds = [...new Set(rows.map(row => (row!.payload as Record<string, unknown>).hostId).filter((id): id is string => typeof id === 'string'))];
         const hostStatuses = new Map(await Promise.all(hostIds.map(async hostId => [hostId, await this.bindingStatus(header, header.hosts.find(binding => binding.hostId === hostId), deadline, signal)] as const)));

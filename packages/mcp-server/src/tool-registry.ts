@@ -40,6 +40,7 @@ import { fleetCatalogTools } from './tools/fleet-catalog-tools.js';
 import { incidentTools } from './tools/incident-tools.js';
 import { driftTools } from './tools/drift-tools.js';
 import { diagnosisTools } from './tools/diagnosis-tools.js';
+import { incidentFixTools } from './tools/incident-fix-tools.js';
 import { releaseVerifyTools } from './tools/release-verify-tools.js';
 import { environmentPreflightTools } from './tools/environment-preflight-tools.js';
 import { workflowPreflightTools } from './tools/workflow-preflight-tools.js';
@@ -139,6 +140,7 @@ export class ToolRegistry {
       ...incidentTools(context),
       ...driftTools(context),
       ...diagnosisTools(context),
+      ...incidentFixTools(context),
       ...releaseVerifyTools(context),
       ...environmentPreflightTools(context),
       ...workflowPreflightTools(context),

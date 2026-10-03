@@ -53,8 +53,8 @@ import {
 } from '@baitonghub-linux-mcp/storage';
 import { SecretPolicy, WorkspacePathGuard, WorkspaceService, type Workspace } from '@baitonghub-linux-mcp/workspace';
 import { StrictWorkspaceRepository } from './strict-workspace-repository.js';
-import { DiagnosisService, DriftService, IncidentService, RemoteFleetRuntime } from '@baitonghub-linux-mcp/mcp-server';
-import { SqliteDiagnosisRepository, SqliteDriftRepository, SqliteIncidentRepository } from '@baitonghub-linux-mcp/storage';
+import { DiagnosisService, DriftService, IncidentFixService, IncidentService, RemoteFleetRuntime } from '@baitonghub-linux-mcp/mcp-server';
+import { SqliteDiagnosisRepository, SqliteDriftRepository, SqliteIncidentFixRepository, SqliteIncidentRepository } from '@baitonghub-linux-mcp/storage';
 
 export interface StdioMcpRuntime {
   readonly services: McpApplicationServices;
@@ -281,14 +281,18 @@ export function createStdioMcpRuntime(
   const incident = new IncidentService({ repository: new SqliteIncidentRepository(database), workspaces: workspaceRepository, hosts: remoteHosts, fleet: new RemoteFleetRuntime(capabilityService, async event => auditService.record({
     actorId: actor.clientId, actorName: actor.clientName, action: 'incident_probe', targetSummary: `host:${event.hostId}`, resultCode: event.resultCode, durationMs: event.durationMs, metadata: { operation: event.operation, truncated: event.truncated ?? false },
   })), catalog: fleetCatalog, metrics: runtimeMetrics, changes: workspaceChanges, profileProvider });
+  const diagnosis = new DiagnosisService({ repository: new SqliteDiagnosisRepository(database), incidents: incident, profileProvider });
+  const workflowRepository = new SqliteWorkflowRepository(database);
+  const incidentFix = new IncidentFixService({repository:new SqliteIncidentFixRepository(database),workflows:workflowRepository,diagnosis,incidents:incident,catalog:fleetCatalog,plans:workflowPlan,files:fileService,workspaces:workspaceRepository,hosts:remoteHosts,profileProvider});
   const services: McpApplicationServices = {
-    diagnosis: new DiagnosisService({ repository: new SqliteDiagnosisRepository(database), incidents: incident, profileProvider }),
+    diagnosis,
+    incidentFix,
     drift: new DriftService({ repository: new SqliteDriftRepository(database), workspaces: workspaceRepository, hosts: remoteHosts, fleet: new RemoteFleetRuntime(capabilityService, async event => auditService.record({
       actorId: actor.clientId, actorName: actor.clientName, action: 'drift_probe', targetSummary: `host:${event.hostId}`, resultCode: event.resultCode, durationMs: event.durationMs, metadata: { operation: event.operation, truncated: event.truncated ?? false },
     })), profileProvider }),
     incident,
     workflowPlan,
-    workflowState: new WorkflowStateService(workspaceRepository, new SqliteWorkflowRepository(database), profileProvider),
+    workflowState: new WorkflowStateService(workspaceRepository, workflowRepository, profileProvider,(actor,workflow,operation,confirmed,signal)=>incidentFix.validateWorkflow(actor,workflow,operation,confirmed,signal)),
     fleetCatalog,
     verifiedSkills,
     verifiedWorkflowPlan,

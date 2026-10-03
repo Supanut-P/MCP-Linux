@@ -60,6 +60,7 @@ semantic-version order.
 | v1.46.0 | Registered fleet groups and service mappings (Ubuntu/package verification closed) | [notes](docs/releases/v1.46.0.md) |
 | v1.47.0 | Durable incident observations (Ubuntu/package verification closed; publication unapproved) | [notes](docs/releases/v1.47.0.md) |
 | v1.48.0 | Approved baseline drift (Ubuntu/package verification closed; publication unapproved) | [notes](docs/releases/v1.48.0.md) |
+| v1.49.0 | Evidence-linked diagnosis (Ubuntu/package verification closed; publication unapproved) | [notes](docs/releases/v1.49.0.md) |
 
 The old Windows desktop tags are intentionally not part of this sequence.
 They are not Linux releases and are not published from the Linux-only branch.

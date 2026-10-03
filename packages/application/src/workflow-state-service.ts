@@ -4,8 +4,11 @@ import { prepareWorkflowContract } from '@baitonghub-linux-mcp/codex';
 import { DefaultPermissionEngine, permissionProfiles, type PermissionProfile } from '@baitonghub-linux-mcp/permissions';
 import { WorkspacePathGuard, type WorkspaceRepository } from '@baitonghub-linux-mcp/workspace';
 import type { FileActor } from './file-service.js';
-import { parseWorkflowQaSubmission, verifyWorkflowQaArtifacts } from './workflow-qa.js';
-import { captureWorkflowScope, compareWorkflowSnapshots, type WorkflowSourceSnapshot } from './workflow-scope.js';
+import { parseWorkflowQaSubmission, verifyWorkflowQaArtifacts, type WorkflowQaSubmission } from './workflow-qa.js';
+import { captureWorkflowScope, compareWorkflowSnapshots, type WorkflowSourceSnapshot, type WorkflowScopeCapture } from './workflow-scope.js';
+
+/** Trusted synchronous retained-state check, invoked after the last filesystem await. */
+export interface WorkflowLinkFence { readonly verify: () => Result<void> }
 
 export type WorkflowOperation = 'plan' | 'start' | 'status' | 'events' | 'result' | 'resume' | 'checkpoint' | 'complete' | 'cancel' | 'reconcile' | 'review' | 'retry';
 interface Request {
@@ -41,6 +44,7 @@ export class WorkflowStateService {
     private readonly workspaces: WorkspaceRepository,
     private readonly repository: WorkflowRepository,
     private readonly profileProvider: () => PermissionProfile = () => permissionProfiles.balanced,
+    private readonly linkValidator?: (actor:FileActor,workflow:DurableWorkflow,operation:WorkflowOperation,userConfirmed:boolean,signal?:AbortSignal)=>Promise<Result<WorkflowLinkFence | undefined>>,
   ) {}
 
   public async execute(actor: FileActor, input: unknown, signal?: AbortSignal): Promise<Result<unknown>> {
@@ -95,6 +99,8 @@ export class WorkflowStateService {
       let reservation: WorkflowReservation | undefined;
       let verification: WorkflowVerification | undefined;
       let sourceEvidence: unknown;
+      let capturedScope: WorkflowScopeCapture | undefined;
+      let captureMode: 'workspace' | 'disjoint' = 'workspace';
       let now = new Date().toISOString();
       const expiresAt = new Date(Date.parse(now) + (request.leaseSeconds ?? 300) * 1000).toISOString();
       if (['start', 'checkpoint', 'complete', 'reconcile', 'review'].includes(request.operation)) {
@@ -104,6 +110,8 @@ export class WorkflowStateService {
         if (request.operation !== 'start' && lease === null) return conflict();
         const captured = await captureWorkflowScope(workspace, allowedFiles, lease?.reservation.mode ?? request.scopeMode ?? 'workspace', signal);
         if (!captured.ok) return captured;
+        capturedScope = captured.value;
+        captureMode = lease?.reservation.mode ?? request.scopeMode ?? 'workspace';
         if (request.operation === 'start') {
           reservation = { mode: request.scopeMode ?? 'workspace', scopes: captured.value.scopes, workspaceFingerprint: captured.value.workspaceFingerprint, baselineJson: JSON.stringify({ ...captured.value.snapshot, canonicalAllowedFiles: captured.value.canonicalAllowedFiles }), expiresAt };
         } else if (request.operation === 'reconcile') {
@@ -133,6 +141,7 @@ export class WorkflowStateService {
         }
       }
       const qaArtifactPaths: string[] = [];
+      let qaSubmission: WorkflowQaSubmission | undefined;
       let reviewInput: import('@baitonghub-linux-mcp/domain').WorkflowQAReceiptInput | undefined;
       if (request.operation === 'review' || (request.operation === 'complete' && request.state === 'done')) {
         const task = workflow.tasks.find((item) => item.taskId === request.taskId);
@@ -143,6 +152,7 @@ export class WorkflowStateService {
         if (!prepared.ok) return invalid();
         const submission = request.operation === 'review' ? parseWorkflowQaSubmission(request.review, prepared.value.contract) : info.receipts.find((receipt) => receipt.canonicalHash === info.acceptedReceiptHash);
         if (submission == null) return invalid();
+        qaSubmission = submission;
         if (request.operation === 'complete') {
           const receipt = submission as import('@baitonghub-linux-mcp/domain').WorkflowQAReceipt;
           if (receipt.contractSha256 !== createHash('sha256').update(task.contractJson).digest('hex') || receipt.baselineFingerprint !== (JSON.parse(lease.reservation.baselineJson) as WorkflowSourceSnapshot).fingerprint || receipt.leaseId !== lease.id || receipt.sourceFingerprint !== verification.sourceFingerprint || receipt.diffFingerprint !== verification.diffFingerprint) return conflict();
@@ -164,12 +174,27 @@ export class WorkflowStateService {
           verification = { ...verification, acceptedReceiptHash: info.acceptedReceiptHash };
         }
       }
-      // Lease lifetime begins at admission, after bounded filesystem capture.
+      // Awaited scope reads can cross a live policy change: authorize again at commit.
+      if(this.linkValidator!==undefined&&(request.operation==='start'||request.operation==='review'||(request.operation==='complete'&&(request.state==='verifying'||request.state==='done')))){
+        const linked=await this.linkValidator(actor,workflow,request.operation,request.userConfirmed===true,signal);
+        if(!linked.ok)return linked;
+        // Link reads may change source or artifacts. Hash artifacts first, then capture
+        // scope, and finally fence retained SQL state with no intervening await.
+        if (qaSubmission !== undefined && !await verifyWorkflowQaArtifacts(workspace, qaSubmission, signal)) return invalid();
+        if (capturedScope !== undefined) {
+          const fresh = await captureWorkflowScope(workspace, contracts.get(request.taskId ?? '') ?? [], captureMode, signal);
+          if (!fresh.ok) return fresh;
+          if (JSON.stringify(fresh.value) !== JSON.stringify(capturedScope)) return conflict();
+        }
+        if (signal?.aborted) return cancelled();
+        const fenced = linked.value?.verify();
+        if (fenced !== undefined && !fenced.ok) return fenced;
+      }
+      // Admission and expiry checks use the clock after every asynchronous read.
       now = new Date().toISOString();
       const admissionExpiry = new Date(Date.parse(now) + (request.leaseSeconds ?? 300) * 1000).toISOString();
       if (reservation !== undefined) reservation = { ...reservation, expiresAt: admissionExpiry };
       if (verification !== undefined) verification = { ...verification, expiresAt: admissionExpiry };
-      // Awaited scope reads can cross a live policy change: authorize again at commit.
       const currentRead = this.authorize(request, 'READ');
       if (!currentRead.ok) return currentRead;
       if (mutating) {

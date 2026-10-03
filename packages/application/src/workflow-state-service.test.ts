@@ -8,21 +8,23 @@ import { permissionProfiles, type PermissionProfile } from '@baitonghub-linux-mc
 import type { Workspace, WorkspaceRepository } from '@baitonghub-linux-mcp/workspace';
 import type { WorkflowTaskContract } from '@baitonghub-linux-mcp/codex';
 import * as workflowQa from './workflow-qa.js';
+import * as workflowScope from './workflow-scope.js';
 import { WorkflowStateService } from './workflow-state-service.js';
+import { appError, err, ok } from '@baitonghub-linux-mcp/domain';
 
 const roots: string[] = [];
 const databases: SqliteDatabase[] = [];
-afterEach(async () => { vi.restoreAllMocks(); for (const db of databases.splice(0)) db.close(); await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true }))); });
+afterEach(async () => { vi.useRealTimers(); vi.restoreAllMocks(); for (const db of databases.splice(0)) db.close(); await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true }))); });
 const actor = { clientId: 'trusted-owner', clientName: 'display', sessionId: 'old-session' };
 const contract = (taskId: string, dependencies: string[] = []): WorkflowTaskContract => ({ taskId, goal: 'Scoped fixture', workspaceId: 'ws', allowedFiles: ['new.ts'], dependencies, acceptanceCriteria: ['check'], acceptanceCommands: [{ executable: 'node', args: [], expectedExitCode: 0, timeoutSeconds: 10 }], contextReferences: [], workerRole: 'coding', plannerRequired: false, securitySensitive: false, stopConditions: ['Stop before external writes'] });
-async function fixture(): Promise<{ open(): WorkflowStateService; setProfile(value: PermissionProfile): void; workspaceRoot: string }> {
+async function fixture(): Promise<{ open(validator?:ConstructorParameters<typeof WorkflowStateService>[3]): WorkflowStateService; setProfile(value: PermissionProfile): void; workspaceRoot: string }> {
   const root = await realpath(await mkdtemp(path.join(os.tmpdir(), 'durable-workflow-service-'))); roots.push(root);
   const workspaceRoot = path.join(root, 'workspace'); await mkdir(workspaceRoot); await writeFile(path.join(workspaceRoot, 'result.log'), 'passed');
   const ws: Workspace = { id: 'ws', displayName: 'fixture', rootPath: workspaceRoot, realRootPath: workspaceRoot, createdAt: new Date(0).toISOString() };
   const workspaces: WorkspaceRepository = { async get(id) { return id === ws.id ? ws : null; }, async list() { return [ws]; }, async insert() {}, async delete() {} };
   let profile: PermissionProfile = permissionProfiles.balanced;
   const filename = path.join(root, 'state.db');
-  const open = (): WorkflowStateService => { const db = new SqliteDatabase(filename); databases.push(db); return new WorkflowStateService(workspaces, new SqliteWorkflowRepository(db), () => profile); };
+  const open = (validator?:ConstructorParameters<typeof WorkflowStateService>[3]): WorkflowStateService => { const db = new SqliteDatabase(filename); databases.push(db); return new WorkflowStateService(workspaces, new SqliteWorkflowRepository(db), () => profile,validator); };
   return { open, workspaceRoot, setProfile(value: PermissionProfile): void { profile = value; } };
 }
 function value(result: unknown): Record<string, unknown> {
@@ -37,7 +39,136 @@ async function review(service: WorkflowStateService, workflowId: string, taskId:
   value(await service.execute(actor, { operation: 'review', workspaceId: 'ws', workflowId, taskId, claimToken, expectedRevision, leaseId: lease.leaseId, sourceFingerprint: qa.sourceFingerprint, diffFingerprint: qa.diffFingerprint, ...(concurrentAcknowledgement === undefined ? {} : {concurrentAcknowledgement}), review: { reviewerId: 'independent-qa', independentReview: true, verdict: 'passed', summary: 'Reviewed fixture', verificationBounds: 'Caller-reported test fixture', commands: [{commandIndex: 0, exitCode: 0, artifact: {path: 'result.log', sha256: createHash('sha256').update('passed').digest('hex'), bytes: 6}}], criteria: [{criterionIndex: 0, passed: true}] } }));
 }
 
+async function reviewRequest(service: WorkflowStateService, workflowId: string, claimToken: unknown): Promise<Record<string, unknown>> {
+  const status = value(await service.execute(actor, { operation: 'status', workspaceId: 'ws', workflowId }));
+  const lease = (status.leases as Array<{leaseId: string}>)[0]!;
+  const qa = (status.qa as Array<{info: {sourceFingerprint: string; diffFingerprint: string}}>)[0]!.info;
+  return { operation: 'review', workspaceId: 'ws', workflowId, taskId: 'one', claimToken, expectedRevision: 2, leaseId: lease.leaseId,
+    sourceFingerprint: qa.sourceFingerprint, diffFingerprint: qa.diffFingerprint,
+    review: { reviewerId: 'independent-qa', independentReview: true, verdict: 'passed', summary: 'Reviewed fixture', verificationBounds: 'Caller-reported test fixture',
+      commands: [{commandIndex: 0, exitCode: 0, artifact: {path: 'result.log', sha256: createHash('sha256').update('passed').digest('hex'), bytes: 6}}], criteria: [{criterionIndex: 0, passed: true}] } };
+}
+
 describe('WorkflowStateService real SQLite', () => {
+  it.each(['start', 'review', 'done'] as const)('uses the admission clock after awaited link validation at %s', async (phase) => {
+    vi.useFakeTimers({toFake: ['Date']});
+    vi.setSystemTime(new Date('2026-10-03T12:00:00.000Z'));
+    const f = await fixture(); let advanceMs = 0;
+    const service = f.open(async () => { vi.setSystemTime(Date.now() + advanceMs); return ok(undefined); });
+    const id = (value(await service.execute(actor, {operation: 'plan', workspaceId: 'ws', contracts: [contract('one')]})).workflow as {id: string}).id;
+    if (phase === 'start') advanceMs = 30_000;
+    const started = value(await service.execute(actor, {operation: 'start', workspaceId: 'ws', workflowId: id, taskId: 'one', expectedRevision: 0, workerId: 'worker', leaseSeconds: 60}));
+    if (phase === 'start') {
+      const status = value(await service.execute(actor, {operation: 'status', workspaceId: 'ws', workflowId: id}));
+      const lease = (status.leases as Array<{expiresAt: string}>)[0]!;
+      expect(Date.parse(lease.expiresAt) - Date.now()).toBe(60_000);
+      return;
+    }
+    const complete = {operation: 'complete', workspaceId: 'ws', workflowId: id, taskId: 'one', claimToken: started.claimToken};
+    value(await service.execute(actor, {...complete, expectedRevision: 1, state: 'verifying'}));
+    const request = await reviewRequest(service, id, started.claimToken);
+    if (phase === 'done') value(await service.execute(actor, request));
+    const before = value(await service.execute(actor, {operation: 'status', workspaceId: 'ws', workflowId: id}));
+    const lease = (before.leases as Array<{expiresAt: string}>)[0]!;
+    vi.setSystemTime(Date.parse(lease.expiresAt) - 1000);
+    advanceMs = 2000;
+    expect(await service.execute(actor, phase === 'review' ? request : {...complete, expectedRevision: 3, state: 'done'})).toMatchObject({ok: false});
+    const status = value(await service.execute(actor, {operation: 'status', workspaceId: 'ws', workflowId: id}));
+    expect(status.workflow).toMatchObject({tasks: [{state: 'verifying', revision: phase === 'review' ? 2 : 3}]});
+    expect(status.leases).toMatchObject([{state: 'quarantined'}]);
+    if (phase === 'review') expect(status.qa).toMatchObject([{info: {receipts: [], acceptedReceiptHash: null}}]);
+  });
+
+  it.each(['start', 'review', 'done'] as const)('rejects source changes during the final link callback at %s', async (phase) => {
+    const f = await fixture(); let armed = false;
+    await writeFile(path.join(f.workspaceRoot, 'new.ts'), 'original');
+    const validator = vi.fn(async () => {
+      if (armed) await writeFile(path.join(f.workspaceRoot, 'new.ts'), 'changed during link validation');
+      return ok(undefined);
+    });
+    const service = f.open(validator);
+    const id = (value(await service.execute(actor, {operation: 'plan', workspaceId: 'ws', contracts: [contract('one')]})).workflow as {id: string}).id;
+    const start = {operation: 'start', workspaceId: 'ws', workflowId: id, taskId: 'one', expectedRevision: 0, workerId: 'worker'};
+    if (phase === 'start') {
+      armed = true;
+      expect(await service.execute(actor, start)).toMatchObject({ok: false});
+      const status = value(await service.execute(actor, {operation: 'status', workspaceId: 'ws', workflowId: id}));
+      expect(status.leases).toEqual([]);
+      expect(status.workflow).toMatchObject({tasks: [{state: 'ready', revision: 0}]});
+      return;
+    }
+    const started = value(await service.execute(actor, start));
+    const complete = {operation: 'complete', workspaceId: 'ws', workflowId: id, taskId: 'one', claimToken: started.claimToken};
+    value(await service.execute(actor, {...complete, expectedRevision: 1, state: 'verifying'}));
+    const request = await reviewRequest(service, id, started.claimToken);
+    if (phase === 'review') {
+      armed = true;
+      expect(await service.execute(actor, request)).toMatchObject({ok: false});
+    } else {
+      value(await service.execute(actor, request));
+      armed = true;
+      expect(await service.execute(actor, {...complete, expectedRevision: 3, state: 'done'})).toMatchObject({ok: false});
+    }
+    const status = value(await service.execute(actor, {operation: 'status', workspaceId: 'ws', workflowId: id}));
+    expect(status.workflow).toMatchObject({tasks: [{state: 'verifying', revision: phase === 'review' ? 2 : 3}]});
+    if (phase === 'review') expect(status.qa).toMatchObject([{info: {receipts: [], acceptedReceiptHash: null}}]);
+  });
+
+  it.each(['review', 'done'] as const)('rejects disjoint QA artifact changes during the final link callback at %s', async (phase) => {
+    const f = await fixture(); let armed = false;
+    const service = f.open(async () => {
+      if (armed) await writeFile(path.join(f.workspaceRoot, 'result.log'), 'failed');
+      return ok(undefined);
+    });
+    const id = (value(await service.execute(actor, {operation: 'plan', workspaceId: 'ws', contracts: [contract('one')]})).workflow as {id: string}).id;
+    const started = value(await service.execute(actor, {operation: 'start', workspaceId: 'ws', workflowId: id, taskId: 'one', expectedRevision: 0, workerId: 'worker', scopeMode: 'disjoint'}));
+    const complete = {operation: 'complete', workspaceId: 'ws', workflowId: id, taskId: 'one', claimToken: started.claimToken};
+    value(await service.execute(actor, {...complete, expectedRevision: 1, state: 'verifying'}));
+    const request = await reviewRequest(service, id, started.claimToken);
+    if (phase === 'review') {
+      armed = true;
+      expect(await service.execute(actor, request)).toMatchObject({ok: false});
+    } else {
+      value(await service.execute(actor, request));
+      armed = true;
+      expect(await service.execute(actor, {...complete, expectedRevision: 3, state: 'done'})).toMatchObject({ok: false});
+    }
+    const status = value(await service.execute(actor, {operation: 'status', workspaceId: 'ws', workflowId: id}));
+    expect(status.workflow).toMatchObject({tasks: [{state: 'verifying', revision: phase === 'review' ? 2 : 3}]});
+    if (phase === 'review') expect(status.qa).toMatchObject([{info: {receipts: [], acceptedReceiptHash: null}}]);
+  });
+
+  it('checks the synchronous incident fence after the final scope capture and denies the claim', async () => {
+    const f = await fixture();
+    const capture = vi.spyOn(workflowScope, 'captureWorkflowScope');
+    let captureCountAtLink = 0;
+    const verify = vi.fn(() => {
+      expect(capture.mock.calls.length).toBeGreaterThan(captureCountAtLink);
+      return err(appError('INVALID_INPUT', 'Incident changed during final scope capture'));
+    });
+    const service = f.open(async () => { captureCountAtLink = capture.mock.calls.length; return ok({verify}); });
+    const id = (value(await service.execute(actor, {operation: 'plan', workspaceId: 'ws', contracts: [contract('one')]})).workflow as {id: string}).id;
+    expect(await service.execute(actor, {operation: 'start', workspaceId: 'ws', workflowId: id, taskId: 'one', expectedRevision: 0})).toMatchObject({ok: false, error: {code: 'INVALID_INPUT'}});
+    expect(verify).toHaveBeenCalledOnce();
+    const status = value(await service.execute(actor, {operation: 'status', workspaceId: 'ws', workflowId: id}));
+    expect(status.leases).toEqual([]);
+    expect(status.workflow).toMatchObject({tasks: [{state: 'ready', revision: 0}]});
+  });
+
+  it('denies a source link after scope reads without claiming the task',async()=>{
+    const f=await fixture(),validator=vi.fn(async()=>err(appError('INVALID_INPUT','Stale incident link'))),service=f.open(validator);
+    const workflow=(value(await service.execute(actor,{operation:'plan',workspaceId:'ws',contracts:[contract('one')]})).workflow as {id:string});
+    expect(await service.execute(actor,{operation:'start',workspaceId:'ws',workflowId:workflow.id,taskId:'one',expectedRevision:0})).toMatchObject({ok:false,error:{code:'INVALID_INPUT'}});
+    expect(validator).toHaveBeenCalledTimes(1);
+    const status=value(await service.execute(actor,{operation:'status',workspaceId:'ws',workflowId:workflow.id}));
+    expect(status.leases).toEqual([]);expect(status.workflow).toMatchObject({tasks:[{state:'ready',revision:0}]});
+  });
+  it('rechecks current policy after the awaited incident link validator',async()=>{
+    const f=await fixture();const service=f.open(async()=>{f.setProfile({...permissionProfiles.safe,defaults:{...permissionProfiles.safe.defaults,WRITE:'DENY'}});return ok(undefined);});
+    const workflow=(value(await service.execute(actor,{operation:'plan',workspaceId:'ws',contracts:[contract('one')]})).workflow as {id:string});
+    expect(await service.execute(actor,{operation:'start',workspaceId:'ws',workflowId:workflow.id,taskId:'one',expectedRevision:0})).toMatchObject({ok:false,error:{code:'PERMISSION_DENIED'}});
+    const status=value(await service.execute(actor,{operation:'status',workspaceId:'ws',workflowId:workflow.id}));expect(status.leases).toEqual([]);
+  });
   it('freezes allowed alias targets in default workspace mode while permitting atomic file replacement', async () => {
     const f = await fixture(); const service = f.open();
     await mkdir(path.join(f.workspaceRoot, 'A')); await mkdir(path.join(f.workspaceRoot, 'B'));

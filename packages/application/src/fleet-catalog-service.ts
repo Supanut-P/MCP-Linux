@@ -113,6 +113,18 @@ export class FleetCatalogService {
       return ok(result);
     } catch { return err(appError('INVALID_INPUT', 'Fleet catalog state or request could not be verified')); }
   }
+  /** Synchronous stored mapping fence; registration observations remain bounded reads. */
+  public verifyMapping(actor: FileActor, binding: {id:string;revision:number;workspaceId:string;hostId:string;serviceUnit:string;workspaceFingerprint:string;hostFingerprint:string}, userConfirmed = false): Result<void> {
+    try {
+      const entry = this.repository.get(hash(actor.clientId), binding.id);
+      const payload = entry === null ? null : parsePayload(entry);
+      if (entry === null || payload === null || entry.kind !== 'mapping' || entry.revision !== binding.revision || payload.workspaceId !== binding.workspaceId || payload.serviceUnit !== binding.serviceUnit || payload.workspaceFingerprint !== binding.workspaceFingerprint || payload.hosts.length !== 1 || payload.hosts[0]!.hostId !== binding.hostId || payload.hosts[0]!.fingerprint !== binding.hostFingerprint) return conflict();
+      const decision = this.permissions.decide(this.profileProvider(), {action:'fleet_catalog_resolve',level:'READ',workspaceId:'',target:binding.id,destructive:false});
+      if (decision === 'DENY' || decision === 'ASK' && !userConfirmed) return err(appError(decision === 'DENY' ? 'PERMISSION_DENIED' : 'PERMISSION_REQUIRED', 'Fleet catalog requires current policy permission'));
+      return ok(undefined);
+    } catch { return invalid(); }
+  }
+
   private project(entry: Entry): { id: string; kind: Entry['kind']; revision: number; createdAt: string; updatedAt: string } {
     if (parsePayload(entry) === null) throw new Error('Invalid catalog payload');
     return { id: entry.id, kind: entry.kind, revision: entry.revision, createdAt: entry.createdAt, updatedAt: entry.updatedAt };

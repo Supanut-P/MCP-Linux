@@ -47,6 +47,16 @@ export class DiagnosisService {
     } catch { return invalid(); }
   }
 
+  /** Retained document fence; no registry reads or execution. */
+  public verifyRecord(actor: FileActor, diagnosisId: string, documentHash: string, userConfirmed = false): Result<void> {
+    try {
+      const entry = this.options.repository.get(hash(actor.clientId), diagnosisId);
+      const document = entry === null ? null : validateDocument(entry.document);
+      if (entry === null || document === null || entry.id !== diagnosisId || entry.documentHash !== documentHash || document.request.diagnosisId !== entry.id || diagnosisRequestFingerprint(document.request) !== entry.requestFingerprint || hash(canonical({id:entry.id,ownerKey:entry.ownerKey,requestFingerprint:entry.requestFingerprint,document:entry.document,createdAt:entry.createdAt})) !== entry.documentHash) return invalid();
+      return this.authorize({operation:'get',diagnosisId,userConfirmed}, document.request.workspaceId);
+    } catch { return invalid(); }
+  }
+
   private authorize(request: DiagnosisRequest, workspaceId = request.operation === 'record' ? request.workspaceId : ''): Result<void> {
     for (const level of request.operation === 'get' ? ['READ'] as const : ['READ', 'WRITE'] as const) {
       const decision = this.permissions.decide(this.options.profileProvider?.() ?? permissionProfiles.balanced, { action: `diagnosis_${request.operation}`, level, workspaceId, target: request.diagnosisId, destructive: false });

@@ -1,6 +1,6 @@
 {
   "name": "@baitonghub-linux-mcp/mcp-server",
-  "version": "1.49.0",
+  "version": "1.50.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -15,6 +15,7 @@
   "dependencies": {
     "@baitonghub-linux-mcp/application": "workspace:*",
     "@baitonghub-linux-mcp/capabilities": "workspace:*",
+    "@baitonghub-linux-mcp/codex": "workspace:*",
     "@baitonghub-linux-mcp/domain": "workspace:*",
     "@baitonghub-linux-mcp/extensions": "workspace:*",
     "@baitonghub-linux-mcp/permissions": "workspace:*",

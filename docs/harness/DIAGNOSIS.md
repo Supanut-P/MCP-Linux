@@ -26,6 +26,5 @@ Migration 017 adds immutable owner-scoped documents, 32 per owner/256 globally,
 reuse fails. Quotas, corruption checks and one request deadline bound state and
 reads. Old binaries ignore the new table. No automatic retry or replay exists.
 
-v1.49 is a candidate until local, Ubuntu/package, installed transport/lifecycle
-and native gates close. v1.50 will separately prepare local fix tasks. No live
+v1.49 verification is closed under the [Ubuntu receipt](evidence/2026-10-03-v1.49-ubuntu.md). v1.50 will separately prepare local fix tasks. No live
 fleet, native provider authentication or publication approval is implied.

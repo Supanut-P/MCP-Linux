@@ -189,6 +189,9 @@ importers:
       '@baitonghub-linux-mcp/capabilities':
         specifier: workspace:*
         version: link:../capabilities
+      '@baitonghub-linux-mcp/codex':
+        specifier: workspace:*
+        version: link:../codex
       '@baitonghub-linux-mcp/domain':
         specifier: workspace:*
         version: link:../domain

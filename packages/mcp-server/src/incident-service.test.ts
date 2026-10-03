@@ -5,6 +5,7 @@ import { SqliteDatabase, SqliteIncidentRepository } from '@baitonghub-linux-mcp/
 import { permissionProfiles, type PermissionProfile } from '@baitonghub-linux-mcp/permissions';
 import type { Workspace, WorkspaceRepository } from '@baitonghub-linux-mcp/workspace';
 import { IncidentService } from './incident-service.js';
+import { fleetHostFingerprint, fleetWorkspaceFingerprint } from '@baitonghub-linux-mcp/application';
 
 const actor = { clientId: 'owner', clientName: 'fixture' };
 const request = { operation: 'collect', incidentId: 'incident-1', workspaceId: 'ws', hostIds: ['h1'], unit: 'app.service' };
@@ -30,6 +31,20 @@ function fixture(deadlineMs = 1000): Fixture {
 }
 
 describe('durable bounded incidents', () => {
+  it('requires the mapped service and registered identities when resolving fix evidence',async()=>{
+    const f=fixture();
+    try{
+      await f.service.execute(actor,request);
+      const report=await f.service.execute(actor,{operation:'report',incidentId:request.incidentId,limit:32});
+      const refs=(report as {value:{evidence:{reference:{incidentId:string;sequence:number;hash:string}}[]}}).value.evidence.map(row=>row.reference);
+      const ws=(await f.workspaces.get('ws'))!,host=f.hosts.get('h1')!;
+      const mapping={hostId:'h1',serviceUnit:'app.service',workspaceFingerprint:fleetWorkspaceFingerprint(ws),hostFingerprint:fleetHostFingerprint(host)};
+      expect(await f.service.resolveFixEvidence(actor,'ws',refs,mapping)).toMatchObject({ok:true});
+      const probes=f.execute.mock.calls.length;
+      for(const changed of [{...mapping,serviceUnit:'other.service'},{...mapping,serviceUnit:'-Hother.service'},{...mapping,hostFingerprint:'0'.repeat(64)},{...mapping,workspaceFingerprint:'0'.repeat(64)},{...mapping,hostId:'h2'}])expect(await f.service.resolveFixEvidence(actor,'ws',refs,changed)).toMatchObject({ok:false});
+      expect(f.execute).toHaveBeenCalledTimes(probes);
+    }finally{f.db.close();}
+  });
   it('classifies real timer expiry as timeout while the wall clock is frozen', async () => {
     const f=fixture(10);const clock=vi.spyOn(Date,'now').mockReturnValue(1790985600000);
     f.workspaces.get=async():Promise<Workspace|null>=>new Promise(()=>undefined);

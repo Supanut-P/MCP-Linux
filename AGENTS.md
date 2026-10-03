@@ -1,7 +1,7 @@
 # MCP-Linux development harness
 
 Follow the user's global harness profile and preserve existing dirty work.
-Current source candidate: v1.41.0. Version completion requires Ubuntu/package
+Current source candidate: v1.42.0. Version completion requires Ubuntu/package
 evidence; local Windows checks alone do not permit the next milestone.
 
 ## Read only what the task needs

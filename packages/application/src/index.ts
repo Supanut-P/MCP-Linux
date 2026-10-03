@@ -22,3 +22,4 @@ export * from './target-catalog-service.js';
 export * from './support-bundle-service.js';
 export * from './verified-skill-registry-service.js';
 export * from './verified-workflow-plan-service.js';
+export * from './workflow-state-service.js';

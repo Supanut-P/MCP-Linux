@@ -1,0 +1,158 @@
+{
+  "milestone": "1.42.0",
+  "status": "implementation-approved-local-passed-ubuntu-open",
+  "sources": [
+    {
+      "path": "packages/domain/src/workflow-state.ts",
+      "sha256": "0bf6094b3c699adcc6f2c818f0742e3a817b2875a8da33d7ba94b4befef9d398"
+    },
+    {
+      "path": "packages/storage/src/workflow-repository.ts",
+      "sha256": "f807e3dd8d0a03daa7d706922dadf80e5ecef08fe5de38a8c7f5f8eea8daa469"
+    },
+    {
+      "path": "packages/storage/src/workflow-repository.integration.test.ts",
+      "sha256": "f60409b17398ebfdddea5a7d7ad97939e62a92804ed42907e1ba4584e1bed2ae"
+    },
+    {
+      "path": "packages/storage/src/migrations/workflow-state-migration.ts",
+      "sha256": "eb1fa53ac73932ecf079a0d4ffb9873de13bc53ace265ccda7d5d176e508b41f"
+    },
+    {
+      "path": "packages/storage/src/database.ts",
+      "sha256": "b7ff135aa552df665c3b31bf56aaafce7badf3652e29073aa532530584069bf3"
+    },
+    {
+      "path": "packages/application/src/workflow-state-service.ts",
+      "sha256": "55aceac9193b9270f19f60ea440a34f2e9f04ffdb00acc808744004aa22f0fdb"
+    },
+    {
+      "path": "packages/application/src/workflow-state-service.test.ts",
+      "sha256": "ff9125ac3a1f8bf606bfe7ec107ca95a309b8ca47ddea094e9cf1afedd26df27"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/workflow-state-tools.ts",
+      "sha256": "0150f59f84147fafeff19a78557a6540ac1c269435e7e3da645d1e43e39b171a"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/workflow-state-tools.test.ts",
+      "sha256": "4ac3815c152907e1308f1e01a4437c91c7b0f36387c5fa133391abdd8fb1255a"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/schemas.ts",
+      "sha256": "fc9b514189ddae712854b2d00ba5dd1c0a5d9944787c0ab18a43617798536f07"
+    },
+    {
+      "path": "packages/mcp-server/src/tool-registry.ts",
+      "sha256": "939e445cd2b63e707fe8b5cd27ba09c03c3f6c63f614f1acd3a513455d6bba29"
+    },
+    {
+      "path": "apps/cli/src/runtime/stdio-mcp-runtime.ts",
+      "sha256": "4a81ab91b9149ba464a5e6743c2c981f4393e6ef32e1a922d4806a7173b8900a"
+    }
+  ],
+  "gates": [
+    {
+      "name": "typecheck",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--build"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 226
+    },
+    {
+      "name": "lint",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "."
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 4789
+    },
+    {
+      "name": "focused",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages/storage/src/workflow-repository.integration.test.ts",
+        "packages/application/src/workflow-state-service.test.ts",
+        "packages/mcp-server/src/tools/workflow-state-tools.test.ts"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 2248
+    },
+    {
+      "name": "unit",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages",
+        "apps"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 12052
+    },
+    {
+      "name": "other",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/integration",
+        "tests/packaging",
+        "tests/release",
+        "tests/acceptance"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 3106
+    },
+    {
+      "name": "catalog",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-catalog.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 327
+    },
+    {
+      "name": "contract",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-contract-v1.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 345
+    }
+  ],
+  "focusedPassed": 8,
+  "unitPassed": 750,
+  "unitSkipped": 44,
+  "otherPassed": 34,
+  "otherSkipped": 5,
+  "catalogTools": 235,
+  "frozenV1Tools": 227,
+  "reviewer": "v142_implementation_review: gpt-6.1-sol high",
+  "reviewBoundary": "independent source review; lead executed checks",
+  "limits": [
+    "metadata only; no executor",
+    "stable server actor, single-user boundary",
+    "completion/refs caller-supplied",
+    "Ubuntu/package and installed recovery pending",
+    "publication unapproved"
+  ]
+}

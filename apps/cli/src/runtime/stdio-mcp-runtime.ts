@@ -12,6 +12,7 @@ import {
   SearchService,
   WorkspaceInfoService,
   WorkflowPlanService,
+  WorkflowStateService,
   VerifiedSkillRegistryService,
   VerifiedWorkflowPlanService,
   JsonWorkspaceIndexStore,
@@ -46,6 +47,7 @@ import {
   SqliteRemoteHostRepository,
   SqliteRemoteRolloutRepository,
   SqliteWorkspaceCheckpointRepository,
+  SqliteWorkflowRepository,
 } from '@baitonghub-linux-mcp/storage';
 import { SecretPolicy, WorkspacePathGuard, WorkspaceService, type Workspace } from '@baitonghub-linux-mcp/workspace';
 import { StrictWorkspaceRepository } from './strict-workspace-repository.js';
@@ -268,6 +270,7 @@ export function createStdioMcpRuntime(
   const workflowPreflight = new WorkflowPreflightService({ environmentPreflight, diagnosticsSnapshot, workspaceSnapshot });
   const services: McpApplicationServices = {
     workflowPlan,
+    workflowState: new WorkflowStateService(workspaceRepository, new SqliteWorkflowRepository(database), profileProvider),
     verifiedSkills,
     verifiedWorkflowPlan,
     runtimeStatePath: path.join(dataPath, 'upgrade-runtime.json'),

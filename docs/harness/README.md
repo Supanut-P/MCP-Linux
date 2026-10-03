@@ -48,7 +48,13 @@ and provider routing before launch. Windows native success and unsupported-model
 receipts remain distinct from Linux provider and Ubuntu/package readiness.
 The [effective-config receipt](evidence/2026-10-03-v1.41-config-preflight.md) binds
 reviewed source, actual canaries, native requests and local verification limits.
-v1.41 requires full Ubuntu/package proof and independent closure; v1.42 is not started.
+The [v1.41 Ubuntu closure receipt](evidence/2026-10-03-v1.41-ubuntu.md) records
+646 source fingerprints, 55 artifact hashes, full gates and installed lifecycle.
+Independent closure QA approved; v1.41 verification is closed and the configured
+VM runs accepted 1.41.0. Linux native provider authentication remains a final v2
+gate. v1.42 durable state implementation is active under its
+[contract](contracts/v1.42-durable-workflow.md) and
+[caller guide](DURABLE_WORKFLOW.md); no v1.42 package acceptance is claimed yet.
 
 The [2026-10-01 tunnel follow-up](evidence/2026-10-01-existing-tunnel.md)
 verified the previously configured host through the native connector: MCP and

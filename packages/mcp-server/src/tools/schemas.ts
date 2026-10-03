@@ -26,6 +26,20 @@ export const workflowPlanSchema = z.object({
   stopConditions: z.array(z.string().min(1).max(1024)).min(1).max(16),
 }).strict();
 export const optionalWorkspaceIdSchema = workspaceIdSchema.optional();
+const workflowStateBase = { workspaceId: workspaceIdSchema, workflowId: z.string().min(1).max(128) };
+const workflowClaimFields = { ...workflowStateBase, taskId: z.string().min(1).max(128), expectedRevision: z.number().int().min(0).max(1_000_000) };
+const workflowTokenFields = { ...workflowClaimFields, claimToken: z.string().regex(/^[a-f0-9]{64}$/) };
+export const workflowStateSchema = z.discriminatedUnion('operation', [
+  z.object({ operation: z.literal('plan'), workspaceId: workspaceIdSchema, contracts: z.array(workflowPlanSchema).min(1).max(16) }).strict(),
+  z.object({ operation: z.literal('start'), ...workflowClaimFields }).strict(),
+  z.object({ operation: z.literal('checkpoint'), ...workflowTokenFields, checkpoint: z.object({ summary: z.string().min(1).max(2048), references: z.array(z.string().min(1).max(512)).max(16), executionUncertain: z.boolean() }).strict() }).strict(),
+  z.object({ operation: z.literal('complete'), ...workflowTokenFields, state: z.enum(['verifying', 'done', 'blocked', 'failed', 'cancelled']) }).strict(),
+  z.object({ operation: z.literal('status'), ...workflowStateBase }).strict(),
+  z.object({ operation: z.literal('result'), ...workflowStateBase }).strict(),
+  z.object({ operation: z.literal('resume'), ...workflowStateBase }).strict(),
+  z.object({ operation: z.literal('cancel'), ...workflowStateBase }).strict(),
+  z.object({ operation: z.literal('events'), ...workflowStateBase, after: z.number().int().min(0).max(1_000_000).optional(), limit: z.number().int().min(1).max(64).optional() }).strict(),
+]);
 const verifiedSkillIdSchema = z.string().min(1).max(128).refine((value) => Buffer.byteLength(value, 'utf8') <= 128 && !value.includes('\0'), 'Skill ID is invalid');
 const verifiedSkillRoleSchema = z.enum(['lead', 'worker', 'qa', 'planner']);
 export const verifiedSkillListSchema = z.object({ workspaceId: verifiedSkillIdSchema, role: verifiedSkillRoleSchema, query: z.string().max(1024).refine((value) => Buffer.byteLength(value, 'utf8') <= 1024 && !value.includes('\0'), 'Query is invalid').optional() }).strict();

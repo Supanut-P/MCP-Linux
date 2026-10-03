@@ -62,6 +62,7 @@ export interface McpRuntimeTiming {
 export interface McpApplicationServices {
   /** Stateless caller-native task preparation; never launches workers or commands. */
   readonly workflowPlan?: Pick<WorkflowPlanService, 'execute'>;
+  readonly workflowState?: Pick<import('@baitonghub-linux-mcp/application').WorkflowStateService, 'execute'>;
   readonly verifiedSkills?: Pick<VerifiedSkillRegistryService, 'list' | 'load'>;
   readonly verifiedWorkflowPlan?: Pick<VerifiedWorkflowPlanService, 'execute'>;
   readonly runtimeStatePath?: string;

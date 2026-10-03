@@ -1,0 +1,222 @@
+{
+  "milestone": "1.48.0",
+  "status": "implementation-reviewed-local-passed-ubuntu-open",
+  "reviewer": "v143_scope_review: gpt-6.1-sol high",
+  "focused": {
+    "passed": 26,
+    "skipped": 0
+  },
+  "unit": {
+    "passed": 852,
+    "skipped": 47
+  },
+  "other": {
+    "passed": 35,
+    "skipped": 6
+  },
+  "sources": [
+    {
+      "path": "packages/storage/src/drift-repository.ts",
+      "sha256": "01e9911f8a4e3c79d25f12e936556b68cb10897d031173d8aa7bef66308a5470"
+    },
+    {
+      "path": "packages/storage/src/drift-repository.test.ts",
+      "sha256": "e5f5061887c27fcddf218364ee2d67a8a2cbc0df069c41ff74e64584459346aa"
+    },
+    {
+      "path": "packages/storage/src/migrations/drift-migration.ts",
+      "sha256": "d61dabc3197db8d5da5d2b73789e0ef95eb65dc6e870943878e137b7c001022f"
+    },
+    {
+      "path": "packages/storage/src/database.ts",
+      "sha256": "005ba0336a7bdf848857ac60f290c46fd23dbcd2cf6f40d36523bfba8c98a777"
+    },
+    {
+      "path": "packages/storage/src/index.ts",
+      "sha256": "dda7ed771d629ee088d3b50c0ac63bfa4cabaee6cdad66c66aaab911dc8cafaf"
+    },
+    {
+      "path": "packages/mcp-server/src/drift-service.ts",
+      "sha256": "4ab1be5cd45e0b177aa0409fb7d35d52ec9747688cb7e81f99fb05d4ff3c7c42"
+    },
+    {
+      "path": "packages/mcp-server/src/drift-service.test.ts",
+      "sha256": "12e0c3e8c66574c9e39edab0b2bf44733cedd884046e88722339bcd44851a62f"
+    },
+    {
+      "path": "packages/mcp-server/src/drift-projection.ts",
+      "sha256": "7770ef4564f46924ae9d219890eef0212cf80ff644066ed91616a3457463951b"
+    },
+    {
+      "path": "packages/mcp-server/src/drift-projection.test.ts",
+      "sha256": "e56275d48fbb4e5dff7468f6337aa756744a1e3c2e19de0b6dc546cce79f1872"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/drift-tools.ts",
+      "sha256": "f05aa4a8b84380ef1b027ddeb414330ee021a2313aa533c5c5621c3b70563221"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/drift-tools.test.ts",
+      "sha256": "c38691fe2c03a70999dfe681f0a86bce6dd1f9ce24bc862a93a0c1da9280d17a"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/tool-types.ts",
+      "sha256": "5d43b4266b381a221824b3acad1e283c82f4108abfc557c860310e2c8af5a93e"
+    },
+    {
+      "path": "packages/mcp-server/src/tool-registry.ts",
+      "sha256": "09bb08d9be3553a560c48f9371325663b16b0de8d0f77b84aef8fab33c0f3f83"
+    },
+    {
+      "path": "packages/mcp-server/src/server-profile.ts",
+      "sha256": "3e2d0fc184d5c23c6ba089c3c778fcc2da9bd236075641400beebe224ff755b1"
+    },
+    {
+      "path": "packages/mcp-server/src/index.ts",
+      "sha256": "0733ad3793b5a6d57201e4c934113327174ff4112f1a46244f2ded812178b052"
+    },
+    {
+      "path": "apps/cli/src/runtime/stdio-mcp-runtime.ts",
+      "sha256": "58c778afe182a8e15276a20e35191326d0e75ea2c06000f08c8412cbb22eb5a4"
+    },
+    {
+      "path": "scripts/generate-tool-catalog.mjs",
+      "sha256": "f3ef5f25d8bcf4969e2ed314a23a20f5445cc1b225dbdb6cbc5630dc598ed019"
+    }
+  ],
+  "gates": [
+    {
+      "name": "typecheck",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--build"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 155
+    },
+    {
+      "name": "lint",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "."
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 5058
+    },
+    {
+      "name": "focused",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages/storage/src/drift-repository.test.ts",
+        "packages/mcp-server/src/drift-service.test.ts",
+        "packages/mcp-server/src/drift-projection.test.ts",
+        "packages/mcp-server/src/tools/drift-tools.test.ts"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 2509
+    },
+    {
+      "name": "unit",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages",
+        "apps",
+        "--maxWorkers=4"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 23385
+    },
+    {
+      "name": "other",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/integration",
+        "tests/packaging",
+        "tests/release",
+        "tests/acceptance",
+        "--maxWorkers=4"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 3417
+    },
+    {
+      "name": "catalog",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-catalog.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 353
+    },
+    {
+      "name": "contract",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-contract-v1.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 345
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "dist/v1.48.0-local-20261003-r2/full-local-logs/typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.48.0-local-20261003-r2/full-local-logs/lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.48.0-local-20261003-r2/full-local-logs/focused.log",
+      "sha256": "525bbe3ddf4d239e63f8e91d50dc29e7b1018c2e7e06c977580ad40e313556e3"
+    },
+    {
+      "path": "dist/v1.48.0-local-20261003-r2/full-local-logs/unit.log",
+      "sha256": "be075c6f0d6affea1ec2847f43f3adb0af338f7a177b69ac7c4c85774de5037b"
+    },
+    {
+      "path": "dist/v1.48.0-local-20261003-r2/full-local-logs/other.log",
+      "sha256": "89a674d17e5c6331e289674983aaca601533d8944c106e3da9bd3ac74b862ce4"
+    },
+    {
+      "path": "dist/v1.48.0-local-20261003-r2/full-local-logs/catalog.log",
+      "sha256": "302c07cb430c59eec4b78f615c82e17b7aad2e6cd673e71b9850cac1fedbd7f0"
+    },
+    {
+      "path": "dist/v1.48.0-local-20261003-r2/full-local-logs/contract.log",
+      "sha256": "b34b29a25d39c37624d257f752fda5a1b7d62237eb3751eef0bd24b185474c40"
+    },
+    {
+      "path": "dist/v1.48.0-local-20261003-r2/full-local-logs/gates.json",
+      "sha256": "947e2a7f6405bbdca4f4a9d62535bba5edb69f850d75e796131c00260294a34b"
+    },
+    {
+      "path": "dist/v1.48.0-local-20261003-r2/full-local-logs/initial-gates.json",
+      "sha256": "f863460c0cb4075a3dbe3a4f5c9baa2efcdaa70e34577eb81912173e7dd919d6"
+    },
+    {
+      "path": "dist/v1.48.0-local-20261003-r2/full-local-logs/initial-unit.log",
+      "sha256": "666da41a423cc4a246becf2a3d46df25f502d9404f6dfc09e7893eebe8d6b442"
+    }
+  ],
+  "repairHistory": "Independent QA repaired outer truncation, malformed nullable fields, approval digest binding, aggregate timeout classification and option-shaped service units. Initial broad unit run had three legacy Git/workflow tests exceed 5 seconds with default parallelism; complete rerun capped at four workers passed without changing those tests or timeout thresholds. First frozen Ubuntu r1 exposed registry timer cancellation misclassified as missing target when the wall clock had not reached the deadline. A distinct timeout sentinel and deterministic frozen-clock regression repair this; r1 source and failing gate remain retained separately. This receipt binds corrected r2.",
+  "boundary": "Windows source checks only; Ubuntu/package/installed acceptance and final v2 native provider readiness remain separate. Primary dirty process-manager EOF whitespace preserved."
+}

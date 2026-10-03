@@ -1,0 +1,256 @@
+{
+  "milestone": "1.47.0",
+  "status": "implementation-reviewed-local-passed-ubuntu-open",
+  "reviewer": "v143_scope_review: gpt-6.1-sol high",
+  "focused": {
+    "passed": 26,
+    "skipped": 0
+  },
+  "unit": {
+    "passed": 826,
+    "skipped": 47
+  },
+  "other": {
+    "passed": 35,
+    "skipped": 6
+  },
+  "sources": [
+    {
+      "path": "packages/storage/src/incident-repository.ts",
+      "sha256": "34bd6279bfeb1684a9e191b9631022df0412594cdab41d71234965a23677c220"
+    },
+    {
+      "path": "packages/storage/src/incident-repository.test.ts",
+      "sha256": "cd2dd2a70f0ca6afe924cd62401840bcba61bd50564e056d3d5a265c7b75fea3"
+    },
+    {
+      "path": "packages/storage/src/migrations/incident-migration.ts",
+      "sha256": "43e3835cadc861ac3a364963fc6bb603491a35283ba6197bff87227b96c8f750"
+    },
+    {
+      "path": "packages/storage/src/database.ts",
+      "sha256": "72f183b3d08f88b1956472fbc8a81168eeb08d7cdfda220daa553b64848f0241"
+    },
+    {
+      "path": "packages/storage/src/index.ts",
+      "sha256": "d2f6f0fb99d1d437651a82eff8f4521f12474265795bb7a21c0ac8cbc5b198be"
+    },
+    {
+      "path": "packages/application/src/fleet-catalog-service.ts",
+      "sha256": "94a2d88a709a902f109fdab0e2923bfaaf04fea83b4614a556d43b6c9f4d40bd"
+    },
+    {
+      "path": "packages/application/src/workspace-index-queue.ts",
+      "sha256": "037ae4d19f56bbf6eb3530e9859a0e8814eb1d0a88877f6a347fe63975d5b1dd"
+    },
+    {
+      "path": "packages/application/src/workspace-index-queue.test.ts",
+      "sha256": "af05560ba5b4b70a3e9b93be20783e3041a845f38dfe5874e28a207fd98d7a7a"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-service.ts",
+      "sha256": "ad1da4660cff1c74198b58be388f4e9ca2a4112b66f4bc2da66fe9395d28afbd"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-service.test.ts",
+      "sha256": "f09e7c5f87b907d62dbabdd1f330093c8a5068c542ac3d738d7bd98b86805c85"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-projection.ts",
+      "sha256": "824efbdf357c55788d8c1292d2e30f72015461e414748d028b5c8422d57df94a"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-projection.test.ts",
+      "sha256": "e990dfe4940295c665e3ab67612a1aebeb9f7cd110847547075bde8707e0be92"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/incident-tools.ts",
+      "sha256": "6b51c39d5452bf23734225f216597b28d8743093bdd61ad80f7f37b658cd19da"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/incident-tools.test.ts",
+      "sha256": "348fa59fba8dacb15a5fb096f6ffa95339e484623048ce78ecd1c179f538f4e8"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/tool-types.ts",
+      "sha256": "838e30586414b2cb5f7ce005d0fb3e36535836e3caa62605631dfc15dff5c1c6"
+    },
+    {
+      "path": "packages/mcp-server/src/tool-registry.ts",
+      "sha256": "c20bfb0289a431a9533a13f849e774dd55362d87079c711e1f6ffef40d9d98de"
+    },
+    {
+      "path": "packages/mcp-server/src/server-profile.ts",
+      "sha256": "e8d496bb3575f7df19f2a5dc2f000541fcea4bff6026a0dc588a5d104bd0b2a3"
+    },
+    {
+      "path": "packages/mcp-server/src/index.ts",
+      "sha256": "c1c4c8b21bbcbfcca3ce5dd46871f386ae094cd8892b972444d662fe05187e84"
+    },
+    {
+      "path": "apps/cli/src/runtime/stdio-mcp-runtime.ts",
+      "sha256": "b8f277aae57bf0946be9d2341b8c05f3af7e314dc926d889c2cb730844b1b034"
+    },
+    {
+      "path": "scripts/generate-tool-catalog.mjs",
+      "sha256": "c7f6f16e2fb0476587d810ff5451e2dfe60d4bc5e304eb2a9524eb7d698006d3"
+    }
+  ],
+  "gates": [
+    {
+      "name": "typecheck",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--build"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 3121
+    },
+    {
+      "name": "lint",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "."
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 4890
+    },
+    {
+      "name": "focused",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages/storage/src/incident-repository.test.ts",
+        "packages/mcp-server/src/incident-service.test.ts",
+        "packages/mcp-server/src/incident-projection.test.ts",
+        "packages/mcp-server/src/tools/incident-tools.test.ts"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 12824
+    },
+    {
+      "name": "unit",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages",
+        "apps"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 14791
+    },
+    {
+      "name": "other",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/integration",
+        "tests/packaging",
+        "tests/release",
+        "tests/acceptance"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 2751
+    },
+    {
+      "name": "catalog",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-catalog.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 317
+    },
+    {
+      "name": "contract",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-contract-v1.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 341
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/focused.log",
+      "sha256": "4adf51bbc365bb0bc5c12ff8fa3a19af58e3295f2d17abf3447aee43feecdf91"
+    },
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/unit.log",
+      "sha256": "5416fd8ad73064f2723c9fb141c33714bdbee633a843290922d2e0ab04771f01"
+    },
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/other.log",
+      "sha256": "bccc0d9550b6c7788dbea58fc902256c1c405c8dc64f8e9efb2cea7550ac82b6"
+    },
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/catalog.log",
+      "sha256": "5d5c5e4a4005596ccbd6adf77c4150d5abb490de1dad3c18eb633b40ea4bbd19"
+    },
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/contract.log",
+      "sha256": "b5fdc2206af6ba2bf427254c560a5360a5a1e98a7bb445552c10ee693ae9bf80"
+    },
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/gates.json",
+      "sha256": "9a15feedd042422f14049ad8d0e90d463288d3605e77bdbbb56785f73a3adee2"
+    },
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/initial-gates.json",
+      "sha256": "6646cbfb71cc82c815448bdeb2d32f879d97d6efbda23295763972bab5d8cfca"
+    },
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/initial-unit.log",
+      "sha256": "86e898f4bbcfcb465c25b52787d2f1f1c0fa24abe8ab0989393c7454068f7941"
+    },
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/pre-waiters-gates.json",
+      "sha256": "46e4da4821517a8ba4aa5fa06e8c4c587c23d8a63ae23386bf3df93ffffe8579"
+    },
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/pre-waiters-unit.log",
+      "sha256": "ab02b7475b61156ee136aeb2ad5985672127c3e129b02d25434a2281dbca6654"
+    },
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/watcher-regression-red.log",
+      "sha256": "09ea1d6a65311a0adc65bc050ac4493af4073c9df73e72949a480c3f5c2a347f"
+    },
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/watcher-regression-green.log",
+      "sha256": "7a6baf8d8d6f2ca4595fe7e388fa3d8d8cf7012cd0e84e01108685c9c7d5b09f"
+    },
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/watcher-waiters-red.log",
+      "sha256": "20b8a84a206814d68e4117726816637970389feca46bc2dc075bae23421d6b77"
+    },
+    {
+      "path": "dist/v1.47.0-local-20261003/full-local-logs/watcher-waiters-green.log",
+      "sha256": "c78af407637e643d777ce6808d6679675fc26e5065a7e68674a0be5656057501"
+    }
+  ],
+  "repairHistory": "Initial full unit gate exposed pre-existing watcher queue saturation recursion. Deterministic concurrent drain reproduced RangeError, one-line saturation guard and regression repaired it; red/green and initial failure retained.",
+  "boundary": "Windows source checks only; Ubuntu/package/installed acceptance and final v2 native provider readiness remain separate. Primary dirty process-manager EOF whitespace preserved."
+}

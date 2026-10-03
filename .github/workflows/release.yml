@@ -1,0 +1,107 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-release:
+    name: Verify and publish Linux headless release
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify release tag matches package version
+        shell: bash
+        run: |
+          version=$(node -p "require('./package.json').version")
+          test "${{ github.ref_name }}" = "v${version}"
+          test -f "RELEASE_NOTES_${GITHUB_REF_NAME}.md"
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsecret-1-0 libsecret-tools ripgrep
+          corepack enable
+          corepack prepare pnpm@10.15.0 --activate
+          pnpm install --frozen-lockfile
+
+      - name: Run release gates
+        run: |
+          pnpm rebrand:check
+          pnpm lint
+          pnpm typecheck
+          pnpm test
+          pnpm test:integration
+          pnpm test:release-gate
+          pnpm docs:tools:check
+          pnpm test:v1
+          pnpm exec vitest run tests/release/public-repo-hygiene.test.ts tests/packaging/headless-linux-tunnel.test.ts
+
+      - name: Require production evidence for v1.5 releases
+        if: startsWith(github.ref_name, 'v1.5.')
+        run: |
+          waiver=docs/linux/evidence/v1.5.0/SEVEN_DAY_SOAK_WAIVER.md
+          if test -f "$waiver"; then
+            grep -q 'SEVEN_DAY_SOAK_GATE: WAIVED' "$waiver"
+            grep -q 'PRODUCTION_EVIDENCE_CLAIM: NONE' "$waiver"
+            echo 'Seven-day soak gate explicitly waived; this release makes no production-evidence claim.'
+          else
+            test -f docs/linux/evidence/v1.5.0/ACCEPTANCE_SUMMARY.md
+            test -f docs/linux/evidence/v1.5.0/soak-linux-headless.tsv
+            SOAK_MIN_DURATION_SECONDS=604800 bash scripts/verify-soak-linux-headless.sh docs/linux/evidence/v1.5.0/soak-linux-headless.tsv
+          fi
+
+      - name: Build Linux headless artifacts
+        run: pnpm package:linux:headless
+
+      - name: Generate release provenance and SBOM
+        run: node scripts/generate-release-provenance.mjs dist
+
+      - name: Inspect artifacts
+        shell: bash
+        run: |
+          cd dist
+          version=$(node -p "require('../package.json').version")
+          sha256sum --check "Baitonghub-Linux-mcp-${version}-SHA256SUMS"
+          sha256sum --check "Baitonghub-Linux-mcp-${version}-PROVENANCE-SHA256SUMS"
+          dpkg-deb --contents "Baitonghub-Linux-mcp-${version}-amd64.deb" > deb-contents.txt
+          tar -tzf "Baitonghub-Linux-mcp-${version}-linux-x64.tar.gz" > tar-contents.txt
+          if grep -Eiq '(^|/)[^/]+\.(exe|cmd|bat|ps1)$|windows-ocr|powershell' deb-contents.txt tar-contents.txt; then
+            echo 'Forbidden Windows runtime found in Linux release' >&2
+            exit 1
+          fi
+          grep -q 'baitonghub-linux-mcp-tunnel@.service' deb-contents.txt
+          grep -q 'install-linux-tunnel-client.sh' deb-contents.txt
+          rm deb-contents.txt tar-contents.txt
+          sh ../scripts/verify-linux-package.sh .
+          bash ../scripts/verify-upgrade-rollback.sh .
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: RELEASE_NOTES_${{ github.ref_name }}.md
+          draft: false
+          prerelease: false
+          files: |
+            dist/Baitonghub-Linux-mcp-*-amd64.deb
+            dist/Baitonghub-Linux-mcp-*-linux-x64.tar.gz
+            dist/Baitonghub-Linux-mcp-*-SHA256SUMS
+            dist/Baitonghub-Linux-mcp-*-BUILD-METADATA.json
+            dist/Baitonghub-Linux-mcp-*-SBOM.cdx.json
+            dist/Baitonghub-Linux-mcp-*-PROVENANCE-SHA256SUMS

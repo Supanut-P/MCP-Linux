@@ -1,0 +1,50 @@
+[
+  {
+    "id": "small_edit",
+    "goal": "Change the feature flag from false to true; preserve the other settings.",
+    "source": "export const settings = { enabled: false, retries: 2 };",
+    "answer": "export const settings = { enabled: true, retries: 2 };",
+    "roles": ["lead"],
+    "criteria": "Return the complete edited declaration exactly, with enabled true and retries 2."
+  },
+  {
+    "id": "bugfix",
+    "goal": "Fix clamp so values below min return min, above max return max, and interior values are preserved.",
+    "source": "export function clamp(n, min, max) { return Math.max(min, Math.max(max, n)); }",
+    "answer": "export function clamp(n, min, max) { return Math.min(max, Math.max(min, n)); }",
+    "roles": ["lead", "worker", "qa"],
+    "criteria": "Return the complete corrected declaration exactly. Test cases are clamp(-1,0,10)=0, clamp(5,0,10)=5, clamp(11,0,10)=10."
+  },
+  {
+    "id": "refactor",
+    "goal": "Extract the duplicated positive predicate without changing either public function result.",
+    "source": "export function countPositive(xs) { return xs.filter(n => n > 0).length; }\nexport function positives(xs) { return xs.filter(n => n > 0); }",
+    "answer": "const isPositive = n => n > 0;\nexport function countPositive(xs) { return xs.filter(isPositive).length; }\nexport function positives(xs) { return xs.filter(isPositive); }",
+    "roles": ["lead", "worker", "qa"],
+    "criteria": "Return exactly three declarations: const isPositive = n => n > 0; then both exported functions using xs.filter(isPositive). Preserve countPositive .length."
+  },
+  {
+    "id": "context_retrieval",
+    "goal": "Find the exported retry limit relevant to a continuation; return its numeric value only.",
+    "source": "export const retryLimit = 3;\nexport const packetBytes = 32768;\nexport const qaPacketBytes = 65536;",
+    "answer": "3",
+    "roles": ["lead"],
+    "criteria": "Answer is the string 3. packetBytes and qaPacketBytes do not answer the question."
+  },
+  {
+    "id": "incident_diagnosis",
+    "goal": "Choose a bounded next action from partial registered-host observations. Do not deploy, restart or invent unavailable-host evidence.",
+    "source": "registered host-a: API logs ECONNREFUSED to registered db-a:5432 at 10:00Z. registered host-b: observation unavailable. registered db-a: no current observation collected. Last deploy time unavailable.",
+    "answer": "hypothesis: database unavailable; unknown: host-b and db-a current state; action: collect registered db-a read-only evidence",
+    "roles": ["lead", "worker", "qa"],
+    "criteria": "Format: hypothesis: <likely dependency problem>; unknown: <missing hosts/current observations>; action: <registered read-only collection>. Preserve uncertainty and stop before external mutation."
+  },
+  {
+    "id": "resume",
+    "goal": "Resume inspection after process loss without dispatching an uncertain task again.",
+    "source": "workflow task repair: running; active claim exists; last checkpoint executionUncertain=true; source fingerprint must be revalidated; lease not reconciled; writer termination unknown.",
+    "answer": "inspect existing claim and source; dispatch=false; retry=false; require writer reconciliation before any retry",
+    "roles": ["lead"],
+    "criteria": "Return the next action, explicit dispatch=false and retry=false, and the prerequisite before retry. Do not assume writer termination or reuse stale source evidence."
+  }
+]

@@ -60,6 +60,7 @@ export interface McpRuntimeTiming {
 }
 
 export interface McpApplicationServices {
+  readonly fleetCatalog?: Pick<import('@baitonghub-linux-mcp/application').FleetCatalogService, 'execute'>;
   /** Stateless caller-native task preparation; never launches workers or commands. */
   readonly workflowPlan?: Pick<WorkflowPlanService, 'execute'>;
   readonly workflowState?: Pick<import('@baitonghub-linux-mcp/application').WorkflowStateService, 'execute'>;

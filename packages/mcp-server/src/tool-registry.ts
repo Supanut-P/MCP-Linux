@@ -36,6 +36,7 @@ import { taskEventsTools } from './tools/task-events-tools.js';
 import { taskHistoryTools } from './tools/task-history-tools.js';
 import { diagnosticsSnapshotTools } from './tools/diagnostics-snapshot-tools.js';
 import { remoteFleetDiffTools } from './tools/remote-fleet-diff-tools.js';
+import { fleetCatalogTools } from './tools/fleet-catalog-tools.js';
 import { releaseVerifyTools } from './tools/release-verify-tools.js';
 import { environmentPreflightTools } from './tools/environment-preflight-tools.js';
 import { workflowPreflightTools } from './tools/workflow-preflight-tools.js';
@@ -131,6 +132,7 @@ export class ToolRegistry {
       ...taskHistoryTools(context),
       ...diagnosticsSnapshotTools(context),
       ...remoteFleetDiffTools(context),
+      ...fleetCatalogTools(context),
       ...releaseVerifyTools(context),
       ...environmentPreflightTools(context),
       ...workflowPreflightTools(context),

@@ -13,6 +13,7 @@ import {
   WorkspaceInfoService,
   WorkflowPlanService,
   WorkflowStateService,
+  FleetCatalogService,
   VerifiedSkillRegistryService,
   VerifiedWorkflowPlanService,
   JsonWorkspaceIndexStore,
@@ -48,6 +49,7 @@ import {
   SqliteRemoteRolloutRepository,
   SqliteWorkspaceCheckpointRepository,
   SqliteWorkflowRepository,
+  SqliteFleetCatalogRepository,
 } from '@baitonghub-linux-mcp/storage';
 import { SecretPolicy, WorkspacePathGuard, WorkspaceService, type Workspace } from '@baitonghub-linux-mcp/workspace';
 import { StrictWorkspaceRepository } from './strict-workspace-repository.js';
@@ -271,6 +273,12 @@ export function createStdioMcpRuntime(
   const services: McpApplicationServices = {
     workflowPlan,
     workflowState: new WorkflowStateService(workspaceRepository, new SqliteWorkflowRepository(database), profileProvider),
+    fleetCatalog: new FleetCatalogService(new SqliteFleetCatalogRepository(database), remoteHosts, workspaceRepository, profileProvider, async event => auditService.record({
+      actorId: actor.clientId, actorName: actor.clientName, action: 'fleet_catalog',
+      targetSummary: event.id === undefined ? 'catalog' : `catalog:${event.id}`,
+      resultCode: 'OK', durationMs: 0,
+      metadata: { ownerKey: event.ownerKey, operation: event.operation, ...(event.revision === undefined ? {} : { expectedRevision: event.revision }) },
+    })),
     verifiedSkills,
     verifiedWorkflowPlan,
     runtimeStatePath: path.join(dataPath, 'upgrade-runtime.json'),

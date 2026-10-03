@@ -80,8 +80,11 @@ for test work. Home LV size is unchanged.
 v1.45 bounded usage/report work is active under its
 [contract](contracts/v1.45-usage-benchmark.md) and
 [caller guide](USAGE_BENCHMARK.md). Native Windows returned-answer benchmark
-calls are retained separately; implementation QA and full release gates are
-pending. Unknown telemetry must remain null, and the experimental 25% goal is
+calls are retained separately. The [Ubuntu closure receipt](evidence/2026-10-03-v1.45-ubuntu.md)
+closes v1.45 after independent QA verified 704 source files, 10 implementation
+fingerprints and 59 artifacts. Full source/package gates, four lifecycle phases,
+installed benchmark/workflow/skills checks and native connector recovery passed.
+The configured VM runs accepted 1.45.0; v1.46 work may begin. Unknown telemetry must remain null, and the experimental 25% goal is
 not a confirmed savings claim. Workflow execution and Linux native provider
 readiness remain separate boundaries.
 
@@ -108,6 +111,13 @@ source snapshots and must remain distinct. Ubuntu artifacts and raw logs are
 retained in the ignored `dist/v1.37.0-local-20260930/` directory. Subsequent
 document edits are not part of the verified Ubuntu source snapshot.
 ## Verification and authority
+
+v1.46 fleet selection metadata is active under the
+[catalog contract](contracts/v1.46-fleet-catalog.md). Local focused storage,
+service, MCP boundary and unchanged fleet tests pass (24 tests); independent
+implementation review and full source/package gates remain open. The accepted
+installed VM version remains 1.45.0. Selection metadata provides no execution
+authority and does not isolate the existing global host registrations.
 
 Evidence must name its source snapshot, command, exit status, artifacts, and
 boundary. Do not equate Windows tests with Ubuntu behavior, fixture tests with

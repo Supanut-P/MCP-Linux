@@ -14,3 +14,7 @@ For nontrivial work, leave an auditable receipt with source/diff hashes, exact c
 Pause for explicit human approval before creating branches, changing production or credentials, destructive operations, external actions, deploys, merges, pushes, tags, or releases.
 
 Relevant repo references: [version roadmap](../../superpowers/plans/2026-09-30-mcp-linux-v2-roadmap.md), [Ubuntu acceptance](../../linux/UBUNTU_ACCEPTANCE.md), [tool contract](../../architecture/TOOL_CONTRACT.md), and [package scripts](../../../package.json).
+
+For caller-native task contracts, role prompts, handoffs and independent QA,
+follow the [native workflow guide](../../harness/NATIVE_WORKFLOW.md). Preparation
+is read-only and does not dispatch a worker or validate provider availability.

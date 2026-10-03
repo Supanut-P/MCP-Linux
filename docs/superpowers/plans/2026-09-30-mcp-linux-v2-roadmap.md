@@ -4,8 +4,8 @@
 
 ## Current position and sequencing
 
-- v1.37 fleet journal is a dirty local candidate. Its remaining implementation, Ubuntu acceptance, package, and release gates are not complete. Finish and record those gates before starting v1.38.
-- v1.38–v1.56 and v2.0 below are planned; none is represented as implemented or accepted by this roadmap.
+- v1.37.0 follow-up source/package gates, install/rollback, and installed MCP fleet inspection through native Secret Service/pinned loopback SSH passed on a new clean snapshot after fixing public admin-command routing. The configured test connector now runs the exact 1.37 candidate; native calls, restart/reconnect, installed-byte binding, and bounded known-credential checks including incident diagnostics passed. Independent QA found no remaining material findings and v1.37 milestone verification is closed; publication remains unapproved. See [current candidate evidence](../../harness/evidence/2026-10-01-packaged-fleet.md), [configured tunnel evidence](../../harness/evidence/2026-10-02-configured-tunnel.md), and the separate [historical Ubuntu evidence](../../harness/evidence/2026-09-30-v1.37-ubuntu.md).
+- v1.38 implementation is active under the [native workflow contract](../../harness/contracts/v1.38-native-workflow.md); it is not yet accepted. v1.39–v1.56 and v2.0 below remain planned.
 - Work in strict order: complete all gates for a version before starting the next version. A failed gate blocks sequence advancement and triggers bounded repair or replan. P1 work is optional, does not block v2, and reserved version numbers do not imply empty releases.
 - Preserve the frozen v1 contract and compatibility throughout v1.x and v2.0. v2 is an additive product milestone, not permission to break v1.
 
@@ -75,5 +75,6 @@ Potential follow-on work, outside the v2 release gate: graph views; flaky-test d
 ## Self-review and status rules
 
 This is a plan, not implementation evidence. Do not mark a version complete from this roadmap. Record implementation, local checks, Ubuntu/package acceptance, release artifacts, compatibility results, and human approval separately. Maintain the strict sequence and stop at the first failed gate. No release or external mutation is authorized by this document.
+
 
 

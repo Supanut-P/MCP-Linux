@@ -6,6 +6,25 @@ const MAX_WORKSPACE_ID_LENGTH = 128;
 const MAX_INSTRUCTION_BYTES = 256 * 1024;
 
 export const workspaceIdSchema = z.string().trim().min(1).max(MAX_WORKSPACE_ID_LENGTH);
+export const workflowPlanSchema = z.object({
+  taskId: z.string().min(1).max(128),
+  goal: z.string().min(1).max(4096),
+  workspaceId: workspaceIdSchema,
+  allowedFiles: z.array(z.string().min(1).max(4096)).min(1).max(64),
+  dependencies: z.array(z.string().min(1).max(128)).max(32),
+  acceptanceCriteria: z.array(z.string().min(1).max(1024)).min(1).max(32),
+  acceptanceCommands: z.array(z.object({
+    executable: z.string().min(1).max(256),
+    args: z.array(z.string().max(1024)).max(32),
+    expectedExitCode: z.number().int().min(0).max(255),
+    timeoutSeconds: z.number().int().min(1).max(600),
+  }).strict()).min(1).max(16),
+  contextReferences: z.array(z.string().min(1).max(1024)).max(64),
+  workerRole: z.enum(['coding', 'debugging', 'refactor']),
+  plannerRequired: z.boolean(),
+  securitySensitive: z.boolean(),
+  stopConditions: z.array(z.string().min(1).max(1024)).min(1).max(16),
+}).strict();
 export const optionalWorkspaceIdSchema = workspaceIdSchema.optional();
 export const pathSchema = z.string().min(1).max(MAX_PATH_LENGTH).refine((value) => !value.includes('\0'), 'Path is invalid');
 export const lineRangeSchema = z.object({

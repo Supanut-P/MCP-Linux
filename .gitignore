@@ -97,6 +97,14 @@ docs/skills/*/*
 !docs/harness/
 docs/harness/*
 !docs/harness/README.md
+!docs/harness/NATIVE_WORKFLOW.md
+!docs/harness/contracts/
+docs/harness/contracts/*
+!docs/harness/contracts/*.md
+!docs/harness/NATIVE_WORKFLOW.md
+!docs/harness/contracts/
+docs/harness/contracts/*
+!docs/harness/contracts/*.md
 !docs/harness/evidence/
 docs/harness/evidence/*
 !docs/harness/evidence/*.md

@@ -1,0 +1,223 @@
+{
+  "schemaVersion": 1,
+  "candidateVersion": "1.37.0",
+  "sourceCommit": "1cfef54ce980aa2c0f4cd6628bded64b65d06b14",
+  "sourceManifestSha256": "a92a01d35fa82df345efcbf76dfd858b3796b7e08823c885204c98ac440e6ca3",
+  "sourceFileCount": 578,
+  "nodeVersion": "v24.14.0",
+  "unitPassed": 684,
+  "unitSkipped": 1,
+  "integrationPassed": 3,
+  "packagingPassed": 15,
+  "releaseGatePassed": 10,
+  "v1AcceptancePassed": 5,
+  "canonicalToolCount": 227,
+  "packagedToolCount": 221,
+  "logs": {
+    "apt-install.log": "1951eb43cb1dce3f0f988c2eb097c8fe4604b526a3d1f2705bc0e2268d6bd808",
+    "apt-update.log": "2f9737ad03998135774d7dd5187b43dcfdeab9ac3a8c9ceb074836e18cbd8146",
+    "docs-tools-check.log": "db8b47a5d2d8937ab5c72ae36a3f78862e3afbf1f20656cd40bee685b74ab745",
+    "gates.tsv": "2b91ba18118441d1ed83192dcb8c64d92d737405162091d070d7ade72dbe2f4a",
+    "install.log": "66e0176027c212b4baccc6ee0e49fcb10de3ced2f2fc30168f9364c0c1674032",
+    "installed-http-smoke.log": "2d8d4d629303e1f580240eca6c0886c2b2cbfea00cd7f0a58790a778cd153221",
+    "installed-lifecycle.log": "5f8d94795b67ee689b5579f4e6fa8f79d0cc5b80ae60833e41fa2e3715a95a13",
+    "journal-sshd.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lint.log": "365012753b51971c1cd8e527c40cc77dd52b54e9873ef11baed3ed04cbc3e8e9",
+    "native-fleet-journal.log": "61da04cb78713f193f4f22c515ada644ae17abef27a7ac760f272f665b0312d8",
+    "package-inspection.log": "04636c0344acedca911e3bcc1d3a0e0222a8edff0d93b5313f5ef5c9e8353521",
+    "package-linux-headless.log": "29b3db875062370e6cf032656d0fb0b83a0edc7ff4ded6db251aa65c40c0c230",
+    "provenance.log": "a5be90054362bb5b18c89ad40f1dd4ef28f626057bc7babc4eb90a16fbfdc578",
+    "rebrand-check.log": "e4c724e9e3e4ca97f36f2ee457b2b6fe628cdf623a4d6f2fea5509bd716383b1",
+    "test-integration-initial.log": "7912db02eddc3d74f3fd2a137e5b5d8a9383658d571197927efefd0f634cdb25",
+    "test-integration-runtime-fixed.log": "b6de433d66d37e1769f825f3075dc761f95868af0a60c36e3b00b8e9d0ba4c9e",
+    "test-integration.log": "87d5ece5f866a1a0b82c5bc4cc58d876cb12e8fe0d0dd1ed637dff450dd5996e",
+    "test-packaging-initial.log": "2da60540abc8335214484674e9bd628700057d6388ec698200d173f519ce0929",
+    "test-packaging.log": "1363e2251cba3ce31c1b97d71e743b089e99139af0a0d14a71ad14c1b6bb75c4",
+    "test-release-gate.log": "f0a8082f54a710dcdf542e6f2ddaf8ae143118b6463a3cbab8ee6f8695c3df3c",
+    "test-v1.log": "83799aec8b178be6e4f7845c1bdab011da318e84f54f06193141488bfc4e5947",
+    "test.log": "d1d38a1012d4eaf761bbe55fa5566f091e36502ec6859c81e6acec2031a88649",
+    "tunnel-client-install.log": "e22624ed7fc05d9effe0f8a357ce686f391cb5e80d00303e42bc0dce5e06b141",
+    "typecheck.log": "2a94fd763b1f63d800bedf89d02362981d3f4d5cfd76f037ec2747bbb37f7b2d",
+    "upgrade-rollback-preflight.log": "5c578493a8c2b0306132645915757fbcf878036385d536b74d7d2bafab77c712"
+  },
+  "artifacts": {
+    "Baitonghub-Linux-mcp-1.36.0-amd64.deb": "16d73d1811d55d13c7060063369f7d67a5fc5091062923b1ef37b89daf724888",
+    "Baitonghub-Linux-mcp-1.37.0-BUILD-METADATA.json": "ba887c33cf31a189ea81bb66a81a619ba533b58695b9ff2c801de8783c106ac5",
+    "Baitonghub-Linux-mcp-1.37.0-PROVENANCE-SHA256SUMS": "f74e17e8b96beaffbcbde6d3007008d7546751b03dcd28c0e25095e6688ea5f4",
+    "Baitonghub-Linux-mcp-1.37.0-SBOM.cdx.json": "5394b84b97cab6482b4f2a1ebe270990fd1dda05f4c154c839d01228816dd55a",
+    "Baitonghub-Linux-mcp-1.37.0-SHA256SUMS": "76d42d415e5ecd96c7c2ab5e2de171a79baa144de46b6d176eadb91390cccd81",
+    "Baitonghub-Linux-mcp-1.37.0-amd64.deb": "559d64d75ed22d05067084b6ad10227fa0e4e0db57f5005c99c15f3d9713ef74",
+    "Baitonghub-Linux-mcp-1.37.0-linux-x64.tar.gz": "457f42fa4bcb3aa58b2aeae5e2fbe62a6e863106dcc48cc19f93c8b73afffc07",
+    "source-commit.txt": "3945d406024a295d60ddb781b158c16dc4fd560a230744f86086643a6e3a5767",
+    "tunnel-client-binary.sha256": "de5fbdd7fe4b50f71619625b8017d8a667bde1fa544b32318014446bb5e4c572"
+  },
+  "publication": "not_requested",
+  "secureTunnel": "blocked_client_not_seen_missing_vm_profile_and_credential",
+  "soak": "waived_not_passed",
+  "status": "UBUNTU_CANDIDATE_CHECKED_SECURE_TUNNEL_GATE_OPEN",
+  "date": "2026-09-30",
+  "target": "approved-disposable-ubuntu-test-vm",
+  "os": "Ubuntu 24.04.4 LTS x86_64",
+  "pnpmVersion": "10.15.0",
+  "sourceCommitKind": "isolated verification snapshot; not upstream release commit",
+  "unitSkipReason": "Windows junction-security test requires Windows",
+  "archive": "dist/v1.37.0-local-20260930/ubuntu-evidence.tar.gz",
+  "archiveSha256": "aa1e7594bbc698a0d7cf606c3f888cc3ad265d109ee5e100692b3ab67239ad83",
+  "retainedFileHashesVerified": 34,
+  "commands": [
+    {
+      "command": "corepack pnpm@10.15.0 install --frozen-lockfile",
+      "exitCode": 0
+    },
+    {
+      "command": "corepack pnpm@10.15.0 rebrand:check",
+      "exitCode": 0
+    },
+    {
+      "command": "corepack pnpm@10.15.0 typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "corepack pnpm@10.15.0 lint",
+      "exitCode": 0
+    },
+    {
+      "command": "corepack pnpm@10.15.0 test",
+      "exitCode": 0
+    },
+    {
+      "command": "corepack pnpm@10.15.0 test:integration",
+      "exitCode": 0
+    },
+    {
+      "command": "corepack pnpm@10.15.0 test:packaging",
+      "exitCode": 0
+    },
+    {
+      "command": "corepack pnpm@10.15.0 test:release-gate",
+      "exitCode": 0
+    },
+    {
+      "command": "corepack pnpm@10.15.0 docs:tools:check",
+      "exitCode": 0
+    },
+    {
+      "command": "corepack pnpm@10.15.0 test:v1",
+      "exitCode": 0
+    },
+    {
+      "command": "corepack pnpm@10.15.0 package:linux:headless",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/generate-release-provenance.mjs dist",
+      "exitCode": 0
+    },
+    {
+      "command": "sh scripts/verify-linux-package.sh dist",
+      "exitCode": 0
+    },
+    {
+      "command": "sh scripts/verify-upgrade-rollback.sh dist",
+      "exitCode": 0,
+      "boundary": "preflight only"
+    },
+    {
+      "command": "sudo sh installed-lifecycle.sh",
+      "exitCode": 0,
+      "boundary": "approved VM install upgrade rollback uninstall reinstall; SQLite hash and non-root ownership"
+    },
+    {
+      "command": "PATH=<lab-no-node-bin> <private-node> installed-http-smoke.mjs --lab-root <lab> --workspace <lab-workspace>",
+      "exitCode": 0,
+      "boundary": "installed loopback HTTP health/workspace_list/read_file"
+    },
+    {
+      "command": "sudo sh native-journal-run.sh",
+      "exitCode": 0,
+      "boundary": "native registered OpenSSH loopback fleet journal; partial failure; temporary server stopped and private keys revoked"
+    }
+  ],
+  "installedLifecycle": {
+    "versions": [
+      "1.36.0",
+      "1.37.0",
+      "1.36.0",
+      "uninstalled",
+      "1.37.0"
+    ],
+    "sqliteSha256": "cf85b88633e8152f67d6d8bb4f60ff6206ed6f5b3875c94f04a0cece9c29fcdb",
+    "databaseOwner": "baitong",
+    "serviceTemplateUser": "baitong",
+    "serviceActiveVerified": false,
+    "entireXdgTreePreservationVerified": false,
+    "systemNodeUnavailableInAdminAndHttpSmokePath": true
+  },
+  "nativeFleet": {
+    "transport": "real OpenSSH loopback",
+    "partialFailureMs": 328,
+    "packagedMcpFleetVerified": false
+  },
+  "tunnelPreparation": {
+    "officialClientVersion": "0.0.15",
+    "checksumVerified": true,
+    "profileCreated": false,
+    "credentialCreated": false
+  },
+  "secureTunnelCalls": {
+    "health": "404 tunnel_client_not_seen",
+    "workspace_list": "404 tunnel_client_not_seen",
+    "clientNotSeenSeconds": 300
+  },
+  "filesystem": {
+    "approvedResize2fsExitCode": 0,
+    "result": "already full size; nothing to do",
+    "lastObservedAvailableBytes": 18809004032
+  },
+  "actualTotalTokens": null,
+  "tokenSavings": null,
+  "nextMilestone": "1.38 not started; closure gate remains open",
+  "remainingGates": [
+    "secure tunnel configured/active/ready",
+    "ChatGPT health/workspace/read",
+    "complete registered remote-fleet MCP proof",
+    "tunnel restart/reconnect and credential absence",
+    "final release commit and human publication approval"
+  ],
+  "verificationBoundary": "Tested snapshot artifacts; subsequent documentation deltas require final source binding before publication. No native Codex model/auth/cancellation proof or v2 implementation claimed.",
+  "installedStdio": {
+    "exitCode": 0,
+    "toolCount": 221,
+    "systemNodeUnavailableInPath": true,
+    "log": "dist/v1.37.0-local-20260930/ubuntu-installed-stdio-smoke.log",
+    "logSha256": "686b06a2d0dd59625d74f42d493102cbe05bcb2b8ae5e55d1aca07a03888f7d1",
+    "archiveContainsThisLaterLog": false
+  },
+  "approvalReviewRejection": {
+    "action": "recursive content scan for credential references",
+    "reason": "credential probing from unintended sources exceeds limited directory-check request",
+    "alternative": "directory names and known-profile metadata only; no credential contents read or copied"
+  },
+  "profileLocationFollowup": {
+    "searchBoundary": "filename and metadata inventory under /baitong and /home; dependency/Git directories and this new lab excluded",
+    "yamlFilenameCount": 416,
+    "expectedTunnelProfileFoundOnApprovedVm": false,
+    "credentialContentsRead": false,
+    "log": "dist/v1.37.0-local-20260930/profile-filename-find.log",
+    "logSha256": "7f22175594b6b09e297b9af4e6e8e7ed499772827606dd4d4d9d6b11b5f7c5c2",
+    "archiveContainsThisLaterLog": false,
+    "historicalSetup": "Prior chat records describe active MCP and tunnel services on another host/account; current status not verified",
+    "otherHostInspection": "Automatic approval review rejected read-only SSH before execution because the newly discovered host/account lacks direct authorization; user question pending"
+  },
+  "independentReview": {
+    "reviewer": "gpt-6.1-sol",
+    "effort": "high",
+    "status": "hashes_counts_source_binding_reviewed; remaining-gate omission repaired",
+    "runtimeExecutionByReviewer": false,
+    "retainedHashesIndependentlyVerified": 34
+  }
+}

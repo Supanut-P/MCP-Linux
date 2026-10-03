@@ -1,0 +1,182 @@
+{
+  "sourceCommit": "bbd47e10c0575f9ddb9312d8c61e752f1a8858c9",
+  "sourceManifestSha256": "c216a5486d7dd6a1a800850bc6e79c309675a07d3f9b2d9d0a709e2e2486dac8",
+  "sourceFileCount": 580,
+  "sourceTreeClean": true,
+  "unitPassed": 684,
+  "unitSkipped": 1,
+  "fleet": {
+    "status": "passed",
+    "transport": "installed-streamable-http",
+    "serverVersion": "1.37.0",
+    "checks": [
+      "installed-http-server",
+      "journal-success-bounds-and-forwarding",
+      "invalid-unit-and-lines",
+      "unregistered-host-refusal",
+      "registered-partial-failure",
+      "remote-command-boundary"
+    ],
+    "journalOutputBytes": 228,
+    "partialStatuses": [
+      "ok",
+      "error"
+    ],
+    "partialDurationMs": 391,
+    "commandCount": 2,
+    "authority": "installed binary; isolated XDG; disposable pinned loopback SSH; Secret Service key-path reference"
+  },
+  "artifacts": {
+    "Baitonghub-Linux-mcp-1.36.0-amd64.deb": "16d73d1811d55d13c7060063369f7d67a5fc5091062923b1ef37b89daf724888",
+    "Baitonghub-Linux-mcp-1.37.0-BUILD-METADATA.json": "a283ca78d5fe09df8cab8402db27d577637b72256468ead7c640a092edd7c034",
+    "Baitonghub-Linux-mcp-1.37.0-PROVENANCE-SHA256SUMS": "2099903e46568aa65a7c501c197ceada33861822e0356996d8e842af16686f7b",
+    "Baitonghub-Linux-mcp-1.37.0-SBOM.cdx.json": "fec3719fa5b8bc45421bf39e1b3faacc8b66e1a3794853127b54b776947fe15e",
+    "Baitonghub-Linux-mcp-1.37.0-SHA256SUMS": "129fda9da11f42f11f9e258711389d3f71a8b881389e31838bb2a8d440f64193",
+    "Baitonghub-Linux-mcp-1.37.0-amd64.deb": "1a01ef081970d34d19831163e2877d8e57435e1ff1de47bb98f9db4604902de5",
+    "Baitonghub-Linux-mcp-1.37.0-linux-x64.tar.gz": "fc6ec46e95ef66da496498c413a4105878921133abe55b7415af5de3680c1a14",
+    "source-commit.txt": "85f1c2887a80516eacf0ddedeffd9117654730e960421382bfae390a32d823c8"
+  },
+  "logs": {
+    "diff-check.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs-tools-check.log": "765fabc6cbba11830115bb77b12700114c5713b56ce2b05529ea225a422901f0",
+    "fleet-secret-service-install.log": "e76b1d008ec652bd30fc91c8a4dc11c6bc9524c800287ca429b57b07e6f36bc8",
+    "gates.tsv": "7356d83299b8f19497a793d47fb5768abe07f5b3e3b76c9e7991f98da1f57e71",
+    "installed-candidate.log": "528b0e78d7a1d62679b07cfbd7909458df8409f6c710240009831f1dba8601de",
+    "installed-http-smoke.log": "2d8d4d629303e1f580240eca6c0886c2b2cbfea00cd7f0a58790a778cd153221",
+    "installed-lifecycle.log": "4445079bf9df06f6ea2b04b553464459ba5998178b184da04109eb7c9bb9a337",
+    "installed-source-binding.log": "371655f6d7b08704f75494250da4a7ea4e70213ac643cea50778b92b4e32f3e9",
+    "installed-stdio-smoke-missing-git.log": "6af90a43593de4122a8023cb9dc290c78c484e51d15a04e9e0968c040c011795",
+    "installed-stdio-smoke.log": "783a71ca51bd418ceac117980a8edc3aeeab9476e6bb07f042761ceb106bc590",
+    "launcher-green.log": "49d1db2735924e441e6fc69b2e9cf8185e517b8b64555dd42d34ad1547e3faed",
+    "launcher-red-corrected.log": "243ff576d60ee65c54ca93bac63f110a58cb05a64e2c7eae7742c56ecad63062",
+    "launcher-red.log": "3027d9c67f8b6932af24c82b5ed9cff78974ef8ef71b5ed05da9f30e54fcda90",
+    "lifecycle-preparation.log": "d74ed987b66a9c7dd97a0e61fb966646b20a0d93a89826e968942bc4b0d8d302",
+    "lint.log": "36dda69b9c811f3558529b363b28f5769c3f5fc2a47b76f53003117f7e2aefd9",
+    "package-build.log": "e5133b7512b395090155c032b000d161cedb1d66780b44f27406bcd4881496e3",
+    "package-inspection.log": "6d4ac777101b5c56308b4cb6180b4b67d5dd0d92fd8d0e9677ff80542a6d7bc9",
+    "packaged-fleet-commands.log": "4516185a1fb890c0535235b67da9fa337bacee07a9d77f0ccdc55811cb22d1bd",
+    "packaged-fleet-mcp.log": "5a920a8fa1c6d916d2f482bc8d0cf49be0620ce91911227b617f91359b22130e",
+    "provenance.log": "ad37684a2934efd78ad66fa2feb58edb53e66053dd1be35daaf31cf48c3d0347",
+    "rebrand-check.log": "dea0bb89941abb818fa1bc5a7dc672fb53df61e2885cbd6824340b0c1f188170",
+    "test-integration.log": "a0151e9078b158445cda667ad789a6cd6830e5dcd30d83f81517c1c953ef364f",
+    "test-packaging.log": "131c83cc2207ca38f07aebea95e702f963e456d404a9ecd83d911c00810879d7",
+    "test-release-gate.log": "ebdee9284e51fca1ec84417f4777dac89de0575b39ee9733b623f39ddc607de2",
+    "test-v1.log": "ab191f1c6a3d7123bf269befd375531e99bcd5dc86ce3dc99949a4eb4380d77d",
+    "test.log": "7c5322b7feff0b3a3d8759f7a930cda0925143988df96670ae85d88b91109152",
+    "typecheck.log": "262f54f36e72685832f6c034212073c01bf5a9f0c4d5bf79088a7ca6db089163",
+    "upgrade-rollback-preflight.log": "5c578493a8c2b0306132645915757fbcf878036385d536b74d7d2bafab77c712"
+  },
+  "schemaVersion": 1,
+  "date": "2026-10-01",
+  "candidateVersion": "1.37.0",
+  "status": "UBUNTU_PACKAGE_AND_NATIVE_MCP_FLEET_CHECKED_CONFIGURED_TUNNEL_GATE_OPEN",
+  "sourceCommitKind": "isolated follow-up verification snapshot; not upstream release commit",
+  "sourceManifestScope": "all 580 Git-tracked files; previous 578-file selected manifest excluded two historical local receipts",
+  "integrationPassed": 3,
+  "packagingPassed": 16,
+  "releaseGatePassed": 10,
+  "v1AcceptancePassed": 5,
+  "canonicalToolCount": 227,
+  "packagedToolCount": 221,
+  "archive": "dist/v1.37.0-local-20260930/launcher-followup-evidence.tar.gz",
+  "archiveSha256": "aaec3ec8db1760eb5e8af4009eec6b555186563d5d16ba3891712be79ea5fa01",
+  "retainedFileHashesVerified": 36,
+  "gates": [
+    {
+      "gate": "rebrand-check",
+      "exitCode": 0
+    },
+    {
+      "gate": "typecheck",
+      "exitCode": 0
+    },
+    {
+      "gate": "lint",
+      "exitCode": 0
+    },
+    {
+      "gate": "test",
+      "exitCode": 0
+    },
+    {
+      "gate": "test-integration",
+      "exitCode": 0
+    },
+    {
+      "gate": "test-packaging",
+      "exitCode": 0
+    },
+    {
+      "gate": "test-release-gate",
+      "exitCode": 0
+    },
+    {
+      "gate": "docs-tools-check",
+      "exitCode": 0
+    },
+    {
+      "gate": "test-v1",
+      "exitCode": 0
+    },
+    {
+      "gate": "diff-check",
+      "exitCode": 0
+    },
+    {
+      "gate": "package-build",
+      "exitCode": 0
+    },
+    {
+      "gate": "provenance",
+      "exitCode": 0
+    },
+    {
+      "gate": "package-inspection",
+      "exitCode": 0
+    },
+    {
+      "gate": "upgrade-rollback-preflight",
+      "exitCode": 0
+    }
+  ],
+  "installedLifecycle": {
+    "versions": [
+      "1.36.0",
+      "1.37.0",
+      "1.36.0",
+      "uninstalled",
+      "1.37.0"
+    ],
+    "sqliteSha256": "2e70514589997f56cc076f607e59166c9cdac17bfd6cd3cf3302cb79a9ace674",
+    "stateOwner": "baitong",
+    "systemNodeUnavailableInSmokePath": true,
+    "serviceTemplateUser": "baitong",
+    "serviceActiveVerified": false
+  },
+  "fixtureScriptHashes": {
+    "mjs": "e8dc4b1c5bad2a2e2d929b717b5812c8299830641f54f44387c09551ae51b58d",
+    "sh": "2375ec1d4e6c26d368da99b4761cba6d9e0ab729874c21a498349de10b3e431d"
+  },
+  "initialFailures": [
+    "First regression fixture failed on CRLF; corrected LF fixture then reproduced public remote-host routing refusal",
+    "First installed STDIO fixture omitted required Git; log retained, Git and ripgrep added to isolated PATH, rerun passed"
+  ],
+  "independentReview": {
+    "reviewer": "gpt-6.1-sol",
+    "effort": "high",
+    "scope": "fixture and two-file product patch; inspection only",
+    "actionableFindingsRemaining": 0
+  },
+  "soak": "waived_not_passed",
+  "publication": "not_requested",
+  "remainingGates": [
+    "candidate on configured tunnel host",
+    "candidate ChatGPT health/workspace/read",
+    "candidate tunnel restart/reconnect and credential absence",
+    "final source binding and human publication approval"
+  ],
+  "verificationBoundary": "Installed HTTP MCP and native Secret Service/pinned loopback SSH; no external-host fleet, saturation or secret-canary proof. Configured tunnel still runs 1.36; no native model/auth/cancellation or token-savings claim.",
+  "nextMilestone": "1.38 not started; v1.37 closure open",
+  "actualTotalTokens": null,
+  "tokenSavings": null
+}

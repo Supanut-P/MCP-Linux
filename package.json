@@ -1,6 +1,6 @@
 {
   "name": "baitonghub-linux-mcp",
-  "version": "1.37.0",
+  "version": "1.38.0",
   "private": true,
   "packageManager": "pnpm@10.15.0",
   "engines": {
@@ -15,7 +15,7 @@
     "test": "corepack pnpm@10.15.0 --workspace-concurrency=1 -r --if-present test",
     "test:integration": "vitest run tests/integration/mcp-development-flow.test.ts tests/integration/codex-review-flow.test.ts",
     "test:packaging": "vitest run tests/packaging/headless-linux-tunnel.test.ts tests/release/public-repo-hygiene.test.ts",
-    "test:release-gate": "vitest run tests/release/release-gate.test.ts",
+    "test:release-gate": "vitest run tests/release/release-gate.test.ts tests/release/version-sync.test.ts",
     "benchmark:baseline": "node scripts/benchmark-mcp.mjs",
     "build:headless": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/cli build:headless",
     "package:linux:headless": "corepack pnpm@10.15.0 --filter @baitonghub-linux-mcp/cli package:headless",

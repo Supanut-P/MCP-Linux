@@ -18,7 +18,14 @@ async function updatePackageJson(filePath, newVersion) {
 async function syncAllVersions() {
   const rootPkgPath = path.join(rootDir, 'package.json');
   const rootPkg = JSON.parse(await readFile(rootPkgPath, 'utf8'));
-  const version = targetVersion || rootPkg.version;
+  const currentVersion = rootPkg.version;
+  if (typeof currentVersion !== 'string' || !/^\d+\.\d+\.\d+$/.test(currentVersion)) {
+    throw new Error('Root package.json must contain a valid current version before synchronization.');
+  }
+  const version = targetVersion || currentVersion;
+  if (!/^\d+\.\d+\.\d+$/.test(version)) {
+    throw new Error(`Invalid target version: ${version}`);
+  }
   const name = rootPkg.name || 'baitonghub-linux-mcp';
 
   console.log(`Synchronizing single source of truth for name "${name}" and version "${version}"...`);
@@ -67,13 +74,33 @@ async function syncAllVersions() {
   const readmePath = path.join(rootDir, 'README.md');
   try {
     let readmeContent = await readFile(readmePath, 'utf8');
+    const currentVersionPattern = currentVersion.replaceAll('.', '\\.');
     readmeContent = readmeContent
-      .replace(/## Current (?:version|source \/ release candidate|release): v[0-9.]+/g, `## Current version: v${version}`)
-      .replace(/The v[0-9.]+ release target and runtime contract/g, 'The v' + version + ' release target and runtime contract')
-      .replace(/current source\/release candidate is `v[0-9.]+`/g, 'current version is `v' + version + '`')
-      .replace(/current v[0-9.]+ `ToolRegistry`/g, 'current v' + version + ' `ToolRegistry`')
-      .replace(/## v[0-9.]+ release status/g, `## v${version} release status`)
-      .replace(/Release `v[0-9.]+`/g, `Release \`v${version}\``);
+      .replace(new RegExp('## Current (?:version|source / release candidate|release): v' + currentVersionPattern + '(?=\\r?\\n|$)', 'g'), `## Current version: v${version}`)
+      .replace(new RegExp('The v' + currentVersionPattern + ' release target and runtime contract', 'g'), 'The v' + version + ' release target and runtime contract')
+      .replace(new RegExp('current source\\/release candidate is `v' + currentVersionPattern + '`', 'g'), 'current version is `v' + version + '`')
+      .replace(new RegExp('current v' + currentVersionPattern + ' `ToolRegistry`', 'g'), 'current v' + version + ' `ToolRegistry`')
+      .replace(new RegExp('## v' + currentVersionPattern + ' release status', 'g'), `## v${version} release status`)
+      .replace(new RegExp('Release `v' + currentVersionPattern + '`', 'g'), `Release \`v${version}\``);
+    readmeContent = readmeContent.replace(
+      new RegExp(`The v${currentVersion.replaceAll('.', '\\.')} release is \\*\\*headless\\*\\*`),
+      `The v${version} release is **headless**`,
+    );
+    const installHeading = readmeContent.indexOf('## Install');
+    if (installHeading >= 0) {
+      const nextHeading = readmeContent.indexOf('\n## ', installHeading + 3);
+      const end = nextHeading >= 0 ? nextHeading : readmeContent.length;
+      const installSection = readmeContent.slice(installHeading, end)
+        .replaceAll(`v${currentVersion}`, `v${version}`)
+        .replaceAll(`-${currentVersion}-`, `-${version}-`)
+        .replaceAll(`-${currentVersion}.`, `-${version}.`);
+      readmeContent = readmeContent.slice(0, installHeading) + installSection + readmeContent.slice(end);
+    } else {
+      // Small fixtures and older README layouts may not have an install section.
+      readmeContent = readmeContent
+        .replaceAll(`releases/download/v${currentVersion}/`, `releases/download/v${version}/`)
+        .replaceAll(`Baitonghub-Linux-mcp-${currentVersion}`, `Baitonghub-Linux-mcp-${version}`);
+    }
     await writeFile(readmePath, readmeContent, 'utf8');
     console.log(`Updated README.md -> v${version}`);
   } catch {

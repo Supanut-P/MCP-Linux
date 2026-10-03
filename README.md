@@ -24,7 +24,7 @@ Baitonghub-Linux-mcp lets an MCP client work with a Linux machine through a
 controlled local runtime. It is intended for repository maintenance, coding,
 testing, Git workflows, command execution, and long-running development tasks.
 
-The v1.37.0 release is **headless**. It does not require Electron, a desktop
+The v1.38.0 release is **headless**. It does not require Electron, a desktop
 session, Chrome, Wayland, X11, or a system-installed Node.js runtime.
 
 ### What it can do
@@ -119,6 +119,10 @@ session, Chrome, Wayland, X11, or a system-installed Node.js runtime.
   composes the bounded environment and diagnostics signals and can include
   regular-file usage for one registered workspace; it never authorizes or
   executes work.
+- Prepare scoped native Codex work with `workflow_plan`: task contract, role
+  prompts, acceptance descriptions and stop conditions. The caller dispatches
+  workers and independent QA; planning never executes commands or validates
+  model availability. See the [native workflow guide](docs/harness/NATIVE_WORKFLOW.md).
 - Create owner-isolated `workspace_checkpoint` manifests between agent turns.
   Checkpoints store only bounded relative paths and file metadata, enforce
   expiry and per-owner quotas, never persist file contents or absolute paths,
@@ -179,7 +183,7 @@ outside the v1.37 release contract.
 
 Download the latest package from
 [GitHub Releases](https://github.com/Supanut-P/MCP-Linux/releases/latest).
-The v1.37.0 links below become downloadable when the Ubuntu package gate and
+The v1.38.0 links below become downloadable when the Ubuntu package gate and
 release approval are complete.
 
 The v1 administration tools add bounded, explicitly confirmed mutations. They
@@ -199,17 +203,17 @@ bounded soak run; it does not claim that a seven-day run has completed.
 ### Ubuntu DEB
 
 ```sh
-  curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.37.0/Baitonghub-Linux-mcp-1.37.0-amd64.deb
-  curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.37.0/Baitonghub-Linux-mcp-1.37.0-SHA256SUMS
-  sha256sum --check --ignore-missing Baitonghub-Linux-mcp-1.37.0-SHA256SUMS
-  sudo apt install ./Baitonghub-Linux-mcp-1.37.0-amd64.deb
+  curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.38.0/Baitonghub-Linux-mcp-1.38.0-amd64.deb
+  curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.38.0/Baitonghub-Linux-mcp-1.38.0-SHA256SUMS
+  sha256sum --check --ignore-missing Baitonghub-Linux-mcp-1.38.0-SHA256SUMS
+  sudo apt install ./Baitonghub-Linux-mcp-1.38.0-amd64.deb
 ```
 
 ### Linux x64 tarball
 
 ```sh
-  curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.37.0/Baitonghub-Linux-mcp-1.37.0-linux-x64.tar.gz
-  tar -xzf Baitonghub-Linux-mcp-1.37.0-linux-x64.tar.gz
+  curl -LO https://github.com/Supanut-P/MCP-Linux/releases/download/v1.38.0/Baitonghub-Linux-mcp-1.38.0-linux-x64.tar.gz
+  tar -xzf Baitonghub-Linux-mcp-1.38.0-linux-x64.tar.gz
 ```
 
 ## Quick start: local STDIO

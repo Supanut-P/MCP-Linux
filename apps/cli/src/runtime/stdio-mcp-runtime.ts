@@ -11,6 +11,7 @@ import {
   ProjectSnapshotService,
   SearchService,
   WorkspaceInfoService,
+  WorkflowPlanService,
   JsonWorkspaceIndexStore,
   WorkspaceIndexService,
   WorkspaceChangesService,
@@ -99,6 +100,7 @@ export function createStdioMcpRuntime(
   })));
   const workspaceService = new WorkspaceService(workspaceRepository);
   const workspaceInfoService = new WorkspaceInfoService(workspaceRepository, workspaceService, effectiveUnrestricted);
+  const workflowPlan = new WorkflowPlanService(workspaceRepository);
   const workspaceSnapshot = new WorkspaceSnapshotService({
     info: async (actor, workspaceId): Promise<Result<WorkspaceSnapshotRootInfo>> => {
       const result = await workspaceInfoService.info(actor, workspaceId);
@@ -261,6 +263,7 @@ export function createStdioMcpRuntime(
   const environmentPreflight = new EnvironmentPreflightService({ capabilities: capabilityService });
   const workflowPreflight = new WorkflowPreflightService({ environmentPreflight, diagnosticsSnapshot, workspaceSnapshot });
   const services: McpApplicationServices = {
+    workflowPlan,
     runtimeStatePath: path.join(dataPath, 'upgrade-runtime.json'),
     runtimeTiming: () => ({
       mcpPollWaitSeconds: parseIntegerSetting(settingsRepository.get(USER_SETTING_KEYS.mcpPollWaitSeconds), DEFAULT_MCP_POLL_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS),

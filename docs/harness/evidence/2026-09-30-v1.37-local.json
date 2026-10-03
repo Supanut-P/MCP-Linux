@@ -48,8 +48,9 @@
       "status": "partial_platform_coverage",
       "passedTests": 646,
       "skippedTests": 39,
-      "log": "dist/v1.37.0-local-20260930/test.log",
-      "logSha256": "17dfc69c0f8a604f7a99e1a308fcaa8db83e85e4f7f37c5b66cb95aa4418be7b"
+      "log": null,
+      "logSha256": "17dfc69c0f8a604f7a99e1a308fcaa8db83e85e4f7f37c5b66cb95aa4418be7b",
+      "rawLogStatus": "original file overwritten during Ubuntu evidence download; original hash and counts retained"
     },
     {
       "command": "corepack pnpm@10.15.0 test:integration",
@@ -148,5 +149,17 @@
     "remoteWritesPerformed": false,
     "filesystemGrow": "proposed_resize2fs_pending_explicit_human_approval",
     "credentialsPersisted": false
+  },
+  "historicalReceipt": true,
+  "laterUbuntuReceipt": "docs/harness/evidence/2026-09-30-v1.37-ubuntu.json",
+  "windowsUnitRecheck": {
+    "command": "corepack pnpm@10.15.0 test",
+    "exitCode": 0,
+    "passed": 646,
+    "skipped": 39,
+    "log": "dist/v1.37.0-local-20260930/test-windows-recheck.log",
+    "logSha256": "ff3561686a9209abe9e21f535b0374b3eeb4a43e83eac263ebfcdab656b6c8d0",
+    "sourceManifest": "dist/v1.37.0-local-20260930/windows-recheck-manifest.json",
+    "sourceManifestSha256": "0717d4584db0858688ca18b65197e91fb2896e0da009a4dac2a8cd0e73b4335d"
   }
 }

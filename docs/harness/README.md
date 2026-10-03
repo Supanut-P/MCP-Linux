@@ -7,17 +7,41 @@ grant execution authority.
 
 ## Current milestone
 
-v1.37.0 is the source candidate. Close its unit, integration, packaging,
-release, catalog, contract, acceptance, Ubuntu runtime, and package gates
-before starting v1.38 implementation. Supporting roadmap/skill documentation
-does not mean the v1.38 runtime workflow exists.
+The disposable Ubuntu source and package gates for v1.37.0 passed, including
+install, upgrade, rollback, and reinstall checks. The
+[configured candidate receipt](evidence/2026-10-02-configured-tunnel.md) now
+records installation on the approved existing tunnel VM, native connector
+calls before/after restart, and bounded known-credential checks including
+incident diagnostics. Independent QA found no remaining material findings;
+v1.37 milestone verification is closed. Publication remains unapproved.
+v1.38 implementation is now active under the
+[native workflow contract](contracts/v1.38-native-workflow.md); its gates have
+not yet all passed. The [native round receipt](evidence/2026-10-03-v1.38-native-flow.md)
+records implemented preparation, focused checks and a caller-native worker/QA
+bug-fix round. Ubuntu/package acceptance remains pending; v1.39 has not started.
 
-See [local evidence](evidence/2026-09-30-v1.37-local.md) for exact results and
-verification limits. Raw local logs are retained in the ignored
-`dist/v1.37.0-local-20260930/` directory; copy them with the evidence when
-handing off to another machine. A pre-existing working-tree patch is retained
-there separately from this request's edits.
+The [2026-10-01 tunnel follow-up](evidence/2026-10-01-existing-tunnel.md)
+verified the previously configured host through the native connector: MCP and
+tunnel services are active, health/readiness endpoints return 200, and
+workspace read works. Its installed package remains 1.36.0; this does not
+close candidate 1.37 acceptance. The [2026-10-02 SSH key test](evidence/2026-10-02-ssh-key-access.md)
+now verifies root access using the user-specified key. The authentication
+blocker is resolved; no candidate installation or restart was performed in
+that access test. The roadmap goal has since resumed and is active; the new
+candidate receipt records the subsequent authorized installation and restart.
 
+The [new packaged fleet receipt](evidence/2026-10-01-packaged-fleet.md) records
+a public-launcher routing repair, full Ubuntu gates, install/rollback, and
+installed MCP → native Secret Service → pinned loopback SSH proof. This new
+snapshot and its hashes supersede the earlier candidate for future acceptance;
+the earlier receipts remain historical. External fleet and canary/saturation
+claims are outside this fixture's scope.
+
+See the [local receipt](evidence/2026-09-30-v1.37-local.md) and separate
+[Ubuntu receipt](evidence/2026-09-30-v1.37-ubuntu.md). They bind to different
+source snapshots and must remain distinct. Ubuntu artifacts and raw logs are
+retained in the ignored `dist/v1.37.0-local-20260930/` directory. Subsequent
+document edits are not part of the verified Ubuntu source snapshot.
 ## Verification and authority
 
 Evidence must name its source snapshot, command, exit status, artifacts, and
@@ -28,3 +52,6 @@ authentication/model selection/cancellation. A soak waiver is not a pass.
 Use a disposable Ubuntu 24.04 x64 target for package install/upgrade/rollback;
 obtain explicit authorization before preparing or mutating infrastructure or
 a remote target. Existing v1.36 artifacts are historical evidence only.
+
+
+

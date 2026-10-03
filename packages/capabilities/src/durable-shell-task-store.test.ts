@@ -2,6 +2,8 @@ import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promis
 import { readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
 import { afterEach, describe, expect, it } from 'vitest';
 import { DurableShellTaskStore } from './durable-shell-task-store.js';
 import { ShellCapabilityBackend } from './shell-backend.js';
@@ -14,7 +16,48 @@ afterEach(async () => {
   await Promise.all(roots.map((root) => rm(root, { recursive: true, force: true })));
 });
 
+describe('durable process group metadata validation', () => {
+  it('accepts every safe PID prefix and rejects unsafe group members', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'baitonghub-linux-mcp-durable-shell-'));
+    temporaryRoots.push(root);
+    const tasks = path.join(root, '.tasks'); const taskId = 'group-prefix';
+    const directory = path.join(tasks, taskId); await mkdir(directory, {recursive: true});
+    const store = new DurableShellTaskStore(tasks);
+    for (const [member, accepted] of [['107215:123', true], ['10:123', true], ['2:123', true], ['1:123', false], ['0:123', false], ['01:123', false], ['9007199254740992:123', false], ['-2:123', false]] as const) {
+      await writeFile(path.join(directory, 'task.json'), JSON.stringify({version: 1, task_id: taskId, state: 'completed', started_at: new Date().toISOString(), include_stdout: false, include_stderr: false, max_output_bytes: 128, deadline_at: new Date().toISOString(), child_group_members: [member]}));
+      expect((await store.snapshot(taskId)).ok, member).toBe(accepted);
+    }
+  });
+});
+
 describe.runIf(process.platform === 'linux')('durable shell background tasks', () => {
+  it('preserves a live startup worker before task.json publishes its identity', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'baitonghub-linux-mcp-durable-shell-'));
+    temporaryRoots.push(root);
+    const taskId = 'startup-window'; const tasks = path.join(root, '.tasks'); const directory = path.join(tasks, taskId);
+    await mkdir(directory, {recursive: true});
+    const child = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 3000)'], {stdio: 'ignore'});
+    const exited = once(child, 'exit'); await once(child, 'spawn');
+    const pid = child.pid!; const identity = processStartIdentity(pid);
+    const metadata = {version: 1, task_id: taskId, state: 'running', started_at: new Date().toISOString(), include_stdout: true, include_stderr: true, max_output_bytes: 128, deadline_at: new Date(Date.now() + 10_000).toISOString()};
+    const filename = path.join(directory, 'task.json');
+    try {
+      expect(identity).toMatch(/^[0-9]+$/);
+      await writeFile(filename, JSON.stringify(metadata));
+      await writeFile(path.join(directory, 'worker.pid'), `${pid}\n${identity}`);
+      const store = new DurableShellTaskStore(tasks);
+      expect(await store.snapshot(taskId)).toMatchObject({ok: true, value: {state: 'running', worker_pid: pid}});
+      expect(JSON.parse(await readFile(filename, 'utf8'))).toEqual(metadata);
+      await writeFile(path.join(directory, 'worker.pid'), String(pid));
+      expect(await store.snapshot(taskId)).toMatchObject({ok: true, value: {state: 'termination_unverified'}});
+      expect(isProcessRunning(pid)).toBe(true);
+    } finally {
+      // Remove observed PID metadata before generic test cleanup; only this ChildProcess is stopped.
+      await writeFile(filename, JSON.stringify({...metadata, state: 'cancelled'}));
+      child.kill('SIGTERM'); await exited;
+    }
+  });
+
   it('rejects traversal task IDs before constructing a task path', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'baitonghub-linux-mcp-durable-shell-'));
     temporaryRoots.push(root);

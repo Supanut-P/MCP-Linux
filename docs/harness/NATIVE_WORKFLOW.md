@@ -23,7 +23,7 @@ fresh source verification and process-local reference boundaries. Existing
 `workspace_context` clients retain their accepted invocation and behavior.
 
 For persistent task metadata, see the [durable coordination guide](DURABLE_WORKFLOW.md).
-Its v1.42 implementation is in progress and does not dispatch work automatically.
+Its v1.42 milestone is accepted and does not dispatch work automatically.
 
 ## Caller sequence
 

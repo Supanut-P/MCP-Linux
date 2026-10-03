@@ -52,9 +52,18 @@ The [v1.41 Ubuntu closure receipt](evidence/2026-10-03-v1.41-ubuntu.md) records
 646 source fingerprints, 55 artifact hashes, full gates and installed lifecycle.
 Independent closure QA approved; v1.41 verification is closed and the configured
 VM runs accepted 1.41.0. Linux native provider authentication remains a final v2
-gate. v1.42 durable state implementation is active under its
+gate. v1.42 durable state verification is closed under its
 [contract](contracts/v1.42-durable-workflow.md) and
-[caller guide](DURABLE_WORKFLOW.md); no v1.42 package acceptance is claimed yet.
+[caller guide](DURABLE_WORKFLOW.md) and
+[Ubuntu/recovery receipt](evidence/2026-10-03-v1.42-ubuntu.md). Independent closure
+QA verified 660 source hashes and 62 artifacts. The configured VM now runs
+accepted 1.42.0. v1.43 file-scope coordination is active under its
+[contract](contracts/v1.43-file-scope.md) and [usage guide](COORDINATED_SCOPE.md).
+Local implementation QA and full local checks passed; Ubuntu/package acceptance
+remains open. Publication is unapproved.
+The [r3 checkpoint](evidence/2026-10-03-v1.43-local-r3.md) records two
+durable-shell defects exposed by the retained failed Ubuntu snapshots and their
+reviewed regressions. Fresh r3 Ubuntu evidence is required before closure.
 
 The [2026-10-01 tunnel follow-up](evidence/2026-10-01-existing-tunnel.md)
 verified the previously configured host through the native connector: MCP and

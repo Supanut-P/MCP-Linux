@@ -6,7 +6,7 @@ export function workflowStateTools(context: McpToolContext): McpToolDefinition[]
   if (service === undefined) return [];
   return [defineTool({
     name: 'workflow',
-    description: 'Persist and inspect bounded owner-scoped caller-native task state. Plan/start/checkpoint/complete/cancel require current WRITE permission. Start only reserves a task; resume never dispatches or repeats execution. Completion and references are caller-reported, not verified QA. Claims do not provide file locks or an OS sandbox.',
+    description: 'Persist bounded owner-scoped caller-native task state. Mutations require current WRITE permission. Start reserves coordinated workspace/file scope with a fenced lease and source baseline; resume never dispatches. Handoff checks bounded nonignored source deltas. Expired or terminal leases quarantine scope until explicit owner reconcile with writerStopped/userConfirmed. QA references and writer termination remain caller-attested. Coordination is not an OS sandbox.',
     permission: 'READ',
     annotations: { readOnlyHint: false, destructiveHint: false },
     inputSchema: workflowStateSchema,

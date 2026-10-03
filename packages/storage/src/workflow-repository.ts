@@ -1,5 +1,6 @@
 import type { DatabaseSync } from 'node:sqlite';
-import type { DurableWorkflow, DurableWorkflowTask, WorkflowCheckpoint, WorkflowEvent, WorkflowRepository, WorkflowTaskState } from '@baitonghub-linux-mcp/domain';
+import { randomUUID } from 'node:crypto';
+import type { DurableWorkflow, DurableWorkflowTask, WorkflowCheckpoint, WorkflowEvent, WorkflowLease, WorkflowRepository, WorkflowReservation, WorkflowScopeKey, WorkflowTaskState, WorkflowVerification } from '@baitonghub-linux-mcp/domain';
 import type { SqliteDatabase } from './database.js';
 
 const STATES = new Set<WorkflowTaskState>(['planned', 'ready', 'running', 'verifying', 'done', 'blocked', 'failed', 'cancelled']);
@@ -7,14 +8,19 @@ const TERMINAL = new Set<WorkflowTaskState>(['done', 'blocked', 'failed', 'cance
 const EVENT_TYPES = new Set(['created', ...STATES]);
 const ID = /^[A-Za-z0-9_.:-]{1,128}$/;
 const MAX_EVENTS = 1024;
+const MAX_LEASES = 512;
 
 interface WorkflowRow { id: string; owner_key: string; workspace_id: string; created_at: string; cancelled: number; }
 interface TaskRow { task_id: string; contract_json: string; dependencies_json: string; state: string; revision: number; checkpoint_json: string | null; claim_token: string | null; }
+interface LeaseRow { lease_id: string; workflow_id: string; task_id: string; state: string; expires_at: string; reservation_json: string; last_source_fingerprint: string | null; }
 class EventLimitError extends Error {}
 
 /** Durable caller workflow metadata. Claim tokens are deliberately omitted from every read. */
 export class SqliteWorkflowRepository implements WorkflowRepository {
-  public constructor(private readonly database: SqliteDatabase) {}
+  public constructor(private readonly database: SqliteDatabase) {
+    // SQLite functions are connection-local; old binaries opening this database do not register it.
+    this.database.connection.function('workflow_v143_guard', () => 143);
+  }
 
   public create(workflow: DurableWorkflow): void {
     validateWorkflow(workflow);
@@ -56,14 +62,23 @@ export class SqliteWorkflowRepository implements WorkflowRepository {
     return result;
   }
 
-  public claim(ownerKey: string, id: string, taskId: string, expectedRevision: number, claimToken: string, now: string): boolean {
-    if (!validRevision(expectedRevision) || !validToken(claimToken) || !validDate(now)) return false;
+  public claim(ownerKey: string, id: string, taskId: string, expectedRevision: number, claimToken: string, now: string, reservation?: WorkflowReservation): boolean {
+    if (!validRevision(expectedRevision) || !validToken(claimToken) || !validDate(now) || !validReservation(reservation, now)) return false;
     return this.tx((db) => {
+      this.quarantineExpired(db, now);
       if (!this.validStoredState(ownerKey, id)) return false;
       const wf = this.owned(db, ownerKey, id);
       const task = this.task(db, id, taskId);
       if (!wf || wf.cancelled || !task || task.state !== 'ready' || task.revision !== expectedRevision || task.claim_token !== null || !this.dependenciesDone(db, id, task)) return false;
+      if (this.hasUnleasedLegacyTask(db)) return false;
+      const count = db.prepare("SELECT COUNT(*) AS count FROM durable_workflow_leases WHERE state!='released'").get() as {count:number|bigint};
+      if (Number(count.count) >= MAX_LEASES || this.conflicts(db, reservation!)) return false;
       if (!this.hasEventRoom(db, id, 1)) return false;
+      const leaseId = randomUUID();
+      db.prepare("INSERT INTO durable_workflow_leases(lease_id,workflow_id,task_id,state,expires_at,reservation_json,last_source_fingerprint,created_at) VALUES(?,?,?,'active',?,?,NULL,?)")
+        .run(leaseId, id, taskId, reservation!.expiresAt, JSON.stringify(reservation), now);
+      const putScope = db.prepare('INSERT INTO durable_workflow_lease_scopes(lease_id,scope_path,inode) VALUES(?,?,?)');
+      for (const scope of reservation!.scopes) putScope.run(leaseId, scope.path, scope.inode);
       db.prepare("UPDATE durable_workflow_tasks SET state='running', revision=revision+1, claim_token=? WHERE workflow_id=? AND task_id=? AND state='ready' AND revision=?")
         .run(claimToken, id, taskId, expectedRevision);
       this.append(db, id, taskId, 'running', now, expectedRevision + 1);
@@ -71,15 +86,27 @@ export class SqliteWorkflowRepository implements WorkflowRepository {
     });
   }
 
-  public update(ownerKey: string, id: string, taskId: string, expectedRevision: number, claimToken: string, state: WorkflowTaskState, checkpoint: WorkflowCheckpoint | null, now: string): boolean {
-    if (!validRevision(expectedRevision) || !validToken(claimToken) || !STATES.has(state) || !validCheckpoint(checkpoint) || !validDate(now)) return false;
+  public update(ownerKey: string, id: string, taskId: string, expectedRevision: number, claimToken: string, state: WorkflowTaskState, checkpoint: WorkflowCheckpoint | null, now: string, verification?: WorkflowVerification): boolean {
+    if (!validRevision(expectedRevision) || !validToken(claimToken) || !STATES.has(state) || !validCheckpoint(checkpoint) || !validDate(now) || (verification !== undefined && !validVerification(verification, now))) return false;
     try { return this.tx((db) => {
+      this.quarantineExpired(db, now);
       if (!this.validStoredState(ownerKey, id)) return false;
       const wf = this.owned(db, ownerKey, id);
       const task = this.task(db, id, taskId);
-      if (!wf || wf.cancelled || !task || task.claim_token !== claimToken || task.revision !== expectedRevision || !allowed(task.state as WorkflowTaskState, state)) return false;
+      const lease = this.lease(db, id, taskId);
+      if (lease !== undefined && !this.scopeRowsMatchReservations(db, [lease.id])) return false;
+      if (!wf || wf.cancelled || !task || !lease || lease.state !== 'active' || Date.parse(lease.expiresAt) <= Date.parse(now) || task.claim_token !== claimToken || task.revision !== expectedRevision || !allowed(task.state as WorkflowTaskState, state)) return false;
+      const fingerprint = verification?.sourceFingerprint;
+      if (state === 'verifying' && fingerprint === undefined) return false;
+      if (task.state === 'verifying' && state === 'verifying' && fingerprint !== lease.lastSourceFingerprint) return false;
+      if (state === 'done' && (fingerprint === undefined || fingerprint !== lease.lastSourceFingerprint)) return false;
+      const nextExpiry = verification?.expiresAt ?? new Date(Date.parse(now) + 300_000).toISOString();
       db.prepare('UPDATE durable_workflow_tasks SET state=?, revision=revision+1, checkpoint_json=?, claim_token=? WHERE workflow_id=? AND task_id=? AND revision=? AND claim_token=?')
         .run(state, checkpoint === null ? null : JSON.stringify(checkpoint), TERMINAL.has(state) ? null : claimToken, id, taskId, expectedRevision, claimToken);
+      const renewed = JSON.stringify({ ...lease.reservation, expiresAt: nextExpiry });
+      const checkedFingerprint = state === 'verifying' && task.state !== 'verifying' ? fingerprint : null;
+      db.prepare('UPDATE durable_workflow_leases SET state=?, expires_at=?, reservation_json=?, last_source_fingerprint=COALESCE(?,last_source_fingerprint) WHERE lease_id=?')
+        .run(TERMINAL.has(state) ? 'quarantined' : 'active', nextExpiry, renewed, checkedFingerprint ?? null, lease.id);
       const promote = state === 'done' ? this.promotable(db, id, taskId) : [];
       if (!this.hasEventRoom(db, id, 1 + promote.length)) throw new EventLimitError('Workflow event limit reached');
       this.append(db, id, taskId, state, now, expectedRevision + 1);
@@ -101,11 +128,60 @@ export class SqliteWorkflowRepository implements WorkflowRepository {
       const active = tasks.filter((t) => !TERMINAL.has(t.state as WorkflowTaskState));
       if (!this.hasEventRoom(db, id, active.length + 1)) return false;
       db.prepare('UPDATE durable_workflows SET cancelled=1 WHERE id=?').run(id);
+      db.prepare("UPDATE durable_workflow_leases SET state='quarantined' WHERE workflow_id=? AND state='active'").run(id);
       for (const t of active) {
         db.prepare("UPDATE durable_workflow_tasks SET state='cancelled', revision=revision+1, claim_token=NULL WHERE workflow_id=? AND task_id=?").run(id, t.task_id);
         this.append(db, id, t.task_id, 'cancelled', now, t.revision + 1);
       }
       this.append(db, id, null, 'cancelled', now, null);
+      return true;
+    });
+  }
+
+  public getLease(ownerKey: string, id: string, taskId: string): WorkflowLease | null {
+    return this.read(() => this.readLease(ownerKey, id, taskId));
+  }
+
+  private readLease(ownerKey: string, id: string, taskId: string): WorkflowLease | null {
+    const row = this.database.connection.prepare("SELECT CASE WHEN length(lease_id)<=128 THEN lease_id ELSE '' END AS lease_id, CASE WHEN length(workflow_id)<=128 THEN workflow_id ELSE '' END AS workflow_id, CASE WHEN length(task_id)<=128 THEN task_id ELSE '' END AS task_id, CASE WHEN length(state)<=16 THEN state ELSE '' END AS state, CASE WHEN length(expires_at)<=64 THEN expires_at ELSE '' END AS expires_at, CASE WHEN length(CAST(reservation_json AS BLOB))<=1048576 THEN reservation_json ELSE '' END AS reservation_json, CASE WHEN last_source_fingerprint IS NULL THEN NULL WHEN length(last_source_fingerprint)<=64 THEN last_source_fingerprint ELSE '' END AS last_source_fingerprint FROM durable_workflow_leases l JOIN durable_workflows w ON w.id=l.workflow_id WHERE w.owner_key=? AND l.workflow_id=? AND l.task_id=?").get(ownerKey, id, taskId) as LeaseRow | undefined;
+    return row && this.scopeRowsMatchReservations(this.database.connection, [row.lease_id]) ? parseLease(row) : null;
+  }
+
+  public concurrentScopes(ownerKey: string, id: string, taskId: string): readonly WorkflowScopeKey[] | null {
+    return this.read(() => this.readConcurrentScopes(ownerKey, id, taskId));
+  }
+
+  private readConcurrentScopes(ownerKey: string, id: string, taskId: string): readonly WorkflowScopeKey[] | null {
+    if (this.get(ownerKey, id) === null || this.lease(this.database.connection, id, taskId) === undefined) return null;
+    const db = this.database.connection;
+    const own = db.prepare("SELECT CASE WHEN length(lease_id)<=128 THEN lease_id ELSE '' END AS lease_id, CASE WHEN length(created_at)<=64 THEN created_at ELSE '' END AS created_at, CASE WHEN released_at IS NULL THEN NULL WHEN length(released_at)<=64 THEN released_at ELSE '' END AS released_at, CASE WHEN length(state)<=16 THEN state ELSE '' END AS state FROM durable_workflow_leases WHERE workflow_id=? AND task_id=?").get(id, taskId) as {lease_id:string;created_at:string;released_at:string|null;state:string} | undefined;
+    if (!own || !ID.test(own.lease_id) || !validDate(own.created_at) || !['active','quarantined','released'].includes(own.state) || (own.released_at !== null && !validDate(own.released_at)) || (own.state === 'released') !== (own.released_at !== null)) return null;
+    const ownEnd = own.released_at ?? new Date().toISOString();
+    const peers = db.prepare("SELECT CASE WHEN length(lease_id)<=128 THEN lease_id ELSE '' END AS lease_id, CASE WHEN length(created_at)<=64 THEN created_at ELSE '' END AS created_at, CASE WHEN released_at IS NULL THEN NULL WHEN length(released_at)<=64 THEN released_at ELSE '' END AS released_at, CASE WHEN length(state)<=16 THEN state ELSE '' END AS state FROM durable_workflow_leases WHERE NOT (workflow_id=? AND task_id=?) AND created_at<=? AND (released_at IS NULL OR released_at>=?) ORDER BY created_at,lease_id LIMIT 513")
+      .all(id, taskId, ownEnd, own.created_at) as unknown as Array<{lease_id:string;created_at:string;released_at:string|null;state:string}>;
+    if (peers.length > 512 || peers.some((p) => !ID.test(p.lease_id) || !validDate(p.created_at) || !['active','quarantined','released'].includes(p.state) || (p.released_at !== null && !validDate(p.released_at)) || (p.state === 'released') !== (p.released_at !== null))) return null;
+    if (peers.length === 0) return [];
+    const ids = peers.map((p) => p.lease_id);
+    if (!this.scopeRowsMatchReservations(db, ids)) return null;
+    const marks = ids.map(() => '?').join(',');
+    const scopes = db.prepare(`SELECT CASE WHEN length(CAST(scope_path AS BLOB))<=4096 THEN scope_path ELSE '' END AS path,CASE WHEN inode IS NULL THEN NULL WHEN length(CAST(inode AS BLOB))<=128 THEN inode ELSE '' END AS inode,lease_id FROM durable_workflow_lease_scopes WHERE lease_id IN (${marks}) ORDER BY scope_path LIMIT 32769`).all(...ids) as unknown as Array<{path:string;inode:string|null;lease_id:string}>;
+    if (scopes.length > 32768 || scopes.some((s) => !validScope({ path: s.path, inode: s.inode }))) return null;
+    const scopeCounts = new Map<string, number>();
+    for (const scope of scopes) scopeCounts.set(scope.lease_id, (scopeCounts.get(scope.lease_id) ?? 0) + 1);
+    if (peers.some((peer) => (scopeCounts.get(peer.lease_id) ?? 0) < 1 || (scopeCounts.get(peer.lease_id) ?? 0) > 64)) return null;
+    return scopes.map(({ path: scopePath, inode }) => ({ path: scopePath, inode }));
+  }
+
+  public reconcile(ownerKey: string, id: string, taskId: string, leaseId: string, expectedRevision: number, now: string): boolean {
+    if (!validRevision(expectedRevision) || !ID.test(leaseId) || !validDate(now)) return false;
+    return this.tx((db) => {
+      const wf = this.owned(db, ownerKey, id); const task = this.task(db, id, taskId); const lease = this.lease(db, id, taskId);
+      if (!this.validStoredState(ownerKey, id) || (lease !== undefined && !this.scopeRowsMatchReservations(db, [lease.id]))) return false;
+      if (!wf || !task || !TERMINAL.has(task.state as WorkflowTaskState) || task.revision !== expectedRevision || !lease || lease.id !== leaseId || lease.state === 'released' || !this.hasEventRoom(db, id, 1)) return false;
+      if (lease.state === 'active' && Date.parse(lease.expiresAt) > Date.parse(now)) return false;
+      db.prepare("UPDATE durable_workflow_leases SET state='released',released_at=? WHERE lease_id=? AND state IN ('active','quarantined')").run(now, leaseId);
+      db.prepare('UPDATE durable_workflow_tasks SET revision=revision+1 WHERE workflow_id=? AND task_id=? AND revision=?').run(id, taskId, expectedRevision);
+      this.append(db, id, taskId, task.state, now, expectedRevision + 1);
       return true;
     });
   }
@@ -140,6 +216,50 @@ export class SqliteWorkflowRepository implements WorkflowRepository {
   }
   private task(db: DatabaseSync, id: string, taskId: string): TaskRow | undefined {
     return db.prepare('SELECT task_id, contract_json, dependencies_json, state, revision, checkpoint_json, claim_token FROM durable_workflow_tasks WHERE workflow_id=? AND task_id=?').get(id, taskId) as TaskRow | undefined;
+  }
+  private lease(db: DatabaseSync, id: string, taskId: string): WorkflowLease | undefined {
+    const row = db.prepare("SELECT CASE WHEN length(lease_id)<=128 THEN lease_id ELSE '' END AS lease_id, CASE WHEN length(workflow_id)<=128 THEN workflow_id ELSE '' END AS workflow_id, CASE WHEN length(task_id)<=128 THEN task_id ELSE '' END AS task_id, CASE WHEN length(state)<=16 THEN state ELSE '' END AS state, CASE WHEN length(expires_at)<=64 THEN expires_at ELSE '' END AS expires_at, CASE WHEN length(CAST(reservation_json AS BLOB))<=1048576 THEN reservation_json ELSE '' END AS reservation_json, CASE WHEN last_source_fingerprint IS NULL THEN NULL WHEN length(last_source_fingerprint)<=64 THEN last_source_fingerprint ELSE '' END AS last_source_fingerprint FROM durable_workflow_leases WHERE workflow_id=? AND task_id=?").get(id, taskId) as LeaseRow | undefined;
+    return row ? parseLease(row) ?? undefined : undefined;
+  }
+  private conflicts(db: DatabaseSync, reservation: WorkflowReservation): boolean {
+    if (db.prepare("SELECT 1 AS found FROM durable_workflow_leases WHERE legacy=1 AND state!='released' LIMIT 1").get() !== undefined) return true;
+    const leases = db.prepare("SELECT lease_id FROM durable_workflow_leases WHERE state!='released' LIMIT 513").all() as unknown as Array<{lease_id:string}>;
+    if (leases.length > MAX_LEASES || !this.scopeRowsMatchReservations(db, leases.map((lease) => lease.lease_id))) return true;
+    const bad = db.prepare("SELECT 1 AS found FROM durable_workflow_leases l LEFT JOIN durable_workflow_lease_scopes s ON s.lease_id=l.lease_id WHERE l.state!='released' GROUP BY l.lease_id HAVING COUNT(s.scope_path)<1 OR COUNT(s.scope_path)>64 LIMIT 1").get();
+    if (bad !== undefined) return true;
+    const rows = db.prepare("SELECT CASE WHEN length(CAST(s.scope_path AS BLOB))<=4096 THEN s.scope_path ELSE '' END AS scope_path,CASE WHEN s.inode IS NULL THEN NULL WHEN length(CAST(s.inode AS BLOB))<=128 THEN s.inode ELSE '' END AS inode FROM durable_workflow_lease_scopes s JOIN durable_workflow_leases l ON l.lease_id=s.lease_id WHERE l.state!='released' LIMIT 32769").all() as unknown as Array<{scope_path:string;inode:string|null}>;
+    if (rows.length > 32768 || rows.some((held) => !validScope({ path: held.scope_path, inode: held.inode }))) return true;
+    return reservation.scopes.some((wanted) => rows.some((held) => (wanted.inode !== null && wanted.inode === held.inode) || overlaps(wanted.path, held.scope_path)));
+  }
+
+  private scopeRowsMatchReservations(db: DatabaseSync, ids: readonly string[]): boolean {
+    if (ids.length === 0) return true;
+    if (ids.length > MAX_LEASES || ids.some((id) => !ID.test(id))) return false;
+    const marks = ids.map(() => '?').join(',');
+    const bounds = db.prepare(`SELECT COUNT(*) AS count,COALESCE(SUM(length(CAST(scope_path AS BLOB))+COALESCE(length(CAST(inode AS BLOB)),0)),0) AS bytes FROM durable_workflow_lease_scopes WHERE lease_id IN (${marks})`).get(...ids) as {count:number|bigint;bytes:number|bigint};
+    if (Number(bounds.count) > 32768 || Number(bounds.bytes) > 16 * 1024 * 1024) return false;
+    const select = db.prepare("SELECT CASE WHEN length(CAST(reservation_json AS BLOB))<=1048576 AND json_valid(reservation_json) THEN CASE WHEN length(CAST(json_extract(reservation_json,'$.scopes') AS BLOB))<=300000 THEN json_extract(reservation_json,'$.scopes') ELSE '' END ELSE '' END AS scopes FROM durable_workflow_leases WHERE lease_id=?");
+    const rows = db.prepare('SELECT scope_path AS path,inode FROM durable_workflow_lease_scopes WHERE lease_id=? ORDER BY scope_path');
+    try {
+      for (const id of ids) {
+        const row = select.get(id) as {scopes:string}|undefined;
+        const expected: unknown = JSON.parse(row?.scopes ?? '');
+        const actual = rows.all(id) as unknown as WorkflowScopeKey[];
+        if (!Array.isArray(expected) || expected.length < 1 || expected.length > 64 || actual.length !== expected.length || expected.some((scope: unknown) => !validScope(scope)) || actual.some((scope) => !validScope(scope))) return false;
+        const canonical = (scopes: readonly WorkflowScopeKey[]): string => JSON.stringify([...scopes].sort((a, b) => a.path.localeCompare(b.path)).map((scope) => ({path: scope.path, inode: scope.inode})));
+        if (canonical(expected as WorkflowScopeKey[]) !== canonical(actual)) return false;
+      }
+      return true;
+    } catch { return false; }
+  }
+  private quarantineExpired(db: DatabaseSync, now: string): void {
+    const rows = db.prepare("SELECT lease_id,expires_at FROM durable_workflow_leases WHERE state='active'").all() as unknown as Array<{lease_id:string;expires_at:string}>;
+    const quarantine = db.prepare("UPDATE durable_workflow_leases SET state='quarantined' WHERE lease_id=? AND state='active'");
+    for (const row of rows) if (Date.parse(row.expires_at) <= Date.parse(now)) quarantine.run(row.lease_id);
+  }
+  private hasUnleasedLegacyTask(db: DatabaseSync): boolean {
+    const row = db.prepare("SELECT 1 AS found FROM durable_workflow_tasks t LEFT JOIN durable_workflow_leases l ON l.workflow_id=t.workflow_id AND l.task_id=t.task_id WHERE t.state IN ('running','verifying') AND l.lease_id IS NULL LIMIT 1").get();
+    return row !== undefined;
   }
   private dependenciesDone(db: DatabaseSync, id: string, task: TaskRow): boolean {
     let deps: unknown;
@@ -215,6 +335,40 @@ function validPersistedWorkflow(w: DurableWorkflow): boolean {
 function validRevision(n: number): boolean { return Number.isSafeInteger(n) && n >= 0; }
 function validToken(t: string): boolean { return typeof t === 'string' && Buffer.byteLength(t, 'utf8') >= 32 && Buffer.byteLength(t, 'utf8') <= 256; }
 function validDate(d: string): boolean { return typeof d === 'string' && d.length <= 64 && !Number.isNaN(Date.parse(d)); }
+function validVerification(v: WorkflowVerification, now: string): boolean { return typeof v === 'object' && v !== null && Object.keys(v).sort().join(',') === 'expiresAt,sourceFingerprint' && /^[a-f0-9]{64}$/i.test(v.sourceFingerprint) && validDate(v.expiresAt) && validTtl(now, v.expiresAt); }
+function validReservation(v: WorkflowReservation | undefined, now: string): v is WorkflowReservation {
+  if (v === undefined || typeof v !== 'object' || v === null || Object.keys(v).sort().join(',') !== 'baselineJson,expiresAt,mode,scopes,workspaceFingerprint' || !['workspace','disjoint'].includes(v.mode) || !Array.isArray(v.scopes) || v.scopes.length < 1 || v.scopes.length > 64 || !/^[a-f0-9]{64}$/i.test(v.workspaceFingerprint) || typeof v.baselineJson !== 'string' || Buffer.byteLength(v.baselineJson, 'utf8') > 512 * 1024 || Buffer.byteLength(JSON.stringify(v), 'utf8') > 1024 * 1024 || !validDate(v.expiresAt) || !validTtl(now, v.expiresAt)) return false;
+  try { const baseline: unknown = JSON.parse(v.baselineJson); if (typeof baseline !== 'object' || baseline === null || Array.isArray(baseline)) return false; } catch { return false; }
+  const seen = new Set<string>();
+  for (const s of v.scopes) {
+    if (!validScope(s)) return false;
+    if (seen.has(s.path)) return false; seen.add(s.path);
+  }
+  return true;
+}
+function validScope(s: unknown): s is {path:string;inode:string|null} {
+  if (typeof s !== 'object' || s === null) return false;
+  const scope = s as {path?:unknown;inode?:unknown};
+  const absolute = typeof scope.path === 'string' && (scope.path.startsWith('/') || /^[a-z]:\//.test(scope.path));
+  return Object.keys(scope).sort().join(',') === 'inode,path' && typeof scope.path === 'string' && Buffer.byteLength(scope.path, 'utf8') <= 4096 && scope.path === scope.path.toLowerCase() && !scope.path.includes('\\') && !scope.path.includes('\0') && ![...scope.path].some((character) => character.charCodeAt(0) < 32) && absolute && !scope.path.includes('//') && !scope.path.split('/').some((part: string) => part === '..' || part === '.')
+    && (scope.inode === null || (typeof scope.inode === 'string' && Buffer.byteLength(scope.inode, 'utf8') <= 128 && /^[0-9]+:[0-9]+$/.test(scope.inode)));
+}
+function validTtl(now: string, expiry: string): boolean { const ttl = Date.parse(expiry) - Date.parse(now); return ttl >= 60_000 && ttl <= 3_600_000; }
+function overlaps(a: string, b: string): boolean { const x = a.replace(/\/$/, ''); const y = b.replace(/\/$/, ''); return x === y || x.startsWith(`${y}/`) || y.startsWith(`${x}/`); }
+function parseLease(row: LeaseRow): WorkflowLease | null {
+  if (!ID.test(row.lease_id) || !ID.test(row.workflow_id) || !ID.test(row.task_id) || !['active','quarantined','released'].includes(row.state) || !validDate(row.expires_at)) return null;
+  try { const reservation: unknown = JSON.parse(row.reservation_json); if (!validReservationWithoutNow(reservation)) return null;
+    if (row.last_source_fingerprint !== null && !/^[a-f0-9]{64}$/i.test(row.last_source_fingerprint)) return null;
+    if (reservation.expiresAt !== row.expires_at) return null;
+    return { id: row.lease_id, workflowId: row.workflow_id, taskId: row.task_id, state: row.state as WorkflowLease['state'], expiresAt: row.expires_at, reservation, lastSourceFingerprint: row.last_source_fingerprint };
+  } catch { return null; }
+}
+function validReservationWithoutNow(value: unknown): value is WorkflowReservation {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as WorkflowReservation;
+  const now = new Date(Date.parse(v.expiresAt) - 300_000).toISOString();
+  return validReservation(v, now);
+}
 function allowed(from: WorkflowTaskState, to: WorkflowTaskState): boolean {
   if (from === 'running') return ['running', 'verifying', 'blocked', 'failed', 'cancelled'].includes(to);
   if (from === 'verifying') return ['verifying', 'done', 'failed', 'blocked', 'cancelled'].includes(to);

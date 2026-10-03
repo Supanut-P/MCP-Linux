@@ -31,13 +31,14 @@ const workflowClaimFields = { ...workflowStateBase, taskId: z.string().min(1).ma
 const workflowTokenFields = { ...workflowClaimFields, claimToken: z.string().regex(/^[a-f0-9]{64}$/) };
 export const workflowStateSchema = z.discriminatedUnion('operation', [
   z.object({ operation: z.literal('plan'), workspaceId: workspaceIdSchema, contracts: z.array(workflowPlanSchema).min(1).max(16) }).strict(),
-  z.object({ operation: z.literal('start'), ...workflowClaimFields }).strict(),
-  z.object({ operation: z.literal('checkpoint'), ...workflowTokenFields, checkpoint: z.object({ summary: z.string().min(1).max(2048), references: z.array(z.string().min(1).max(512)).max(16), executionUncertain: z.boolean() }).strict() }).strict(),
-  z.object({ operation: z.literal('complete'), ...workflowTokenFields, state: z.enum(['verifying', 'done', 'blocked', 'failed', 'cancelled']) }).strict(),
+  z.object({ operation: z.literal('start'), ...workflowClaimFields, scopeMode: z.enum(['workspace', 'disjoint']).optional(), leaseSeconds: z.number().int().min(60).max(3600).optional() }).strict(),
+  z.object({ operation: z.literal('checkpoint'), ...workflowTokenFields, leaseSeconds: z.number().int().min(60).max(3600).optional(), checkpoint: z.object({ summary: z.string().min(1).max(2048), references: z.array(z.string().min(1).max(512)).max(16), executionUncertain: z.boolean() }).strict() }).strict(),
+  z.object({ operation: z.literal('complete'), ...workflowTokenFields, state: z.enum(['verifying', 'done', 'blocked', 'failed', 'cancelled']), concurrentAcknowledgement: z.object({ baselineFingerprint: z.string().regex(/^[a-f0-9]{64}$/), sourceFingerprint: z.string().regex(/^[a-f0-9]{64}$/), userConfirmed: z.literal(true) }).strict().optional() }).strict(),
   z.object({ operation: z.literal('status'), ...workflowStateBase }).strict(),
   z.object({ operation: z.literal('result'), ...workflowStateBase }).strict(),
   z.object({ operation: z.literal('resume'), ...workflowStateBase }).strict(),
   z.object({ operation: z.literal('cancel'), ...workflowStateBase }).strict(),
+  z.object({ operation: z.literal('reconcile'), ...workflowClaimFields, leaseId: z.string().min(1).max(128), writerStopped: z.literal(true), userConfirmed: z.literal(true), summary: z.string().min(1).max(2048) }).strict(),
   z.object({ operation: z.literal('events'), ...workflowStateBase, after: z.number().int().min(0).max(1_000_000).optional(), limit: z.number().int().min(1).max(64).optional() }).strict(),
 ]);
 const verifiedSkillIdSchema = z.string().min(1).max(128).refine((value) => Buffer.byteLength(value, 'utf8') <= 128 && !value.includes('\0'), 'Skill ID is invalid');

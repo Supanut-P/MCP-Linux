@@ -35,10 +35,15 @@ export function mapResult<T>(result: Result<T>, metadata?: Readonly<Record<strin
 
 export function mapError(error: AppError): McpToolResponse {
   const message = error.code === 'INTERNAL_ERROR' ? 'Operation failed' : error.message;
+  // Only bounded workflow digests cross this boundary; arbitrary error details stay private.
+  const digestDetails = error.code === 'INVALID_INPUT' && error.details !== undefined
+    && Object.keys(error.details).sort().join(',') === 'baselineFingerprint,sourceFingerprint'
+    && [error.details.baselineFingerprint, error.details.sourceFingerprint].every((digest) => typeof digest === 'string' && /^[a-f0-9]{64}$/.test(digest))
+    ? { baselineFingerprint: error.details.baselineFingerprint, sourceFingerprint: error.details.sourceFingerprint } : undefined;
   return {
     isError: true,
     content: [{ type: 'text', text: `${error.code}: ${message}` }],
-    structuredContent: { error: { code: error.code, message, recoverable: error.recoverable } },
+    structuredContent: { error: { code: error.code, message, recoverable: error.recoverable, ...(digestDetails === undefined ? {} : { details: digestDetails }) } },
   };
 }
 

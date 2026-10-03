@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
-import { readFileSync, readdirSync } from 'node:fs';
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { constants, readFileSync, readdirSync } from 'node:fs';
+import { mkdir, open, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
@@ -72,7 +72,7 @@ const PROCESS_EXIT_RECONCILE_DELAY_MS = 75;
 const PROCESS_HANDLE_RELEASE_GRACE_MS = 150;
 const SAFE_TASK_ID = /^(?!\.{1,2}$)[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const SAFE_PROCESS_IDENTITY = /^(?:[0-9]{1,64}|pid:[0-9]{1,64})$/;
-const SAFE_GROUP_MEMBER = /^[2-9][0-9]{0,19}:[0-9]{1,64}$/;
+const SAFE_GROUP_MEMBER = /^[1-9][0-9]{0,19}:[0-9]{1,64}$/;
 
 interface OwnedProcessTarget {
   readonly pid: number;
@@ -151,7 +151,9 @@ export class DurableShellTaskStore {
       // Publish the worker identity on its own file before returning the task handle.
       // The worker owns task.json; keeping launcher identity separate avoids a race
       // where a very fast completion can be overwritten back to running.
-      await writeFile(path.join(taskDirectory, WORKER_PID_FILENAME), String(workerTarget.pid), 'utf8');
+      // Keep the first line compatible with older PID readers; publish the captured
+      // start identity in the same write before returning an observable handle.
+      await writeFile(path.join(taskDirectory, WORKER_PID_FILENAME), `${workerTarget.pid}\n${workerTarget.startIdentity}`, 'utf8');
       spawnedWorker.unref();
       return ok({ ...(await this.snapshotFromMetadata(metadata)), resume_token: resumeToken });
     } catch (error: unknown) {
@@ -371,9 +373,12 @@ export class DurableShellTaskStore {
       try {
         const parsed: unknown = JSON.parse(await readFile(metadataPath, 'utf8'));
         if (isMetadata(parsed) && parsed.task_id === taskId) {
-          if (parsed.worker_pid === undefined) {
-            const publishedPid = await readPublishedPid(path.join(this.taskDirectory(taskId), WORKER_PID_FILENAME));
-            if (publishedPid !== undefined) parsed.worker_pid = publishedPid;
+          if (parsed.worker_pid === undefined || parsed.worker_start_identity === undefined) {
+            const published = await readPublishedWorker(path.join(this.taskDirectory(taskId), WORKER_PID_FILENAME));
+            if (published !== undefined) {
+              parsed.worker_pid ??= published.pid;
+              if (parsed.worker_pid === published.pid && published.startIdentity !== undefined) parsed.worker_start_identity ??= published.startIdentity;
+            }
           }
           return ok(parsed);
         }
@@ -448,10 +453,22 @@ function hashWorkspaceId(value: string): string {
   return createHash('sha256').update(value, 'utf8').digest('hex').slice(0, 32);
 }
 
-async function readPublishedPid(filename: string): Promise<number | undefined> {
+async function readPublishedWorker(filename: string): Promise<{pid: number; startIdentity?: string} | undefined> {
   try {
-    const value = Number.parseInt((await readFile(filename, 'utf8')).trim(), 10);
-    return isSafePid(value) ? value : undefined;
+    const flags = process.platform === 'win32' ? 'r' : constants.O_RDONLY | constants.O_NONBLOCK | constants.O_NOFOLLOW;
+    const handle = await open(filename, flags);
+    try {
+      const info = await handle.stat();
+      if (!info.isFile() || info.size > 160) return undefined;
+      const buffer = Buffer.alloc(161);
+      const {bytesRead} = await handle.read(buffer, 0, buffer.length, 0);
+      if (bytesRead > 160 || bytesRead !== info.size) return undefined;
+      const lines = buffer.subarray(0, bytesRead).toString('utf8').trim().split(/\r?\n/);
+      if (lines.length > 2 || !/^[0-9]+$/.test(lines[0] ?? '')) return undefined;
+      const pid = Number(lines[0]);
+      if (!isSafePid(pid) || (lines[1] !== undefined && !isSafeProcessIdentity(lines[1]))) return undefined;
+      return lines[1] === undefined ? {pid} : {pid, startIdentity: lines[1]};
+    } finally { await handle.close(); }
   } catch {
     return undefined;
   }
@@ -477,7 +494,7 @@ function isMetadata(value: unknown): value is DurableTaskMetadata {
     && (record.resume_token_hash === undefined
       || (typeof record.resume_token_hash === 'string' && /^[a-f0-9]{64}$/.test(record.resume_token_hash)))
     && (record.child_group_members === undefined
-      || (Array.isArray(record.child_group_members) && record.child_group_members.every((member) => typeof member === 'string' && SAFE_GROUP_MEMBER.test(member))));
+      || (Array.isArray(record.child_group_members) && record.child_group_members.every((member) => typeof member === 'string' && SAFE_GROUP_MEMBER.test(member) && isSafePid(Number(member.split(':')[0])))));
 }
 
 export function isValidDurableResumeToken(value: unknown): value is string {
@@ -528,9 +545,10 @@ function readProcessStartIdentity(pid: number): string | undefined {
 
 function observeProcess(pid: number | undefined, expectedIdentity: string | undefined, groupMembers?: readonly string[]): ProcessObservation {
   if (pid === undefined) return { configured: false, leaderRunning: false, groupRunning: false, identityMismatch: false };
-  if (!isSafePid(pid) || !isSafeProcessIdentity(expectedIdentity)) {
+  if (!isSafePid(pid)) {
     return { configured: true, leaderRunning: false, groupRunning: false, identityMismatch: true };
   }
+  if (!isSafeProcessIdentity(expectedIdentity)) return { configured: true, leaderRunning: isProcessRunning(pid), groupRunning: isProcessGroupRunning(pid), identityMismatch: true };
   const identity = readProcessStartIdentity(pid);
   const identityMismatch = identity === undefined || identity !== expectedIdentity;
   const groupRunning = isProcessGroupRunning(pid);

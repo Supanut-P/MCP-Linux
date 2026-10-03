@@ -8,7 +8,8 @@
 - v1.38 verification is closed after independent QA under the [native workflow contract](../../harness/contracts/v1.38-native-workflow.md) and [Ubuntu acceptance receipt](../../harness/evidence/2026-10-03-v1.38-ubuntu.md).
 - v1.39 verification is closed under the [context packet contract](../../harness/contracts/v1.39-context-packets.md) and [Ubuntu acceptance receipt](../../harness/evidence/2026-10-03-v1.39-ubuntu.md). Independent QA verified 613 source files and 49 evidence hashes.
 - v1.40 verification is closed under the [verified skill contract](../../harness/contracts/v1.40-verified-skills.md) and [Ubuntu acceptance receipt](../../harness/evidence/2026-10-03-v1.40-ubuntu.md). Independent QA verified 624 source files and 47 evidence hashes; its installation is superseded below.
-- v1.41 verification is closed under the [Codex adapter contract](../../harness/contracts/v1.41-codex-adapter.md) and [Ubuntu closure receipt](../../harness/evidence/2026-10-03-v1.41-ubuntu.md). Independent QA verified 646 source fingerprints, 55 retained artifact hashes and 22 effective-config proof hashes. The configured VM runs accepted 1.41.0. Windows native selection and Linux process verification retain separate boundaries; Linux native provider authentication remains open for final v2 acceptance. Publication remains unapproved. v1.42 durable state is next; later milestones remain planned.
+- v1.41 verification is closed under the [Codex adapter contract](../../harness/contracts/v1.41-codex-adapter.md) and [Ubuntu closure receipt](../../harness/evidence/2026-10-03-v1.41-ubuntu.md). Independent QA verified 646 source fingerprints, 55 retained artifact hashes and 22 effective-config proof hashes. Windows native selection and Linux process verification retain separate boundaries; Linux native provider authentication remains open for final v2 acceptance. Its installation is superseded below.
+- v1.42 verification is closed under the [durable state contract](../../harness/contracts/v1.42-durable-workflow.md) and [Ubuntu/recovery receipt](../../harness/evidence/2026-10-03-v1.42-ubuntu.md). Independent QA verified 660 source fingerprints and 62 retained artifact hashes, including installed STDIO/HTTP restart recovery and v1.41 binary compatibility with migrated fixtures. The configured VM runs accepted 1.42.0. Publication remains unapproved. v1.43 file-scope coordination is active under its contract and usage guide. Independent implementation QA and full local gates passed; Ubuntu/package acceptance remains open. Later milestones remain planned.
 - Work in strict order: complete all gates for a version before starting the next version. A failed gate blocks sequence advancement and triggers bounded repair or replan. P1 work is optional, does not block v2, and reserved version numbers do not imply empty releases.
 - Preserve the frozen v1 contract and compatibility throughout v1.x and v2.0. v2 is an additive product milestone, not permission to break v1.
 
@@ -78,6 +79,7 @@ Potential follow-on work, outside the v2 release gate: graph views; flaky-test d
 ## Self-review and status rules
 
 This is a plan, not implementation evidence. Do not mark a version complete from this roadmap. Record implementation, local checks, Ubuntu/package acceptance, release artifacts, compatibility results, and human approval separately. Maintain the strict sequence and stop at the first failed gate. No release or external mutation is authorized by this document.
+
 
 
 

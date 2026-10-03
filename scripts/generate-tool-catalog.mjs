@@ -12,6 +12,8 @@ const checkOnly = process.argv.includes('--check');
 
 const { ToolRegistry } = await import(pathToFileURL(registryModulePath).href);
 const registry = new ToolRegistry({
+  verifiedSkills: { list: async () => ({ ok: true, value: {} }), load: async () => ({ ok: true, value: {} }) },
+  verifiedWorkflowPlan: { execute: async () => ({ ok: true, value: {} }) },
   workflowPlan: { execute: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Catalog schema provider only', recoverable: false } }) },
   contextFile: { readContextFile: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Catalog schema provider only', recoverable: false } }) },
   targetCatalog: {

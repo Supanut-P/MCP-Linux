@@ -40,6 +40,7 @@ import { releaseVerifyTools } from './tools/release-verify-tools.js';
 import { environmentPreflightTools } from './tools/environment-preflight-tools.js';
 import { workflowPreflightTools } from './tools/workflow-preflight-tools.js';
 import { workflowPlanTools } from './tools/workflow-plan-tools.js';
+import { verifiedSkillTools } from './tools/verified-skill-tools.js';
 import { workspaceCheckpointTools } from './tools/workspace-checkpoint-tools.js';
 import { policyExplainTools } from './tools/policy-explain-tools.js';
 import { skillTools } from './tools/skill-tools.js';
@@ -133,6 +134,7 @@ export class ToolRegistry {
       ...environmentPreflightTools(context),
       ...workflowPreflightTools(context),
       ...workflowPlanTools(context),
+      ...verifiedSkillTools(context),
       ...workspaceCheckpointTools(context),
       ...databaseTools(context),
       ...targetCatalogTools(context),

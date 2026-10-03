@@ -26,6 +26,11 @@ export const workflowPlanSchema = z.object({
   stopConditions: z.array(z.string().min(1).max(1024)).min(1).max(16),
 }).strict();
 export const optionalWorkspaceIdSchema = workspaceIdSchema.optional();
+const verifiedSkillIdSchema = z.string().min(1).max(128).refine((value) => Buffer.byteLength(value, 'utf8') <= 128 && !value.includes('\0'), 'Skill ID is invalid');
+const verifiedSkillRoleSchema = z.enum(['lead', 'worker', 'qa', 'planner']);
+export const verifiedSkillListSchema = z.object({ workspaceId: verifiedSkillIdSchema, role: verifiedSkillRoleSchema, query: z.string().max(1024).refine((value) => Buffer.byteLength(value, 'utf8') <= 1024 && !value.includes('\0'), 'Query is invalid').optional() }).strict();
+export const verifiedSkillLoadSchema = z.object({ workspaceId: verifiedSkillIdSchema, role: verifiedSkillRoleSchema, skillId: verifiedSkillIdSchema }).strict();
+export const verifiedWorkflowPlanSchema = z.object({ contract: workflowPlanSchema, skillIds: z.array(verifiedSkillIdSchema).min(1).max(3).refine((ids) => new Set(ids).size === ids.length, 'Skill IDs must be unique') }).strict();
 export const pathSchema = z.string().min(1).max(MAX_PATH_LENGTH).refine((value) => !value.includes('\0'), 'Path is invalid');
 export const lineRangeSchema = z.object({
   startLine: z.number().int().min(1).max(1_000_000).optional(),

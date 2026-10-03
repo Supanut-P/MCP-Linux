@@ -23,8 +23,18 @@ checks. The configured VM now runs 1.38.0. Publication remains unapproved.
 v1.39 implementation is active under the
 [context packet contract](contracts/v1.39-context-packets.md). Independent
 implementation review approved the bounded reader, packet state, discovery and
-transport integration after the final Sol repair. Focused packet checks passed
-29 tests; full Ubuntu/package and independent closure gates remain open.
+transport integration after the final Sol repair. The
+[v1.39 Ubuntu receipt](evidence/2026-10-03-v1.39-ubuntu.md) records 730 unit
+passes, all nine Linux reader tests, full gates, package lifecycle and installed
+STDIO/HTTP/native checks. Independent closure review verified 613 source files
+and 49 evidence hashes with no material findings. v1.39 milestone verification
+is closed; the configured VM now runs accepted 1.39.0. Publication is unapproved.
+v1.40 skill registry implementation is active under the
+[verified-guidance contract](contracts/v1.40-verified-skills.md) and
+[usage guide](VERIFIED_SKILLS.md). Local focused checks and independent
+implementation review passed. Source candidate metadata is now 1.40; its own
+Ubuntu/package/installed gate and closure remain open before v1.41. The VM
+continues to run accepted 1.39 until the candidate passes source/package gates.
 
 The [2026-10-01 tunnel follow-up](evidence/2026-10-01-existing-tunnel.md)
 verified the previously configured host through the native connector: MCP and

@@ -19,6 +19,8 @@ import type {
   WorkspaceChangesService,
   WorkspaceQueryService,
   WorkflowPlanService,
+  VerifiedSkillRegistryService,
+  VerifiedWorkflowPlanService,
   WriteFileRequest,
 } from '@baitonghub-linux-mcp/application';
 import type { z } from 'zod';
@@ -60,6 +62,8 @@ export interface McpRuntimeTiming {
 export interface McpApplicationServices {
   /** Stateless caller-native task preparation; never launches workers or commands. */
   readonly workflowPlan?: Pick<WorkflowPlanService, 'execute'>;
+  readonly verifiedSkills?: Pick<VerifiedSkillRegistryService, 'list' | 'load'>;
+  readonly verifiedWorkflowPlan?: Pick<VerifiedWorkflowPlanService, 'execute'>;
   readonly runtimeStatePath?: string;
   readonly runtimeTiming?: () => McpRuntimeTiming;
   /** Returns aggregate owned-task counts only; implementations must not expose task IDs or command metadata. */

@@ -12,6 +12,8 @@ import {
   SearchService,
   WorkspaceInfoService,
   WorkflowPlanService,
+  VerifiedSkillRegistryService,
+  VerifiedWorkflowPlanService,
   JsonWorkspaceIndexStore,
   WorkspaceIndexService,
   WorkspaceChangesService,
@@ -144,6 +146,8 @@ export function createStdioMcpRuntime(
     recoveryTrashRoot: path.join(dataPath, 'recovery-trash'),
   });
   const gitService = new GitService(workspaceRepository);
+  const verifiedSkills = new VerifiedSkillRegistryService({ workspaces: workspaceRepository, files: fileService });
+  const verifiedWorkflowPlan = new VerifiedWorkflowPlanService({ plans: workflowPlan, skills: verifiedSkills });
   const workspaceQuery = new WorkspaceQueryService(workspaceRepository, pathGuard);
   const extensions = createLocalExtensionsService({
     settingsJson: settingsRepository.get(EXTENSIONS_SETTINGS_KEY),
@@ -264,6 +268,8 @@ export function createStdioMcpRuntime(
   const workflowPreflight = new WorkflowPreflightService({ environmentPreflight, diagnosticsSnapshot, workspaceSnapshot });
   const services: McpApplicationServices = {
     workflowPlan,
+    verifiedSkills,
+    verifiedWorkflowPlan,
     runtimeStatePath: path.join(dataPath, 'upgrade-runtime.json'),
     runtimeTiming: () => ({
       mcpPollWaitSeconds: parseIntegerSetting(settingsRepository.get(USER_SETTING_KEYS.mcpPollWaitSeconds), DEFAULT_MCP_POLL_WAIT_SECONDS, MIN_CONFIGURABLE_WAIT_SECONDS, MAX_CONFIGURABLE_WAIT_SECONDS),

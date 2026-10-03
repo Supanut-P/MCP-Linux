@@ -170,7 +170,7 @@ Version-specific notes are archived under [`docs/releases/`](docs/releases/).
 
 ## Supported platform
 
-| Item | v1.37 support |
+| Item | v2.0 support |
 | --- | --- |
 | Operating system | Ubuntu 24.04 LTS |
 | Architecture | x86_64 / amd64 |
@@ -180,14 +180,13 @@ Version-specific notes are archived under [`docs/releases/`](docs/releases/).
 | Packages | DEB, Linux x64 tarball (no AppImage) |
 
 ARM64, RPM, GUI automation, Windows migration, and unrestricted root access are
-outside the v1.37 release contract.
+outside the v2.0 release contract.
 
 ## Install
 
 Download the latest package from
 [GitHub Releases](https://github.com/Supanut-P/MCP-Linux/releases/latest).
-The v2.0.0 links below become downloadable when the Ubuntu package gate and
-release approval are complete.
+The v2.0.0 links below are published and verified under the release receipt linked above.
 
 The v1 administration tools add bounded, explicitly confirmed mutations. They
 use `systemctl`, `apt`, `apt-cache`, and `dpkg-query` with fixed argv and never

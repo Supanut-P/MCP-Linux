@@ -143,4 +143,42 @@ describe('RemoteHostBackend', () => {
     expect(calls.some((command) => command.includes('sha256sum'))).toBe(true);
     expect(calls.some((command) => command.includes('systemctl'))).toBe(true);
   });
+
+  it('redacts bearer and standalone key canaries from journal output', async () => {
+    const canaries = 'Authorization: Bearer bearer-canary sk-testcanary ghp_testcanary xoxb-testcanary AIzatestcanary';
+    const result = await backend([], canaries).execute({ hostId: 'vm103', operation: 'journal' });
+    expect(result).toMatchObject({ ok: true });
+    expect(JSON.stringify(result)).not.toContain('bearer-canary');
+    expect(JSON.stringify(result)).not.toContain('sk-testcanary');
+    expect(JSON.stringify(result)).not.toContain('ghp_testcanary');
+    expect(JSON.stringify(result)).not.toContain('xoxb-testcanary');
+    expect(JSON.stringify(result)).not.toContain('AIzatestcanary');
+  });
+
+  it('rejects option-shaped service units and separates valid units from systemctl options', async () => {
+    const calls: string[][] = [];
+    const instance = backend(calls);
+    for (const unit of ['-Hfoo.service', '-Mfoo.service']) {
+      await expect(instance.execute({ hostId: 'vm103', operation: 'journal', unit })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+      await expect(instance.execute({ hostId: 'vm103', operation: 'service-status', unit })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+      await expect(instance.execute({ hostId: 'vm103', workspaceId: 'ws-1', operation: 'service-restart', unit, dry_run: true })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    }
+    expect(calls).toHaveLength(0);
+
+    await expect(instance.execute({ hostId: 'vm103', operation: 'service-status', unit: 'baitonghub.service' })).resolves.toMatchObject({ ok: true });
+    await expect(instance.execute({ hostId: 'vm103', operation: 'service-status', unit: 'baitonghub.socket' })).resolves.toMatchObject({ ok: true });
+    const statusCommands = calls.map((args) => args.slice(args.indexOf(`${host.username}@${host.host}`) + 1)).filter((args) => args[0] === 'systemctl');
+    expect(statusCommands).toEqual([
+      ['systemctl', 'show', '--no-pager', '--property=Id,LoadState,ActiveState,SubState,UnitFileState,MainPID', '--', 'baitonghub.service'],
+      ['systemctl', 'show', '--no-pager', '--property=Id,LoadState,ActiveState,SubState,UnitFileState,MainPID', '--', 'baitonghub.socket'],
+    ]);
+
+    const preview = await instance.execute({ hostId: 'vm103', workspaceId: 'ws-1', operation: 'service-restart', unit: 'baitonghub.service', dry_run: true });
+    expect(preview).toMatchObject({ ok: true, value: { dry_run: true, preview: { command: ['systemctl', 'restart', '--', 'baitonghub.service'] } } });
+    if (!preview.ok) return;
+    const previewHash = String(preview.value.previewHash);
+    await expect(instance.execute({ hostId: 'vm103', workspaceId: 'ws-1', operation: 'service-restart', unit: 'baitonghub.service', previewHash })).resolves.toMatchObject({ ok: false, error: { code: 'PERMISSION_REQUIRED' } });
+    await expect(instance.execute({ hostId: 'vm103', workspaceId: 'ws-1', operation: 'service-restart', unit: 'baitonghub.service', previewHash, userConfirmed: true })).resolves.toMatchObject({ ok: true });
+    expect(calls.map((args) => args.slice(args.indexOf(`${host.username}@${host.host}`) + 1)).some((args) => args.join(' ') === 'systemctl restart -- baitonghub.service')).toBe(true);
+  });
 });

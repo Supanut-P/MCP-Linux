@@ -12,8 +12,9 @@ states; files retain SHA-256 digests. Raw paths, content and errors are omitted
 from public observations.
 
 Option-shaped service units beginning with `-` are rejected before dispatch.
-The v1.55 hardening review must also audit option separation on the existing
-remote-host service-status surface; admission here protects only this new tool.
+The v1.55 source candidate also rejects these units in incident/catalog and
+remote-host admission and separates systemctl options from literal units.
+Ubuntu/package verification remains separate from these source controls.
 
 Approve requires a complete capture, its exact snapshot hash and explicit
 `userConfirmed:true`, current READ/WRITE permission and unchanged registrations.

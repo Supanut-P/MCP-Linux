@@ -4,7 +4,7 @@ import { defineTool, type McpToolContext, type McpToolDefinition } from './tool-
 const id = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/);
 const confirmation = { userConfirmed: z.boolean().optional() };
 export const incidentSchema = z.discriminatedUnion('operation', [
-  z.object({ operation: z.literal('collect'), incidentId: id, workspaceId: id, hostIds: z.array(id).min(1).max(20).optional(), selectionId: id.optional(), unit: z.string().regex(/^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/).optional(), ...confirmation }).strict(),
+  z.object({ operation: z.literal('collect'), incidentId: id, workspaceId: id, hostIds: z.array(id).min(1).max(20).optional(), selectionId: id.optional(), unit: z.string().regex(/^(?!-)[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/).optional(), ...confirmation }).strict(),
   z.object({ operation: z.literal('status'), incidentId: id, ...confirmation }).strict(),
   z.object({ operation: z.literal('report'), incidentId: id, afterSequence: z.number().int().min(0).max(128).optional(), limit: z.number().int().min(1).max(32).optional(), ...confirmation }).strict(),
 ]);

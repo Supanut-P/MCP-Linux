@@ -1,6 +1,6 @@
 {
   "name": "@baitonghub-linux-mcp/capabilities",
-  "version": "1.50.0",
+  "version": "1.55.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -13,6 +13,7 @@
     }
   },
   "dependencies": {
+    "@baitonghub-linux-mcp/audit": "workspace:*",
     "@baitonghub-linux-mcp/domain": "workspace:*",
     "@baitonghub-linux-mcp/process": "workspace:*",
     "@baitonghub-linux-mcp/shared": "workspace:*",

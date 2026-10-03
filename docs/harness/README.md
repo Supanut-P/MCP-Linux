@@ -4,16 +4,16 @@ v1.47 incident workspace verification is closed under its
 [contract](contracts/v1.47-incident-workspace.md), [caller guide](INCIDENT_WORKSPACE.md)
 and [Ubuntu receipt](evidence/2026-10-03-v1.47-ubuntu.md). Independent QA verified
 733 source files, 20 implementation hashes and 67 artifacts. The configured VM
-runs accepted 1.49.0. Approved baseline drift verification is closed under its
+runs accepted 1.50.0. Approved baseline drift verification is closed under its
 [contract](contracts/v1.48-approved-drift.md), [caller guide](APPROVED_DRIFT.md) and
 [Ubuntu receipt](evidence/2026-10-03-v1.48-ubuntu.md): 749 frozen source files,
 17 implementation fingerprints and 72 artifacts independently verified. v1.49
-diagnosis verification is closed under the [Ubuntu receipt](evidence/2026-10-03-v1.49-ubuntu.md): 765 frozen files, 19 implementation hashes and 74 artifacts independently verified. v1.50 incident-to-local-fix is next.
+diagnosis verification is closed under the [Ubuntu receipt](evidence/2026-10-03-v1.49-ubuntu.md): 765 frozen files, 19 implementation hashes and 74 artifacts independently verified. v1.50 verification is closed under its [Ubuntu receipt](evidence/2026-10-03-v1.50-ubuntu.md): 781 frozen files, 29 implementation hashes and88 artifacts independently verified. P0 v1.55 hardening is next.
 No publication is approved.
 
-v1.50 incident-to-local-fix implementation is active under its
+v1.50 incident-to-local-fix verification is closed under its
 [contract](contracts/v1.50-incident-fix.md) and [caller guide](INCIDENT_FIX.md).
-Source/package closure remains open; the configured VM stays on accepted1.49.0.
+Source/package and both fixture transports passed; the configured VM runs accepted1.50.0. Final provider/usability and publication gates remain open.
 
 The authoritative [v2 roadmap](../superpowers/plans/2026-09-30-mcp-linux-v2-roadmap.md)
 defines the accepted product and model-routing policy. Root `AGENTS.md` routes

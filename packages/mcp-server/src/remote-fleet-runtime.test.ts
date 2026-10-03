@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
 import { RemoteFleetRuntime } from './remote-fleet-runtime.js';
+import { mapResult } from './result-mapper.js';
 
 describe('RemoteFleetRuntime', () => {
   it('fans out only registered host IDs with a maximum of four concurrent calls', async () => {
@@ -208,6 +209,44 @@ describe('RemoteFleetRuntime', () => {
     } });
     expect(calls).toEqual([{ hostId: 'vm1', operation: 'journal', unit: 'api.service', lines: 25 }]);
     expect(JSON.stringify(result)).not.toContain('super-secret');
+  });
+
+  it('removes secret canaries from both MCP result representations', async () => {
+    const canaries = 'Authorization: Bearer bearer-canary sk-testcanary ghp_testcanary xoxb-testcanary AIzatestcanary';
+    const runtime = new RemoteFleetRuntime({
+      execute: async (): Promise<Result<unknown>> => ok({ output: canaries, details: { Authorization: 'Bearer object-canary' } }),
+    });
+    const result = await runtime.execute({ hostIds: ['vm1'], operation: 'journal' });
+    const mapped = mapResult(result);
+    const text = mapped.content.map((entry) => entry.type === 'text' ? entry.text : '').join('');
+    const structured = JSON.stringify(mapped.structuredContent);
+    for (const representation of [text, structured]) {
+      for (const canary of ['bearer-canary', 'object-canary', 'sk-testcanary', 'ghp_testcanary', 'xoxb-testcanary', 'AIzatestcanary']) {
+        expect(representation).not.toContain(canary);
+      }
+    }
+  });
+
+  it('rejects option-shaped units for journal, service status, and snapshots before dispatch', async () => {
+    let calls = 0;
+    const runtime = new RemoteFleetRuntime({ execute: async (): Promise<Result<unknown>> => { calls += 1; return ok({}); } });
+    for (const unit of ['-Hfoo.service', '-Mfoo.service']) {
+      await expect(runtime.execute({ hostIds: ['vm1'], operation: 'journal', unit })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+      await expect(runtime.execute({ hostIds: ['vm1'], operation: 'service-status', unit })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+      await expect(runtime.execute({ hostIds: ['vm1'], operation: 'snapshot', unit })).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    }
+    expect(calls).toBe(0);
+  });
+
+  it('dispatches valid service and socket units for service status', async () => {
+    const calls: Record<string, unknown>[] = [];
+    const runtime = new RemoteFleetRuntime({ execute: async (_tool: string, input: unknown): Promise<Result<unknown>> => { calls.push(input as Record<string, unknown>); return ok({}); } });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'service-status', unit: 'api.service' })).resolves.toMatchObject({ ok: true });
+    await expect(runtime.execute({ hostIds: ['vm1'], operation: 'service-status', unit: 'api.socket' })).resolves.toMatchObject({ ok: true });
+    expect(calls).toEqual([
+      { hostId: 'vm1', operation: 'service-status', unit: 'api.service' },
+      { hostId: 'vm1', operation: 'service-status', unit: 'api.socket' },
+    ]);
   });
 
   it('projects remote network data into a topology-safe summary', async () => {

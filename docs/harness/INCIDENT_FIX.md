@@ -38,7 +38,7 @@ freshness checks: stop writers and withhold linked workflows from execution
 during rollback until upgraded. Metadata coordination provides no OS sandbox.
 Deployment, production mutation and publication still require their human gates.
 
-v1.50 implementation and full local/Ubuntu/package/installed acceptance are open.
+v1.50 verification is closed under the [Ubuntu receipt](evidence/2026-10-03-v1.50-ubuntu.md).
 See the [contract](contracts/v1.50-incident-fix.md). Installed unavailable-host
 fixtures and caller-native local patches are distinct from real fleet usability,
 native CLI authentication or a proven incident cause.

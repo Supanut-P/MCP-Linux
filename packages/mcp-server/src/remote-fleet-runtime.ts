@@ -1,5 +1,6 @@
 import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
 import type { CapabilityService } from '@baitonghub-linux-mcp/capabilities';
+import { Redactor } from '@baitonghub-linux-mcp/audit';
 
 export type RemoteFleetOperation = 'health' | 'inventory' | 'service-status' | 'journal' | 'disk_usage' | 'checksum' | 'network' | 'snapshot';
 
@@ -38,6 +39,7 @@ const MAX_HOSTS = 20;
 const MAX_CONCURRENCY = 4;
 const HOST_ID = /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/;
 const MAX_HOST_BYTES = 256 * 1024;
+const REDACTOR = new Redactor();
 
 /**
  * Read-only fan-out for registered remote_host records.  Host credentials,
@@ -219,9 +221,9 @@ function parseRequest(input: unknown): Result<RemoteFleetRequest> {
 }
 
 function requestUnit(operation: RemoteFleetOperation, unit: string | undefined): string | undefined | null {
-  if (operation !== 'journal' || unit === undefined) return unit;
+  if (!['journal', 'service-status', 'snapshot'].includes(operation) || unit === undefined) return unit;
   const trimmed = unit.trim();
-  return /^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/.test(trimmed) ? trimmed : null;
+  return !trimmed.startsWith('-') && /^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/.test(trimmed) ? trimmed : null;
 }
 
 function redactRemoteValue(value: unknown, depth = 0): unknown {
@@ -229,11 +231,11 @@ function redactRemoteValue(value: unknown, depth = 0): unknown {
   if (typeof value === 'string') return redactText(value);
   if (Array.isArray(value)) return value.map((entry) => redactRemoteValue(entry, depth + 1));
   if (typeof value !== 'object' || value === null) return value;
-  return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, /(?:secret|password|token|private[_-]?key|api[_-]?key)/i.test(key) ? '[redacted]' : redactRemoteValue(entry, depth + 1)]));
+  return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, /(?:authorization|credential|secret|password|token|private[_-]?key|api[_-]?key)/i.test(key) ? '[redacted]' : redactRemoteValue(entry, depth + 1)]));
 }
 
 function redactText(value: string): string {
-  return value
+  return String(REDACTOR.redact(value))
     .replace(/-----BEGIN [^-]+-----[\s\S]*?-----END [^-]+-----/g, '[redacted]')
     .replace(/\b(token|secret|password|api[_-]?key|private[_-]?key)\s*[:=]\s*[^\s,;]+/gi, '$1=[redacted]');
 }

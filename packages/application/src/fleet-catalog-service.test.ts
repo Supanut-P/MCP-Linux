@@ -19,6 +19,13 @@ function fixture(): { db: SqliteDatabase; service: FleetCatalogService; hosts: M
 }
 
 describe('owner-scoped registered fleet catalog', () => {
+  it('rejects destination-option mappings before retaining them', async () => {
+    const f = fixture();
+    try {
+      for (const serviceUnit of ['-Hother.service', '-Mcontainer.service']) expect(await f.service.execute(actor, { operation: 'put_mapping', id: 'option', hostId: 'h1', serviceUnit, workspaceId: 'ws', expectedRevision: 0 })).toMatchObject({ ok: false });
+      expect(await f.service.execute(actor, { operation: 'list' })).toMatchObject({ ok: true, value: { entries: [] } });
+    } finally { f.db.close(); }
+  });
   it('resolves mixed group members and detects replacement/removal without dispatch', async () => {
     const f = fixture();
     try {

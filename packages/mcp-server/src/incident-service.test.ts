@@ -31,6 +31,26 @@ function fixture(deadlineMs = 1000): Fixture {
 }
 
 describe('durable bounded incidents', () => {
+  it('rejects destination-option units before any observation or persistence', async () => {
+    const f = fixture();
+    try {
+      for (const unit of ['-Hother.service', '-Mcontainer.service']) {
+        expect(await f.service.execute(actor, { ...request, unit })).toMatchObject({ ok: false });
+      }
+      expect(f.execute).not.toHaveBeenCalled();
+      expect(f.metrics.execute).not.toHaveBeenCalled();
+      expect(f.changes.snapshot).not.toHaveBeenCalled();
+      expect(f.db.connection.prepare('SELECT count(*) AS total FROM incidents').get()).toMatchObject({ total: 0 });
+    } finally { f.db.close(); }
+  });
+  it('rejects an option-shaped catalog service even when bindings are resolved', async () => {
+    const f = fixture();
+    const service = new IncidentService({ repository: f.repository, workspaces: f.workspaces, hosts: { async get(id): Promise<TestHost | null> { return f.hosts.get(id) ?? null; } }, fleet: { execute: f.execute }, catalog: { execute: async (): Promise<Result<unknown>> => ok({ kind: 'mapping', workspaceStatus: 'resolved', members: [{ hostId: 'h1', status: 'resolved' }], mapping: { workspaceId: 'ws', serviceUnit: '-Hother.service' } }) } });
+    try {
+      expect(await service.execute(actor, { operation: 'collect', incidentId: 'catalog-option', workspaceId: 'ws', selectionId: 'mapping' })).toMatchObject({ ok: false });
+      expect(f.execute).not.toHaveBeenCalled();
+    } finally { f.db.close(); }
+  });
   it('requires the mapped service and registered identities when resolving fix evidence',async()=>{
     const f=fixture();
     try{

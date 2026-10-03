@@ -22,7 +22,7 @@ interface Binding { readonly hostId: string; readonly fingerprint: string }
 interface Payload { readonly hosts: readonly Binding[]; readonly serviceUnit?: string; readonly workspaceId?: string; readonly workspaceFingerprint?: string }
 interface Request { readonly operation: 'put_group' | 'put_mapping' | 'list' | 'resolve' | 'remove'; readonly id?: string; readonly expectedRevision?: number; readonly hostIds?: readonly string[]; readonly hostId?: string; readonly serviceUnit?: string; readonly workspaceId?: string; readonly userConfirmed?: boolean }
 const ID = /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/;
-const UNIT = /^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/;
+const UNIT = /^(?!-)[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/;
 const SHA = /^[a-f0-9]{64}$/;
 
 /** Local selection metadata only. Ownership does not create remote host tenancy. */

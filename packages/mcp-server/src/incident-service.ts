@@ -50,7 +50,7 @@ export interface IncidentServiceOptions {
 const ID = /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/;
 const SHA = /^[a-f0-9]{64}$/;
 const REGISTRY_TIMEOUT = Symbol('incident-registry-timeout');
-const UNIT = /^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/;
+const UNIT = /^(?!-)[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/;
 const REMOTE_SOURCES = ['health', 'service-status', 'journal', 'disk_usage'] as const;
 const LOCAL_SOURCES = ['local_metrics', 'workspace_changes'] as const;
 

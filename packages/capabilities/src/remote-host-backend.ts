@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
+import { Redactor } from '@baitonghub-linux-mcp/audit';
 import type { SecretStore } from '@baitonghub-linux-mcp/shared';
 import type { NativeCapabilityBackend, NativeCapabilityHealth } from './platform/types.js';
 
@@ -38,6 +39,7 @@ const UNIT = /^[A-Za-z0-9_.@:-]{1,256}\.service$/;
 const READ_UNIT = /^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/;
 const SAFE_ARG = /^[A-Za-z0-9_./:@%+=,-]{1,4096}$/;
 const MAX_INVENTORY_ENTRIES = 500;
+const REDACTOR = new Redactor();
 
 /** SSH operations are intentionally host-registration based; no arbitrary host or shell input is accepted. */
 export class RemoteHostBackend implements NativeCapabilityBackend {
@@ -89,7 +91,7 @@ export class RemoteHostBackend implements NativeCapabilityBackend {
     if (operation === 'journal') {
       const lines = typeof input.lines === 'number' && Number.isInteger(input.lines) ? Math.min(1000, Math.max(1, input.lines)) : 100;
       const args = ['journalctl', '--no-pager', '-n', String(lines)];
-      if (typeof input.unit === 'string' && !/^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/.test(input.unit)) return invalid('Remote journal unit is invalid');
+      if (typeof input.unit === 'string' && (input.unit.startsWith('-') || !/^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/.test(input.unit))) return invalid('Remote journal unit is invalid');
       if (typeof input.unit === 'string') args.push('-u', input.unit);
       return ok(args);
     }
@@ -126,8 +128,8 @@ export class RemoteHostBackend implements NativeCapabilityBackend {
     }
     if (operation === 'service-status') {
       const unit = typeof input.unit === 'string' ? input.unit : '';
-      if (!READ_UNIT.test(unit) || /^(shutdown|reboot|emergency|rescue)\.service$/.test(unit)) return invalid('Remote service unit is invalid or blocked');
-      return ok(['systemctl', 'show', '--no-pager', '--property=Id,LoadState,ActiveState,SubState,UnitFileState,MainPID', unit]);
+      if (unit.startsWith('-') || !READ_UNIT.test(unit) || /^(shutdown|reboot|emergency|rescue)\.service$/.test(unit)) return invalid('Remote service unit is invalid or blocked');
+      return ok(['systemctl', 'show', '--no-pager', '--property=Id,LoadState,ActiveState,SubState,UnitFileState,MainPID', '--', unit]);
     }
     if (operation === 'file_read') {
       const target = typeof input.path === 'string' ? input.path : '';
@@ -176,8 +178,8 @@ export class RemoteHostBackend implements NativeCapabilityBackend {
   private async mutationPlan(host: RegisteredRemoteHost, operation: RemoteHostOperation, input: Record<string, unknown>): Promise<Result<{ readonly command: readonly string[]; readonly input?: string }>> {
     if (operation === 'service-restart') {
       const unit = typeof input.unit === 'string' ? input.unit : '';
-      if (!UNIT.test(unit) || /^(shutdown|reboot|emergency|rescue)\.service$/.test(unit)) return invalid('Remote service unit is invalid or blocked');
-      return ok({ command: ['systemctl', 'restart', unit] });
+      if (unit.startsWith('-') || !UNIT.test(unit) || /^(shutdown|reboot|emergency|rescue)\.service$/.test(unit)) return invalid('Remote service unit is invalid or blocked');
+      return ok({ command: ['systemctl', 'restart', '--', unit] });
     }
     const target = typeof input.path === 'string' ? input.path : '';
     if (operation === 'file-write' && isSecretPath(target)) return err(appError('PERMISSION_DENIED', 'Remote secret-file writes are not permitted', true));
@@ -284,7 +286,11 @@ function readOperation(value: unknown): RemoteHostOperation | null { return type
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null && !Array.isArray(value); }
 function isMutation(operation: RemoteHostOperation): boolean { return operation === 'service-restart' || operation === 'file-write' || operation === 'project-command'; }
 function isWithin(root: string, candidate: string): boolean { const relative = path.posix.relative(path.posix.normalize(root), path.posix.normalize(candidate)); return relative === '' || (relative !== '..' && !relative.startsWith('../') && !path.posix.isAbsolute(relative)); }
-function redact(value: string): string { return value.replace(/\b(token|secret|password|api[_-]?key|private[_-]?key)\s*[:=]\s*[^\s,;]+/gi, '$1=[redacted]'); }
+function redact(value: string): string {
+  return String(REDACTOR.redact(value))
+    .replace(/-----BEGIN [^-]+-----[\s\S]*?-----END [^-]+-----/g, '[redacted]')
+    .replace(/\b(token|secret|password|api[_-]?key|private[_-]?key)\s*[:=]\s*[^\s,;]+/gi, '$1=[redacted]');
+}
 function isSecretPath(value: string): boolean {
   const basename = path.posix.basename(value).toLowerCase();
   return basename === '.env' || basename.startsWith('.env.') || basename === 'id_rsa' || basename === 'id_ed25519' || basename === 'credentials' || basename.startsWith('secret') || basename.includes('password');

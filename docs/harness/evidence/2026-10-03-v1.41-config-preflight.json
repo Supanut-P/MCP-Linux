@@ -1,0 +1,140 @@
+{
+  "status": "implementation-qa-approved-milestone-open",
+  "cliVersion": "0.146.0",
+  "platform": "Windows",
+  "source": [
+    {
+      "path": "packages/codex/src/codex-config-policy.ts",
+      "sha256": "227f14347d768165d161a9adeb2ea53bd048996407539f7e81781d49de29ac3b"
+    },
+    {
+      "path": "packages/codex/src/codex-config-policy.test.ts",
+      "sha256": "895542814963153edd81603065b0af09e0327faad14ccb7ce2750d172d6522f9"
+    },
+    {
+      "path": "packages/codex/src/codex-config-inspector.ts",
+      "sha256": "83f6e48144d11bfd004cba98468ddc14da1ba4a3de60f6368aabecb514a7c78b"
+    },
+    {
+      "path": "packages/codex/src/codex-config-inspector.test.ts",
+      "sha256": "83b35dbc31fe4317b4088c1f176259b6dbce02a15ac3680e6370b141e8c9c293"
+    },
+    {
+      "path": "packages/codex/src/codex-capabilities.ts",
+      "sha256": "2cb4c32939555c7ab555096f2b51a4580816641c471b6657e4feecb05a459ab4"
+    },
+    {
+      "path": "packages/codex/src/codex-adapter.ts",
+      "sha256": "ebe1c07670922b22e4e2494578c05ff87193d9b74ea987d875d483c451df97e3"
+    },
+    {
+      "path": "packages/codex/src/codex-adapter.test.ts",
+      "sha256": "05e47c101439ab59e95fdbb98c7451a010239bd2a9ef75e40ebe14efe0f8faad"
+    },
+    {
+      "path": "packages/process/src/safe-environment.ts",
+      "sha256": "3fe6cff1d48b9d308cd122d29d9f395af609c56a4f97bbf118c5750ee61c805a"
+    },
+    {
+      "path": "packages/process/src/safe-environment.test.ts",
+      "sha256": "208c93c7b4fbdc459007e8c5e5d29ba3d8f81d7fb33c8e9ac267bbdcbb51bc6b"
+    },
+    {
+      "path": "packages/process/src/process-manager.ts",
+      "sha256": "ff81e25d3d94152431abd2aed9e94bfe93aa9f0e2adfc3bdbdfdb41eb9fa217d"
+    },
+    {
+      "path": "packages/process/src/process-manager.test.ts",
+      "sha256": "4581adbffb3b569a45bdd933a1a06cd12e12fc96fcd0e19450f8b81b4248edab"
+    },
+    {
+      "path": "packages/process/src/unix-process-tree.ts",
+      "sha256": "94c15aedfa19b115d4060a77db4e5e9fe1d5541bb2a701590542d67d23a1fa02"
+    },
+    {
+      "path": "packages/process/src/unix-process-tree.test.ts",
+      "sha256": "a34d2b9f5fdd98159f2af5728d59e3d3a752ca094c341772966221d37ffd62f5"
+    },
+    {
+      "path": "tests/fixtures/tool-contract-v1.json",
+      "sha256": "2a4de439c3b4ff8c25b771661d673e4afbbc0f17e418e3a2221ec4f079d97b08"
+    },
+    {
+      "path": "docs/harness/contracts/v1.41-codex-adapter.md",
+      "sha256": "1e65e0327905c40545538812f51d3f860a065d48d3398ac2fb02adeb3f15118c"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "dist/v1.41.0-local-20261003/native/verified-effective-config.json",
+      "sha256": "1ec066291b7c9a2306b6a9c8978c2e24eb00bf9027a3ec040ef0672df03dd624"
+    },
+    {
+      "path": "dist/v1.41.0-local-20261003/native/config-controlled-controls-before.json",
+      "sha256": "92b21200cb44b7aae3a10d506f38e6f01d8b964384d19106ffebe76be10027a6"
+    },
+    {
+      "path": "dist/v1.41.0-local-20261003/native/config-controlled-controls-after.json",
+      "sha256": "4980d727243ae6890b2c7e7174bf78df3bba361fb247e6c836238ee440b36a16"
+    },
+    {
+      "path": "dist/v1.41.0-local-20261003/native/windows-adapter-native.json",
+      "sha256": "33f8306ec4de0714b24baec687ed014afaca2f5f844b6b4dff6ce13c8805ced2"
+    },
+    {
+      "path": "dist/v1.41.0-local-20261003/native/windows-adapter-native-default-model.json",
+      "sha256": "6cee26fc54f95ad1f00d92b49650199d8f3d616fb73534eb8230330f63bcb18d"
+    },
+    {
+      "path": "dist/v1.41.0-local-20261003/native/windows-adapter-native-stdin-timeout.json",
+      "sha256": "f91aaf430d0ba00721e05d0fef9ba5c94b03f4fb6b272662742b1061f00cfb3d"
+    },
+    {
+      "path": "dist/v1.41.0-local-20261003/native/contract-additive-check.json",
+      "sha256": "dee0c360bd4c5d052d7abf2a75354f6c2ee7690b15e9651e245f7038dde391be"
+    }
+  ],
+  "verification": {
+    "typecheckExit": 0,
+    "scopedLintExit": 0,
+    "focusedTestsPassed": 75,
+    "focusedLinuxSkips": 2,
+    "contractTools": 227,
+    "onlyOptionalCodexFieldsChanged": true
+  },
+  "native": {
+    "effectiveProfileServersDisabled": 7,
+    "dottedServerEnabledBefore": 1,
+    "dottedServerEnabledAfter": 0,
+    "customProviderRejected": true,
+    "customChatgptEndpointRejected": true,
+    "explicitModel": "gpt-5.6-sol",
+    "effort": "low",
+    "completed": true,
+    "exitCode": 0,
+    "markerMatched": true,
+    "toolEvents": 0,
+    "usage": {
+      "inputTokens": 17602,
+      "cachedInputTokens": 0,
+      "outputTokens": 8
+    },
+    "defaultModel": "gpt-6.1-sol",
+    "defaultModelRejected": true,
+    "unavailableReason": "MODEL_UNAVAILABLE"
+  },
+  "independentReview": {
+    "reviewer": "Sol independent QA",
+    "result": "approved; no remaining material findings",
+    "executionEvidence": "lead-produced receipts; reviewer did not execute providers"
+  },
+  "boundaries": [
+    "ordinary configuration TOCTOU after second probe",
+    "not Windows process-tree cancellation",
+    "not Linux provider authentication",
+    "not OS containment",
+    "not token savings",
+    "Ubuntu/package and closure QA remain open",
+    "no publication"
+  ]
+}

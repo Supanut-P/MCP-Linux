@@ -30,6 +30,45 @@ function fixture(deadlineMs = 1000): Fixture {
 }
 
 describe('durable bounded incidents', () => {
+  it('classifies real timer expiry as timeout while the wall clock is frozen', async () => {
+    const f=fixture(10);const clock=vi.spyOn(Date,'now').mockReturnValue(1790985600000);
+    f.workspaces.get=async():Promise<Workspace|null>=>new Promise(()=>undefined);
+    try {
+      expect(await f.service.execute(actor,request)).toMatchObject({ok:false,error:{code:'PROCESS_TIMEOUT'}});
+      expect(f.execute).not.toHaveBeenCalled();
+    }finally{clock.mockRestore();f.db.close();}
+  });
+  it('rejects an earlier source changed during a later incident registry lookup', async () => {
+    const f=fixture();
+    try {
+      await f.service.execute(actor,request);await f.service.execute(actor,{...request,incidentId:'incident-2'});
+      const refs=[];
+      for(const incidentId of [request.incidentId,'incident-2']){
+        const report=await f.service.execute(actor,{operation:'report',incidentId,limit:32});
+        refs.push((report as {value:{evidence:{reference:{incidentId:string;sequence:number;hash:string};observation:{source:string}}[]}}).value.evidence.find(row=>row.observation.source==='local_metrics')!.reference);
+      }
+      const original=f.workspaces.get.bind(f.workspaces);let lookups=0;
+      f.workspaces.get=async(id):Promise<Workspace|null>=>{if(++lookups===2)f.db.connection.prepare('DELETE FROM incident_evidence WHERE incident_id=? AND sequence=?').run(refs[0]!.incidentId,refs[0]!.sequence);return original(id);};
+      expect(await f.service.resolveEvidence(actor,'ws',refs)).toMatchObject({ok:false});
+    }finally{f.db.close();}
+  });
+  it('resolves owned terminal evidence without probes and distinguishes registration replacement', async () => {
+    const f = fixture();
+    try {
+      await f.service.execute(actor, request);
+      const report = await f.service.execute(actor, { operation: 'report', incidentId: request.incidentId, limit: 32 });
+      const references = (report as { value: { evidence: { reference: { incidentId: string; sequence: number; hash: string } }[] } }).value.evidence.map(row => row.reference);
+      const calls = f.execute.mock.calls.length;
+      expect(await f.service.resolveEvidence(actor, 'ws', references)).toMatchObject({ ok: true, value: references.map(reference => ({ reference, currentSupport: 'current', incidentHeaderHash: expect.any(String) })) });
+      f.hosts.set('h1', { ...f.hosts.get('h1')!, pinnedFingerprint: 'SHA256:replaced' });
+      const stale = await f.service.resolveEvidence(actor, 'ws', references);
+      expect(stale.ok && stale.value.filter(row => row.observation.hostId === 'h1').every(row => row.currentSupport === 'stale')).toBe(true);
+      expect(await f.service.resolveEvidence(actor, 'other-ws', references)).toMatchObject({ ok: false });
+      expect(await f.service.resolveEvidence({ ...actor, clientId: 'other' }, 'ws', references)).toMatchObject({ ok: false });
+      expect(await f.service.resolveEvidence(actor, 'ws', [{ ...references[0]!, hash: 'f'.repeat(64) }])).toMatchObject({ ok: false });
+      expect(f.execute).toHaveBeenCalledTimes(calls);
+    } finally { f.db.close(); }
+  });
   it('rejects complete state when a valid evidence tail was deleted', async () => {
     const f = fixture();
     try {

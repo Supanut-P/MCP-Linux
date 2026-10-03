@@ -10,6 +10,19 @@ import { projectIncidentObservation, validateStoredIncidentData, type IncidentSo
 type IncidentState = 'collecting' | 'complete' | 'partial' | 'unavailable' | 'interrupted';
 interface IncidentRecord { readonly id: string; readonly ownerKey: string; readonly requestFingerprint: string; readonly runToken: string; readonly state: IncidentState; readonly header: unknown; readonly createdAt: number; readonly expiresAt: number; readonly updatedAt: number }
 interface Evidence { readonly incidentId: string; readonly sequence: number; readonly hash: string; readonly payload: unknown }
+export interface IncidentEvidenceReference { readonly incidentId: string; readonly sequence: number; readonly hash: string }
+export interface ResolvedIncidentEvidence {
+  readonly reference: IncidentEvidenceReference;
+  readonly incidentRequestFingerprint: string;
+  readonly incidentHeaderHash: string;
+  readonly workspaceId: string;
+  readonly workspaceFingerprint: string;
+  readonly hostFingerprint: string | null;
+  readonly observation: Readonly<Record<string, unknown>>;
+  readonly incidentState: Exclude<IncidentState, 'collecting'>;
+  readonly missingSources: number;
+  readonly currentSupport: 'current' | 'stale' | 'unavailable';
+}
 export interface IncidentRepositoryPort {
   get(owner: string, id: string): IncidentRecord | null;
   create(record: IncidentRecord): boolean;
@@ -36,6 +49,7 @@ export interface IncidentServiceOptions {
 }
 const ID = /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/;
 const SHA = /^[a-f0-9]{64}$/;
+const REGISTRY_TIMEOUT = Symbol('incident-registry-timeout');
 const UNIT = /^[A-Za-z0-9_.@:-]{1,256}\.(service|socket|timer|path)$/;
 const REMOTE_SOURCES = ['health', 'service-status', 'journal', 'disk_usage'] as const;
 const LOCAL_SOURCES = ['local_metrics', 'workspace_changes'] as const;
@@ -46,6 +60,52 @@ export class IncidentService {
   private readonly deadlineMs: number;
   public constructor(private readonly options: IncidentServiceOptions) {
     this.deadlineMs = options.deadlineMs === undefined ? 60_000 : Math.max(1, Math.min(60_000, Number.isFinite(options.deadlineMs) ? Math.floor(options.deadlineMs) : 60_000));
+  }
+
+  /** Internal evidence access; no probes, public-page scanning or ownership override. */
+  public async resolveEvidence(actor: FileActor, workspaceId: string, references: readonly IncidentEvidenceReference[], userConfirmed = false, signal?: AbortSignal, outerDeadline?: number): Promise<Result<readonly ResolvedIncidentEvidence[]>> {
+    const deadline = Math.min(Date.now() + this.deadlineMs, outerDeadline ?? Infinity);
+    try {
+      if (!ID.test(workspaceId) || references.length < 1 || references.length > 32 || new Set(references.map(ref => ref.incidentId)).size > 8 || references.some(ref => !ID.test(ref.incidentId) || !Number.isInteger(ref.sequence) || ref.sequence < 1 || ref.sequence > 128 || !SHA.test(ref.hash)) || typeof actor.clientId !== 'string' || !actor.clientId.trim() || actor.clientId.includes('\0') || Buffer.byteLength(actor.clientId) > 512) return invalid();
+      if (signal?.aborted || Date.now() >= deadline) return cancelled();
+      const permission = this.authorize({ operation: 'report', incidentId: references[0]!.incidentId, workspaceId, userConfirmed });
+      if (!permission.ok) return permission;
+      const owner = hash(actor.clientId), resolved: ResolvedIncidentEvidence[] = [];
+      for (const incidentId of new Set(references.map(ref => ref.incidentId))) {
+        const entry = this.options.repository.get(owner, incidentId), header = entry === null ? null : parseHeader(entry.header);
+        if (entry === null || header === null || header.workspaceId !== workspaceId) return invalid();
+        const retained = readRetained(this.options.repository, entry, header);
+        if (retained === null || retained.state === 'collecting') return invalid();
+        const headerHash = hash(canonicalMetadata(header));
+        const wanted = references.filter(ref => ref.incidentId === incidentId);
+        const rows = wanted.map(ref => retained.rows.find(row => row.sequence === ref.sequence && row.hash === ref.hash));
+        if (rows.some(row => row === undefined)) return invalid();
+        const workspaceStatus = await this.bindingStatus(header, undefined, deadline, signal);
+        const hostIds = [...new Set(rows.map(row => (row!.payload as Record<string, unknown>).hostId).filter((id): id is string => typeof id === 'string'))];
+        const hostStatuses = new Map(await Promise.all(hostIds.map(async hostId => [hostId, await this.bindingStatus(header, header.hosts.find(binding => binding.hostId === hostId), deadline, signal)] as const)));
+        if (signal?.aborted) return cancelled();
+        const currentPermission = this.authorize({ operation: 'report', incidentId, workspaceId, userConfirmed }); if (!currentPermission.ok) return currentPermission;
+        const again = this.options.repository.get(owner, incidentId), againHeader = again === null ? null : parseHeader(again.header);
+        const againRows = again === null || againHeader === null ? null : readRetained(this.options.repository, again, againHeader);
+        if (again === null || againHeader === null || againRows === null || againRows.state === 'collecting' || again.requestFingerprint !== entry.requestFingerprint || hash(canonicalMetadata(againHeader)) !== headerHash || wanted.some(ref => !againRows.rows.some(row => row.sequence === ref.sequence && row.hash === ref.hash))) return invalid();
+        for (let index = 0; index < wanted.length; index++) {
+          const observation = rows[index]!.payload as Record<string, unknown>, hostId = observation.hostId;
+          const hostStatus = typeof hostId === 'string' ? hostStatuses.get(hostId) ?? 'unavailable' : 'ok';
+          const currentSupport = workspaceStatus === 'stale' || hostStatus === 'stale' ? 'stale' : workspaceStatus === 'unavailable' || hostStatus === 'unavailable' ? 'unavailable' : 'current';
+          resolved.push({ reference: wanted[index]!, incidentRequestFingerprint: entry.requestFingerprint, incidentHeaderHash: headerHash, workspaceId, workspaceFingerprint: header.workspaceFingerprint, hostFingerprint: typeof hostId === 'string' ? header.hosts.find(binding => binding.hostId === hostId)?.fingerprint ?? null : null, observation, incidentState: retained.state, missingSources: retained.expected - retained.rows.length, currentSupport });
+        }
+      }
+      // Later registry awaits can invalidate a previously checked incident.
+      // Recheck every pinned source synchronously after the last await.
+      for (const incidentId of new Set(references.map(ref => ref.incidentId))) {
+        const pinned=resolved.filter(fact=>fact.reference.incidentId===incidentId);
+        const latest=this.options.repository.get(owner,incidentId),latestHeader=latest===null?null:parseHeader(latest.header);
+        const retained=latest===null||latestHeader===null?null:readRetained(this.options.repository,latest,latestHeader);
+        if(latest===null||latestHeader===null||retained===null||retained.state==='collecting'||pinned.some(fact=>fact.incidentRequestFingerprint!==latest.requestFingerprint||fact.incidentHeaderHash!==hash(canonicalMetadata(latestHeader))||fact.incidentState!==retained.state||fact.missingSources!==retained.expected-retained.rows.length||!retained.rows.some(row=>row.sequence===fact.reference.sequence&&row.hash===fact.reference.hash)))return invalid();
+        const finalPermission=this.authorize({operation:'report',incidentId,workspaceId,userConfirmed});if(!finalPermission.ok)return finalPermission;
+      }
+      return ok(resolved);
+    } catch { return invalid(); }
   }
 
   public async execute(actor: FileActor, input: unknown, signal?: AbortSignal): Promise<Result<unknown>> {
@@ -92,12 +152,13 @@ export class IncidentService {
 
   private async bind(actor: FileActor, request: Request, signal: AbortSignal | undefined, deadline: number): Promise<Result<Header>> {
     const workspace = await deadlineRead(() => this.options.workspaces.get(request.workspaceId!), deadline, signal);
-    if (Date.now() >= deadline || signal?.aborted) return cancelled();
+    if (workspace === REGISTRY_TIMEOUT || Date.now() >= deadline || signal?.aborted) return cancelled();
     if (workspace === null || workspace.archivedAt) return err(appError('WORKSPACE_NOT_FOUND', 'Registered incident workspace was not found'));
     let members: Array<{ hostId: string; status: Binding['status'] }> = request.hostIds?.map(hostId => ({ hostId, status: 'resolved' })) ?? [];
     let unit = request.unit;
     if (request.selectionId !== undefined) {
       const selection = await deadlineRead(async () => await this.options.catalog?.execute(actor, { operation: 'resolve', id: request.selectionId, userConfirmed: request.userConfirmed }, signal) ?? null, deadline, signal);
+      if (selection === REGISTRY_TIMEOUT) return cancelled();
       if (selection == null || !selection.ok || !record(selection.value) || !Array.isArray(selection.value.members)) return invalid();
       if (selection.value.kind === 'mapping' && (selection.value.workspaceStatus !== 'resolved' || !record(selection.value.mapping))) return invalid();
       members = selection.value.members as typeof members;
@@ -111,7 +172,7 @@ export class IncidentService {
     for (const member of members) {
       if (signal?.aborted) return cancelled();
       const host = await deadlineRead(() => this.options.hosts.get(member.hostId), deadline, signal);
-      if (Date.now() >= deadline || signal?.aborted) return cancelled();
+      if (host === REGISTRY_TIMEOUT || Date.now() >= deadline || signal?.aborted) return cancelled();
       if (request.hostIds !== undefined && host === null) return err(appError('INVALID_INPUT', 'Registered incident host was not found'));
       bindings.push({ hostId: member.hostId, status: host === null ? 'unavailable' : member.status, fingerprint: host === null ? null : fleetHostFingerprint(host) });
     }
@@ -120,12 +181,12 @@ export class IncidentService {
 
   private async bindingStatus(header: Header, binding?: Binding, deadline = Date.now() + this.deadlineMs, signal?: AbortSignal): Promise<'ok' | 'stale' | 'unavailable'> {
     const workspace = await deadlineRead(() => this.options.workspaces.get(header.workspaceId), deadline, signal);
-    if (workspace === null || workspace.archivedAt) return 'unavailable';
+    if (workspace === null || workspace === REGISTRY_TIMEOUT || workspace.archivedAt) return 'unavailable';
     if (fleetWorkspaceFingerprint(workspace) !== header.workspaceFingerprint) return 'stale';
     if (binding === undefined) return 'ok';
     if (binding.status !== 'resolved') return binding.status;
     const host = await deadlineRead(() => this.options.hosts.get(binding.hostId), deadline, signal);
-    return host === null ? 'unavailable' : fleetHostFingerprint(host) !== binding.fingerprint ? 'stale' : 'ok';
+    return host === null || host === REGISTRY_TIMEOUT ? 'unavailable' : fleetHostFingerprint(host) !== binding.fingerprint ? 'stale' : 'ok';
   }
 
   private async collect(request: Request, entry: IncidentRecord, header: Header, signal?: AbortSignal): Promise<void> {
@@ -196,22 +257,8 @@ export class IncidentService {
     if (signal?.aborted) return cancelled();
     const permission = this.authorize({ ...request, workspaceId: header.workspaceId });
     if (!permission.ok) return permission;
-    const summary = this.options.repository.summary(entry.ownerKey, entry.id);
-    if (summary === null) return invalid();
-    const state = entry.state === 'collecting' && Date.now() > entry.expiresAt ? 'interrupted' : entry.state;
-    const retained: Evidence[] = [];
-    for (;;) {
-      const page = this.options.repository.listEvidence(entry.ownerKey, entry.id, retained.at(-1)?.sequence ?? 0, 32);
-      if (!page.length) break;
-      retained.push(...page);
-      if (retained.length > 128) return invalid();
-    }
-    if (retained.length !== summary.count || retained.some(row => !validObservation(row.payload, header))) return invalid();
-    const keys = retained.map(row => { const payload = row.payload as Record<string, unknown>; return `${payload.hostId ?? ''}:${payload.source}`; });
-    if (new Set(keys).size !== keys.length) return invalid();
-    const expected = header.hosts.length * REMOTE_SOURCES.length + LOCAL_SOURCES.length;
-    const good = retained.filter(row => { const payload = row.payload as Record<string, unknown>; return payload.status === 'ok' && payload.gap === false && payload.truncated === false; }).length;
-    if ((state === 'complete' && good !== expected) || (state === 'partial' && (good === 0 || good >= expected)) || (state === 'unavailable' && good !== 0)) return invalid();
+    const validated = readRetained(this.options.repository, entry, header); if (validated === null) return invalid();
+    const { summary, state, keys, expected } = validated;
     const missing = [...header.hosts.flatMap(binding => REMOTE_SOURCES.map(source => ({ hostId: binding.hostId, source }))), ...LOCAL_SOURCES.map(source => ({ source }))]
       .filter(item => !keys.includes(`${'hostId' in item ? item.hostId : ''}:${item.source}`))
       .map(item => ({ ...item, status: state === 'collecting' ? 'pending' : state === 'interrupted' ? 'interrupted' : 'timeout', gap: true }));
@@ -223,6 +270,21 @@ export class IncidentService {
   }
 }
 
+function readRetained(repository: IncidentRepositoryPort, entry: IncidentRecord, header: Header): { rows: Evidence[]; summary: { count: number; bytes: number }; state: IncidentState; keys: string[]; expected: number } | null {
+  const summary = repository.summary(entry.ownerKey, entry.id); if (summary === null) return null;
+  const state = entry.state === 'collecting' && Date.now() > entry.expiresAt ? 'interrupted' : entry.state;
+  const rows: Evidence[] = [];
+  for (;;) { const page = repository.listEvidence(entry.ownerKey, entry.id, rows.at(-1)?.sequence ?? 0, 32); if (!page.length) break; rows.push(...page); if (rows.length > 128) return null; }
+  if (rows.length !== summary.count || rows.some(row => !validObservation(row.payload, header))) return null;
+  const keys = rows.map(row => { const payload = row.payload as Record<string, unknown>; return `${payload.hostId ?? ''}:${payload.source}`; });
+  if (new Set(keys).size !== keys.length) return null;
+  const expected = header.hosts.length * REMOTE_SOURCES.length + LOCAL_SOURCES.length;
+  const good = rows.filter(row => { const payload = row.payload as Record<string, unknown>; return payload.status === 'ok' && payload.gap === false && payload.truncated === false; }).length;
+  if ((state === 'complete' && good !== expected) || (state === 'partial' && (good === 0 || good >= expected)) || (state === 'unavailable' && good !== 0)) return null;
+  return { rows, summary, state, keys, expected };
+}
+function canonicalMetadata(value: unknown): string { if (Array.isArray(value)) return `[${value.map(canonicalMetadata).join(',')}]`; if (record(value)) return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${canonicalMetadata(value[key])}`).join(',')}}`; return JSON.stringify(value); }
+
 async function boundedRead(read: () => Promise<Result<unknown>>, signal: AbortSignal): Promise<Result<unknown>> {
   if (signal.aborted) return cancelled();
   let onAbort: (() => void) | undefined;
@@ -233,13 +295,13 @@ async function boundedRead(read: () => Promise<Result<unknown>>, signal: AbortSi
   } catch { return unavailable(); }
   finally { if (onAbort !== undefined) signal.removeEventListener('abort', onAbort); }
 }
-async function deadlineRead<T>(read: () => Promise<T>, deadline: number, signal?: AbortSignal): Promise<T | null> {
-  if (Date.now() >= deadline || signal?.aborted) return null;
+async function deadlineRead<T>(read: () => Promise<T>, deadline: number, signal?: AbortSignal): Promise<T | null | typeof REGISTRY_TIMEOUT> {
+  if (Date.now() >= deadline || signal?.aborted) return REGISTRY_TIMEOUT;
   const controller = new AbortController();
   const abort = (): void => controller.abort();
   signal?.addEventListener('abort', abort, { once: true });
   const timer = setTimeout(abort, Math.max(1, deadline - Date.now()));
-  try { const result = await boundedRead(async () => ok(await read()), controller.signal); return result.ok ? result.value as T : null; }
+  try { const result = await boundedRead(async () => ok(await read()), controller.signal); return result.ok ? result.value as T : result.error.code === 'PROCESS_TIMEOUT' ? REGISTRY_TIMEOUT : null; }
   finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); controller.abort(); }
 }
 function hash(value: string): string { return createHash('sha256').update(value).digest('hex'); }

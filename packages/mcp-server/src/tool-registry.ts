@@ -39,6 +39,7 @@ import { remoteFleetDiffTools } from './tools/remote-fleet-diff-tools.js';
 import { fleetCatalogTools } from './tools/fleet-catalog-tools.js';
 import { incidentTools } from './tools/incident-tools.js';
 import { driftTools } from './tools/drift-tools.js';
+import { diagnosisTools } from './tools/diagnosis-tools.js';
 import { releaseVerifyTools } from './tools/release-verify-tools.js';
 import { environmentPreflightTools } from './tools/environment-preflight-tools.js';
 import { workflowPreflightTools } from './tools/workflow-preflight-tools.js';
@@ -137,6 +138,7 @@ export class ToolRegistry {
       ...fleetCatalogTools(context),
       ...incidentTools(context),
       ...driftTools(context),
+      ...diagnosisTools(context),
       ...releaseVerifyTools(context),
       ...environmentPreflightTools(context),
       ...workflowPreflightTools(context),

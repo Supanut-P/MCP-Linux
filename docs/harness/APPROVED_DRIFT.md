@@ -33,6 +33,7 @@ automatically resumes. SQLite migration 016 adds separate owner-isolated tables;
 older binaries ignore them. Limits are 32 snapshots per owner, 256 globally,
 20 evidence rows per snapshot, 32 KiB header and 64 KiB evidence total.
 
-v1.48 is an implementation candidate until local, Ubuntu/package, lifecycle and
-installed STDIO/HTTP gates close. This guide does not establish live fleet
-readiness, native Codex authentication or publication approval.
+v1.48 verification is closed under the [Ubuntu receipt](evidence/2026-10-03-v1.48-ubuntu.md).
+Installed fixtures and source tests have separate verification boundaries.
+This guide does not establish live fleet readiness, native Codex authentication
+or publication approval.

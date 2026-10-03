@@ -16,6 +16,7 @@ import { WORKFLOW_QA_MIGRATION_SQL } from './migrations/workflow-qa-migration.js
 import { FLEET_CATALOG_MIGRATION_SQL } from './migrations/fleet-catalog-migration.js';
 import { INCIDENT_MIGRATION_SQL } from './migrations/incident-migration.js';
 import { DRIFT_MIGRATION_SQL } from './migrations/drift-migration.js';
+import { DIAGNOSIS_MIGRATION_SQL } from './migrations/diagnosis-migration.js';
 
 export interface SqliteDatabaseOptions {
   readonly backupDirectory?: string;
@@ -69,6 +70,7 @@ export class SqliteDatabase {
     this.applyMigration({ id: '014_fleet_catalog', sql: FLEET_CATALOG_MIGRATION_SQL });
     this.applyMigration({ id: '015_incident', sql: INCIDENT_MIGRATION_SQL });
     this.applyMigration({ id: '016_drift', sql: DRIFT_MIGRATION_SQL });
+    this.applyMigration({ id: '017_diagnosis', sql: DIAGNOSIS_MIGRATION_SQL });
   }
 
   public applyMigration(migration: Migration): void {

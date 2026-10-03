@@ -53,8 +53,8 @@ import {
 } from '@baitonghub-linux-mcp/storage';
 import { SecretPolicy, WorkspacePathGuard, WorkspaceService, type Workspace } from '@baitonghub-linux-mcp/workspace';
 import { StrictWorkspaceRepository } from './strict-workspace-repository.js';
-import { DriftService, IncidentService, RemoteFleetRuntime } from '@baitonghub-linux-mcp/mcp-server';
-import { SqliteDriftRepository, SqliteIncidentRepository } from '@baitonghub-linux-mcp/storage';
+import { DiagnosisService, DriftService, IncidentService, RemoteFleetRuntime } from '@baitonghub-linux-mcp/mcp-server';
+import { SqliteDiagnosisRepository, SqliteDriftRepository, SqliteIncidentRepository } from '@baitonghub-linux-mcp/storage';
 
 export interface StdioMcpRuntime {
   readonly services: McpApplicationServices;
@@ -278,13 +278,15 @@ export function createStdioMcpRuntime(
     resultCode: 'OK', durationMs: 0,
     metadata: { ownerKey: event.ownerKey, operation: event.operation, ...(event.revision === undefined ? {} : { expectedRevision: event.revision }) },
   }));
+  const incident = new IncidentService({ repository: new SqliteIncidentRepository(database), workspaces: workspaceRepository, hosts: remoteHosts, fleet: new RemoteFleetRuntime(capabilityService, async event => auditService.record({
+    actorId: actor.clientId, actorName: actor.clientName, action: 'incident_probe', targetSummary: `host:${event.hostId}`, resultCode: event.resultCode, durationMs: event.durationMs, metadata: { operation: event.operation, truncated: event.truncated ?? false },
+  })), catalog: fleetCatalog, metrics: runtimeMetrics, changes: workspaceChanges, profileProvider });
   const services: McpApplicationServices = {
+    diagnosis: new DiagnosisService({ repository: new SqliteDiagnosisRepository(database), incidents: incident, profileProvider }),
     drift: new DriftService({ repository: new SqliteDriftRepository(database), workspaces: workspaceRepository, hosts: remoteHosts, fleet: new RemoteFleetRuntime(capabilityService, async event => auditService.record({
       actorId: actor.clientId, actorName: actor.clientName, action: 'drift_probe', targetSummary: `host:${event.hostId}`, resultCode: event.resultCode, durationMs: event.durationMs, metadata: { operation: event.operation, truncated: event.truncated ?? false },
     })), profileProvider }),
-    incident: new IncidentService({ repository: new SqliteIncidentRepository(database), workspaces: workspaceRepository, hosts: remoteHosts, fleet: new RemoteFleetRuntime(capabilityService, async event => auditService.record({
-      actorId: actor.clientId, actorName: actor.clientName, action: 'incident_probe', targetSummary: `host:${event.hostId}`, resultCode: event.resultCode, durationMs: event.durationMs, metadata: { operation: event.operation, truncated: event.truncated ?? false },
-    })), catalog: fleetCatalog, metrics: runtimeMetrics, changes: workspaceChanges, profileProvider }),
+    incident,
     workflowPlan,
     workflowState: new WorkflowStateService(workspaceRepository, new SqliteWorkflowRepository(database), profileProvider),
     fleetCatalog,

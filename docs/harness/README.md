@@ -4,9 +4,11 @@ v1.47 incident workspace verification is closed under its
 [contract](contracts/v1.47-incident-workspace.md), [caller guide](INCIDENT_WORKSPACE.md)
 and [Ubuntu receipt](evidence/2026-10-03-v1.47-ubuntu.md). Independent QA verified
 733 source files, 20 implementation hashes and 67 artifacts. The configured VM
-runs accepted 1.47.0. v1.48 approved baseline drift is an implementation candidate
-under its [contract](contracts/v1.48-approved-drift.md) and
-[caller guide](APPROVED_DRIFT.md); local and Ubuntu/package closure remain open.
+runs accepted 1.48.0. Approved baseline drift verification is closed under its
+[contract](contracts/v1.48-approved-drift.md), [caller guide](APPROVED_DRIFT.md) and
+[Ubuntu receipt](evidence/2026-10-03-v1.48-ubuntu.md): 749 frozen source files,
+17 implementation fingerprints and 72 artifacts independently verified. v1.49
+diagnosis workflow may begin.
 No publication is approved.
 
 The authoritative [v2 roadmap](../superpowers/plans/2026-09-30-mcp-linux-v2-roadmap.md)

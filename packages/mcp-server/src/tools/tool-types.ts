@@ -60,6 +60,7 @@ export interface McpRuntimeTiming {
 }
 
 export interface McpApplicationServices {
+  readonly diagnosis?: Pick<import('../diagnosis-service.js').DiagnosisService, 'execute'>;
   readonly drift?: Pick<import('../drift-service.js').DriftService, 'execute'>;
   readonly incident?: Pick<import('../incident-service.js').IncidentService, 'execute'>;
   readonly fleetCatalog?: Pick<import('@baitonghub-linux-mcp/application').FleetCatalogService, 'execute'>;

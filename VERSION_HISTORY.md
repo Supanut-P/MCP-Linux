@@ -104,3 +104,10 @@ provenance, as recorded in each linked receipt.
 [Import/source evidence](docs/harness/evidence/2026-10-04-ordered-git-history.json).
 Personal owner coding/incident trials remain unreported; milestone delivery
 was approved from the reviewed technical evidence. Token savings were not achieved.
+
+Git delivery correction: the first import normalized LICENSE line endings,
+which failed the exact reviewed-license pin on a fresh Linux checkout. Current
+main preserves LICENSE and skill document bytes via scoped Git attributes.
+Historical imports from v1.40 require this correction before verified skill
+loading; original raw-byte Ubuntu package evidence remains unchanged.
+[Correction and fresh-checkout regression](docs/harness/evidence/2026-10-04-git-provenance-correction.json).

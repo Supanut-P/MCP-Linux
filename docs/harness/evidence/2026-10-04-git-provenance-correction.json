@@ -1,0 +1,36 @@
+{
+  "rootCause": "Git CRLF normalization changed the reviewed LICENSE hash. Registry correctly failed closed; permissions and pin checks unchanged.",
+  "files": [
+    {
+      "path": "LICENSE",
+      "sha256": "0c9743c18bc3018ab934818eb1481ba790c29b07814d20e7db3e60fd6b626dc8",
+      "stagedBytesMatchReviewedWorkingBytes": true
+    },
+    {
+      "path": "docs/skills/mcp-linux-development/SKILL.md",
+      "sha256": "fc79f183e47bc02a86caf0f604f9708981281f9589004b39210f392a8b932055",
+      "stagedBytesMatchReviewedWorkingBytes": true
+    },
+    {
+      "path": "docs/skills/mcp-linux-incident/SKILL.md",
+      "sha256": "dde2f7a84e41cafc270d13a0274caf4f590671379be66a3b7d7abb08186c5f85",
+      "stagedBytesMatchReviewedWorkingBytes": true
+    },
+    {
+      "path": "docs/skills/mcp-linux-release/SKILL.md",
+      "sha256": "30e91550dfa1c23b788ef624d83e9c415ec80cd30e78d597ea07a3db35782d82",
+      "stagedBytesMatchReviewedWorkingBytes": true
+    }
+  ],
+  "fix": "Scoped -text for exact reviewed LICENSE/skill documents",
+  "failedCiRun": 37145408328,
+  "regression": {
+    "environment": "disposable Ubuntu24.04 fresh staged-Git tree archive",
+    "stagedTree": "d1205160b5f6fca47339555c82e05051eae8d91d",
+    "testsPassed": 7,
+    "testsFailed": 0,
+    "logPath": "dist/push-history/git-checkout-regression.log",
+    "logSha256": "f015568f87d00ab3ac3fee6d945c344651cd66695d41879b66c8ec65cbef1eb1"
+  },
+  "boundary": "The original raw-byte Ubuntu package proofs remain unchanged. Ordered historical Git imports normalized LICENSE; commits from v1.40 through the first v2 import need this exact-byte LICENSE/attributes correction before verified skill loading. Current main is corrected without force-rewriting public history. No runtime pin or permission check changed."
+}

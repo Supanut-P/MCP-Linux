@@ -193,5 +193,7 @@
   "boundary": "Ordered history reconstructed from verified snapshots with normal Git text normalization; commit dates reflect this import, not fabricated original dates. Binary artifacts retain their original private-lab source commit and hashes; this push publishes source history, not GitHub releases.",
   "ownerApprovalDate": "2026-10-04",
   "ownerApprovalScope": "Git push of all verified versions to existing origin/main",
-  "publicationApproval": "not-granted"
+  "publicationApproval": "not-granted",
+  "gitLicenseNormalizationCorrection": "2026-10-04-git-provenance-correction.json",
+  "historicalCheckoutBoundary": "The original raw-byte Ubuntu package proofs remain unchanged. Ordered historical Git imports normalized LICENSE; commits from v1.40 through the first v2 import need this exact-byte LICENSE/attributes correction before verified skill loading. Current main is corrected without force-rewriting public history. No runtime pin or permission check changed."
 }

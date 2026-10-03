@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { err, ok, type AppError, type Result } from '@baitonghub-linux-mcp/domain';
 import type { FileActor, GitService, SearchService } from '@baitonghub-linux-mcp/application';
+import { isContextSourcePath } from '@baitonghub-linux-mcp/application';
 import { classifyContextPath } from '@baitonghub-linux-mcp/search';
 import type { McpApplicationServices } from './tools/tool-types.js';
 import { ContextEconomyRuntime, type ContextEconomyStats, type ContextDeliveryKind } from './context-economy.js';
@@ -174,6 +175,36 @@ export class ContextEngine {
     private readonly actor: FileActor,
     private readonly economy: ContextEconomyRuntime = new ContextEconomyRuntime(),
   ) {}
+
+  /** Discovery only: packets reread content and never inherit v1 delivery state. */
+  public async discoverPacketCandidates(request: {
+    readonly query: string;
+    readonly workspaceId: string;
+    readonly path?: string;
+    readonly intent?: ContextIntent;
+    readonly maxCandidates?: number;
+  }, signal?: AbortSignal): Promise<Result<{
+    readonly candidates: readonly Pick<ContextFile, 'path' | 'reason' | 'gitRelevance' | 'testRelevance'>[];
+    readonly searchTruncated: boolean;
+  }>> {
+    const cancelled = (): Result<never> => err({ code: 'PROCESS_TIMEOUT', message: 'Context discovery was cancelled', recoverable: true });
+    if (signal?.aborted) return cancelled();
+    if (typeof request.workspaceId !== 'string' || request.workspaceId.trim().length === 0
+      || Buffer.byteLength(request.workspaceId, 'utf8') > 128
+      || typeof request.query !== 'string' || request.query.trim().length === 0
+      || Buffer.byteLength(request.query, 'utf8') > 4096 || request.query.includes('\0')
+      || (request.maxCandidates !== undefined && (!Number.isInteger(request.maxCandidates) || request.maxCandidates < 1 || request.maxCandidates > 100))) {
+      return err({ code: 'INVALID_INPUT', message: 'Packet discovery request is invalid', recoverable: false });
+    }
+    const collected = await this.collectWorkspace(request.workspaceId, { ...request, mode: 'optimized', includeIgnored: false }, true);
+    if (signal?.aborted) return cancelled();
+    if (!collected.ok) return collected;
+    const limit = request.maxCandidates ?? 100;
+    return ok({
+      candidates: collected.value.candidates.slice(0, limit).map(({ path, reason, gitRelevance, testRelevance }) => ({ path, reason, gitRelevance, testRelevance })),
+      searchTruncated: collected.value.searchTruncated || collected.value.candidates.length > limit,
+    });
+  }
 
   public async collect(request: WorkspaceContextRequest): Promise<Result<WorkspaceContextResult>> {
     this.economy.beginRequest();
@@ -401,7 +432,7 @@ export class ContextEngine {
     return ok(ids);
   }
 
-  private async collectWorkspace(workspaceId: string, request: WorkspaceContextRequest): Promise<Result<WorkspaceCollection>> {
+  private async collectWorkspace(workspaceId: string, request: WorkspaceContextRequest, packetDiscovery = false): Promise<Result<WorkspaceCollection>> {
     if (this.services.search === undefined) return err({ code: 'INTERNAL_ERROR', message: 'Search service is unavailable', recoverable: true });
     const limit = SEARCH_LIMIT[request.mode ?? 'optimized'];
     const searchTextPromise = this.safeSearchText(workspaceId, request, limit);
@@ -410,10 +441,11 @@ export class ContextEngine {
     const [textResult, filesResult, gitResult] = await Promise.all([searchTextPromise, searchFilesPromise, gitPromise]);
     if (!textResult.ok && !filesResult.ok) return err(textResult.error);
 
+    const keyPath = packetDiscovery ? (value: string): string => value.replace(/\\/g, '/') : normalizePath;
     const changed = new Set<string>();
     if (gitResult.ok) {
       for (const entry of gitResult.value.entries) {
-        if (typeof entry.path === 'string') changed.add(normalizePath(entry.path));
+        if (typeof entry.path === 'string') changed.add(keyPath(entry.path));
       }
     }
     const candidates = new Map<string, {
@@ -425,7 +457,7 @@ export class ContextEngine {
     const query = request.query.toLowerCase();
     if (textResult.ok) {
       for (const match of textResult.value.matches) {
-        const key = normalizePath(match.path);
+        const key = keyPath(match.path);
         const current = candidates.get(key) ?? { path: match.path, matches: [], score: 0, fromFilename: false };
         current.matches.push({ workspaceId, path: match.path, line: match.line, text: match.text });
         current.score += 12 + (match.text.toLowerCase().includes(query) ? 8 : 0);
@@ -434,7 +466,7 @@ export class ContextEngine {
     }
     if (filesResult.ok) {
       for (const pathValue of filesResult.value.paths) {
-        const key = normalizePath(pathValue);
+        const key = keyPath(pathValue);
         const current = candidates.get(key) ?? { path: pathValue, matches: [], score: 0, fromFilename: false };
         current.fromFilename = true;
         if (pathValue.toLowerCase().includes(query)) current.score += 25;
@@ -450,12 +482,15 @@ export class ContextEngine {
 
     const ranked = [...candidates.values()]
       .filter((candidate) => {
-        const allowed = request.includeIgnored === true || changed.has(normalizePath(candidate.path)) || classifyContextPath(candidate.path, 'automatic').discoverable;
-        if (!allowed) this.economy.recordSkipped(candidate.path);
+        const discoverable = classifyContextPath(candidate.path, 'automatic').discoverable;
+        const allowed = packetDiscovery
+          ? discoverable && isContextSourcePath(candidate.path)
+          : request.includeIgnored === true || changed.has(keyPath(candidate.path)) || discoverable;
+        if (!allowed && !packetDiscovery) this.economy.recordSkipped(candidate.path);
         return allowed;
       })
       .map((candidate): Candidate => {
-      const normalized = normalizePath(candidate.path);
+      const normalized = keyPath(candidate.path);
       const gitRelevance: ContextFile['gitRelevance'] = changed.has(normalized)
         ? 'changed'
         : candidate.matches.length > 0 ? 'related' : 'none';

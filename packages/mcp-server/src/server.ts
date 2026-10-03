@@ -5,6 +5,7 @@ import { APP_NAME, APP_VERSION, type DestructiveAutoApprovalPolicy } from '@bait
 import { readTraceContext, type ActivitySink, type ActivityTracker } from './activity-tracker.js';
 import { withProgressHeartbeat, type ProgressNotifyContext } from './progress-heartbeat.js';
 import { IncrementalVerifier } from './incremental-verifier.js';
+import type { ContextPacketStore } from './context-packet-store.js';
 import { RunBudgetGuard, type RunBudgetContext } from './run-budget.js';
 import { registerTasksProtocol } from './tasks-protocol.js';
 import { TaskCreationAdapter, type TaskAugmentedCallRequest } from './task-creation.js';
@@ -32,6 +33,8 @@ export interface McpServerOptions {
   readonly codexToolsEnabled?: boolean;
   /** Shared across per-request server factories so repeated diff fingerprints can hit cache. */
   readonly incrementalVerifier?: IncrementalVerifier;
+  /** Bounded process-local task packets shared across transport request factories. */
+  readonly contextPacketStore?: ContextPacketStore;
   /** Shared across per-request server factories so the run clock starts at the first tool call. */
   readonly runBudgetGuard?: RunBudgetGuard;
 }
@@ -51,6 +54,7 @@ export function createMcpServer(options: McpServerOptions): McpServer {
     ...(options.activeProjectProvider === undefined ? {} : { activeProjectProvider: options.activeProjectProvider }),
     ...(options.codexToolsEnabled === undefined ? {} : { codexToolsEnabled: options.codexToolsEnabled }),
     ...(options.incrementalVerifier === undefined ? {} : { incrementalVerifier: options.incrementalVerifier }),
+    ...(options.contextPacketStore === undefined ? {} : { contextPacketStore: options.contextPacketStore }),
   });
   const runBudgetGuard = options.runBudgetGuard ?? new RunBudgetGuard();
   // MCP Tasks exposes existing durable shell work and the standard
@@ -69,7 +73,8 @@ export function createMcpServer(options: McpServerOptions): McpServer {
     const result = await withProgressHeartbeat(dispatchContext, toolName, async () => (
       registry.invoke(toolName, input, readTraceContext(context as Parameters<typeof readTraceContext>[0])) as unknown as Promise<CallToolResult>
     ));
-    return runBudgetGuard.finish(dispatchContext, result) as unknown as McpToolResponse;
+    const packetTool = ['workspace_context_packet', 'workspace_context_packet_continue', 'workspace_context_packet_resolve'].includes(toolName);
+    return runBudgetGuard.finish(dispatchContext, result, packetTool) as unknown as McpToolResponse;
   };
   for (const tool of registry.list()) {
     const registeredTool = server.registerTool(tool.name, {

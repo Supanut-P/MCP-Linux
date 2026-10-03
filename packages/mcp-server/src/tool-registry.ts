@@ -6,6 +6,7 @@ import { DEFAULT_DESTRUCTIVE_AUTO_APPROVAL_POLICY, type DestructiveAutoApprovalP
 import { ActivityTracker, summarizeToolTarget, type ActivitySink, type TraceContext } from './activity-tracker.js';
 import { createApprovalReceipt, type ApprovalReceipt } from './approval-receipt.js';
 import { ContextEngine } from './context-engine.js';
+import type { ContextPacketStore } from './context-packet-store.js';
 import { ContextEconomyRuntime } from './context-economy.js';
 import { hasExplicitUserConfirmation, inspectDestructiveOperation } from './destructive-policy.js';
 import { isScopedAutoApprovalAllowed, type WorkspaceScope } from './destructive-scope.js';
@@ -14,6 +15,7 @@ import { IncrementalVerifier } from './incremental-verifier.js';
 import { mapError, mapResult, type McpToolResponse } from './result-mapper.js';
 import { batchTools } from './tools/batch-tools.js';
 import { contextTools } from './tools/context-tools.js';
+import { contextPacketTools } from './tools/context-packet-tools.js';
 import { filePageTools } from './tools/file-page-tools.js';
 import { workspaceIndexTools } from './tools/workspace-index-tools.js';
 import { upgradeTools } from './tools/upgrade-tools.js';
@@ -67,6 +69,7 @@ export interface ToolRegistryOptions {
   /** Exposes quota-consuming Codex delegation tools. Disabled unless explicitly enabled. */
   readonly codexToolsEnabled?: boolean;
   readonly incrementalVerifier?: IncrementalVerifier;
+  readonly contextPacketStore?: ContextPacketStore;
   readonly maxToolDurationMs?: number;
 }
 
@@ -137,6 +140,7 @@ export class ToolRegistry {
       ...skillTools(context),
       ...mcpBridgeTools(context),
       ...contextTools(context, contextEngine),
+      ...contextPacketTools(context, contextEngine, this.sessionId, options.contextPacketStore),
       ...filePageTools(filePageEngine),
       ...workspaceIndexTools(context),
       ...sessionTools(context, incrementalVerifier),
@@ -340,7 +344,7 @@ export class ToolRegistry {
             )));
           }, responseBudgetMs);
         }
-        operation = tool.execute(input, controller.signal).then(mapResult);
+        operation = tool.execute(input, controller.signal).then(result => mapResult(result, tool.resultMetadata));
         void operation.then(
           finish,
           reject,

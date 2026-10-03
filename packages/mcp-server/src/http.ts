@@ -12,6 +12,7 @@ import {
 import { createMcpServer, type McpServerOptions } from './server.js';
 import { createHttpRequestScope, createProtocolHttpRequestScope } from './request-scope.js';
 import { IncrementalVerifier } from './incremental-verifier.js';
+import { ContextPacketStore } from './context-packet-store.js';
 import { RunBudgetGuard } from './run-budget.js';
 import { createOriginPolicy, type OriginPolicy } from './origin-policy.js';
 
@@ -165,11 +166,13 @@ function sessionNotFoundResponse(): Response {
 function createSessionfulMcpHandler(options: McpHttpServerOptions): McpHttpHandler {
   const runBudgetGuard = options.runBudgetGuard ?? new RunBudgetGuard();
   const incrementalVerifier = options.incrementalVerifier ?? new IncrementalVerifier();
+  const contextPacketStore = options.contextPacketStore ?? new ContextPacketStore();
   const endpointFallbackSessionId = randomUUID();
   const factory = (request?: Request): McpServer => createMcpServer({
     ...options,
     runBudgetGuard,
     incrementalVerifier,
+    contextPacketStore,
     requestScope: createHttpRequestScope({ ...(request === undefined ? {} : { request }), fallbackSessionId: endpointFallbackSessionId }),
   });
   const modernHandler = createMcpHandler((context) => factory(context.requestInfo), { legacy: 'reject', onerror: writeDiagnostic });
@@ -189,6 +192,7 @@ function createSessionfulMcpHandler(options: McpHttpServerOptions): McpHttpHandl
       ...options,
       runBudgetGuard,
       incrementalVerifier,
+      contextPacketStore,
       requestScope: createProtocolHttpRequestScope(protocolSessionId),
     });
     let registeredSessionId: string | undefined;
@@ -239,6 +243,7 @@ function createSessionfulMcpHandler(options: McpHttpServerOptions): McpHttpHandl
       if (closed) return;
       closed = true;
       await modernHandler.close();
+      if (options.contextPacketStore === undefined) contextPacketStore.clear();
       const activeSessions = [...sessions.entries()];
       sessions.clear();
       await Promise.allSettled(activeSessions.map(([, session]) => session.server.close()));

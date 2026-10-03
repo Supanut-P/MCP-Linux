@@ -285,6 +285,7 @@ export function createStdioMcpRuntime(
     }),
     project: projectService,
     file: fileService,
+    contextFile: fileService,
     search: new SearchService(workspaceRepository),
     workspaceIndex,
     workspaceChanges,

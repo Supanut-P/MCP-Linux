@@ -20,6 +20,9 @@ import { isProtectedCriticalPath } from '@baitonghub-linux-mcp/shared';
 import { isWithin, WorkspacePathGuard, type Workspace, type WorkspaceRepository } from '@baitonghub-linux-mcp/workspace';
 import type { CheckpointServicePort } from './checkpoint-service.js';
 import { resolveSharedWorkspace, resolveWorkspaceForPath } from './workspace-locator.js';
+import { readContextFile, type ContextFileRequest, type ContextSource } from './context-file-reader.js';
+
+export type { ContextFileRequest, ContextSource } from './context-file-reader.js';
 
 export interface FileActor {
   readonly clientId: string;
@@ -200,6 +203,45 @@ export class FileService {
     const readResult = await this.reader.read(absolute, request);
     if (!readResult.ok) return readResult;
     return ok({ path: resolved.value.relativePath, ...readResult.value, encoding: 'utf8' });
+  }
+
+  public async readContextFile(
+    actor: FileActor,
+    workspaceId: string,
+    request: ContextFileRequest,
+    signal?: AbortSignal,
+  ): Promise<Result<ContextSource>> {
+    void actor;
+    if (isAborted(signal)) return err(appError('PROCESS_TIMEOUT', 'Context file read was cancelled', true));
+    if (typeof workspaceId !== 'string' || workspaceId.length === 0 || workspaceId.length > 128 || workspaceId.includes('\0')) {
+      return err(appError('INVALID_INPUT', 'Workspace id is invalid'));
+    }
+    if (typeof request?.path !== 'string') return err(appError('INVALID_INPUT', 'Context file path is invalid'));
+    const maxBytes = request.maxBytes ?? 256 * 1024;
+    if (!Number.isInteger(maxBytes) || maxBytes < 1 || maxBytes > 2 * 1024 * 1024) {
+      return err(appError('INVALID_INPUT', 'maxBytes must be an integer from 1 through 2097152'));
+    }
+    try {
+      const workspace = await this.workspaces.get(workspaceId);
+      if (isAborted(signal)) return err(appError('PROCESS_TIMEOUT', 'Context file read was cancelled', true));
+      if (workspace === null) return err(appError('WORKSPACE_NOT_FOUND', 'Workspace was not found'));
+      const resolved = await this.guard.resolveForRead(workspace, request.path);
+      if (isAborted(signal)) return err(appError('PROCESS_TIMEOUT', 'Context file read was cancelled', true));
+      if (!resolved.ok) return resolved;
+      return readContextFile({
+        path: resolved.value.realPath ?? resolved.value.absolutePath,
+        relativePath: resolved.value.relativePath,
+        rootPath: workspace.rootPath,
+        maxBytes,
+        ...(signal === undefined ? {} : { signal }),
+        revalidate: async () => {
+          const fresh = await this.guard.resolveForRead(workspace, request.path);
+          return fresh.ok ? fresh.value.realPath ?? fresh.value.absolutePath : null;
+        },
+      });
+    } catch {
+      return err(appError('INTERNAL_ERROR', 'Context file could not be read', true));
+    }
   }
 
   public async readFiles(actor: FileActor, workspaceId: string | undefined, request: ReadFilesRequest): Promise<Result<ReadFilesResult>> {

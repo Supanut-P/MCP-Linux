@@ -57,7 +57,7 @@ export class RunBudgetGuard {
   }
 
   /** Appends the budget warning as the final content block after the threshold. */
-  public finish(context: RunBudgetContext | undefined, result: CallToolResult): CallToolResult {
+  public finish(context: RunBudgetContext | undefined, result: CallToolResult, recountPacket = false): CallToolResult {
     const now = this.now();
     const key = resolveRunBudgetKey(context);
     const state = this.states.get(key);
@@ -69,10 +69,23 @@ export class RunBudgetGuard {
     if (now - state.startedAt < this.warningAfterMs) return result;
     const last = result.content.at(-1);
     if (last?.type === 'text' && last.text === RUN_BUDGET_WARNING) return result;
-    return {
+    const warned: CallToolResult = {
       ...result,
       content: [...result.content, { type: 'text', text: RUN_BUDGET_WARNING }],
     };
+    const structured = result.structuredContent;
+    if (!recountPacket || result.isError === true || typeof structured !== 'object' || structured === null || !('serializedBytes' in structured) || typeof structured.serializedBytes !== 'number' || result.content[0]?.type !== 'text') return warned;
+    // Packet fitting reserved this required block before committing delivery
+    // history. Report the final normalized result, including its warning.
+    let packet = { ...structured, serializedBytes: 0 };
+    let recounted = warned;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      recounted = { ...warned, content: [{ type: 'text', text: JSON.stringify(packet) }, ...warned.content.slice(1)], structuredContent: packet };
+      const bytes = Buffer.byteLength(JSON.stringify(recounted), 'utf8');
+      if (packet.serializedBytes === bytes) return recounted;
+      packet = { ...packet, serializedBytes: bytes };
+    }
+    return recounted;
   }
 
   private prune(now: number, currentKey: string): void {

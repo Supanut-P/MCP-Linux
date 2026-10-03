@@ -72,6 +72,7 @@ export interface McpApplicationServices {
   readonly projectSnapshot?: ProjectSnapshotPort;
   readonly project?: Pick<ProjectService, 'detect'>;
   readonly file?: Pick<FileService, 'readFile' | 'readFiles' | 'writeFile' | 'applyPatch' | 'moveFile' | 'copyFile' | 'deleteFile' | 'restoreDeletedFile'>;
+  readonly contextFile?: Pick<FileService, 'readContextFile'>;
   readonly search?: Pick<SearchService, 'searchFiles' | 'searchText'>;
   readonly workspaceIndex?: Pick<WorkspaceIndexService, 'indexWorkspace' | 'status' | 'startWatch' | 'stopWatch'>;
   readonly workspaceChanges?: Pick<WorkspaceChangesService, 'snapshot' | 'diff'>;
@@ -115,6 +116,7 @@ export interface McpToolAnnotations {
 export type McpPermissionLevel = 'READ' | 'WRITE' | 'EXECUTE' | 'DANGEROUS';
 
 export interface McpToolDefinition {
+  readonly resultMetadata?: Readonly<Record<string, unknown>>;
   readonly name: string;
   readonly description: string;
   readonly permission: McpPermissionLevel;
@@ -133,6 +135,7 @@ export interface McpToolContext {
 }
 
 export interface ToolConfig<T extends z.ZodType> {
+  readonly resultMetadata?: Readonly<Record<string, unknown>>;
   readonly name: string;
   readonly description: string;
   readonly permission: McpPermissionLevel;
@@ -143,6 +146,7 @@ export interface ToolConfig<T extends z.ZodType> {
 
 export function defineTool<T extends z.ZodType>(config: ToolConfig<T>): McpToolDefinition {
   return {
+    ...(config.resultMetadata === undefined ? {} : { resultMetadata: config.resultMetadata }),
     name: config.name,
     description: config.description,
     permission: config.permission,

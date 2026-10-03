@@ -14,16 +14,18 @@ export interface McpImageContent {
 export type McpContent = McpTextContent | McpImageContent;
 
 export interface McpToolResponse {
+  readonly _meta?: Readonly<Record<string, unknown>>;
   readonly content: readonly McpContent[];
   readonly isError?: boolean;
   readonly structuredContent?: Readonly<Record<string, unknown>>;
 }
 
-export function mapResult<T>(result: Result<T>): McpToolResponse {
+export function mapResult<T>(result: Result<T>, metadata?: Readonly<Record<string, unknown>>): McpToolResponse {
   if (!result.ok) return mapError(result.error);
   const structuredContent = toStructuredContent(result.value);
   const image = extractImageContent(result.value);
   return {
+    ...(metadata === undefined ? {} : { _meta: metadata }),
     content: image === undefined
       ? [{ type: 'text', text: toText(result.value) }]
       : [image, { type: 'text', text: toText(result.value) }],

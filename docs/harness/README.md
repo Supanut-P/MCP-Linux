@@ -14,11 +14,17 @@ records installation on the approved existing tunnel VM, native connector
 calls before/after restart, and bounded known-credential checks including
 incident diagnostics. Independent QA found no remaining material findings;
 v1.37 milestone verification is closed. Publication remains unapproved.
-v1.38 implementation is now active under the
-[native workflow contract](contracts/v1.38-native-workflow.md); its gates have
-not yet all passed. The [native round receipt](evidence/2026-10-03-v1.38-native-flow.md)
-records implemented preparation, focused checks and a caller-native worker/QA
-bug-fix round. Ubuntu/package acceptance remains pending; v1.39 has not started.
+v1.38 milestone verification is also closed after independent QA under the
+[native workflow contract](contracts/v1.38-native-workflow.md).
+The [native round receipt](evidence/2026-10-03-v1.38-native-flow.md) records the
+caller-native worker/QA bugfix round; the [Ubuntu acceptance receipt](evidence/2026-10-03-v1.38-ubuntu.md)
+records full gates, package lifecycle and installed STDIO/HTTP/native connector
+checks. The configured VM now runs 1.38.0. Publication remains unapproved.
+v1.39 implementation is active under the
+[context packet contract](contracts/v1.39-context-packets.md). Independent
+implementation review approved the bounded reader, packet state, discovery and
+transport integration after the final Sol repair. Focused packet checks passed
+29 tests; full Ubuntu/package and independent closure gates remain open.
 
 The [2026-10-01 tunnel follow-up](evidence/2026-10-01-existing-tunnel.md)
 verified the previously configured host through the native connector: MCP and

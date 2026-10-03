@@ -2,8 +2,46 @@ import { describe, expect, it } from 'vitest';
 import { ok } from '@baitonghub-linux-mcp/domain';
 import type { McpApplicationServices } from './tools/tool-types.js';
 import { ContextEngine, type WorkspaceContextRequest } from './context-engine.js';
+import { ContextEconomyRuntime } from './context-economy.js';
 
 const actor = { clientId: 'context-test', clientName: 'context-test' };
+
+describe('packet discovery projection', () => {
+  it('keeps case-distinct candidates without reading or committing delivery state', async () => {
+    const base = services();
+    const economy = new ContextEconomyRuntime();
+    const engine = new ContextEngine({ ...base,
+      file: { ...base.file!, readFile: async (): Promise<never> => { throw new Error('Discovery must not read content'); } },
+      search: { ...base.search!,
+        searchText: async (): Promise<ReturnType<typeof ok>> => ok({ matches: [
+          { path: 'src/Login.ts', line: 1, text: 'old match must not escape' },
+          { path: 'src/login.ts', line: 2, text: 'another old match' },
+          { path: '.env', line: 1, text: 'excluded private match' },
+        ], truncated: false }),
+        searchFiles: async (): Promise<ReturnType<typeof ok>> => ok({ paths: ['src/Login.ts', 'src/login.ts', '.env'], truncated: false }),
+      },
+      git: { ...base.git!, status: async (): Promise<ReturnType<typeof ok>> => ok({ entries: [{ path: '.env', index: 'M', worktree: ' ' }] }) },
+    }, actor, economy);
+    const result = await engine.discoverPacketCandidates({ workspaceId: 'workspace-1', query: 'login' });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.candidates.map((file) => file.path).sort()).toEqual(['src/Login.ts', 'src/login.ts']);
+      expect(JSON.stringify(result.value)).not.toContain('old match');
+    }
+    expect(economy.snapshot().ledgerEntries).toBe(0);
+    expect(economy.snapshot().filesDiscovered).toBe(0);
+  });
+
+  it('bounds discovery and observes cancellation without returning old text', async () => {
+    const engine = new ContextEngine(services(), actor);
+    const result = await engine.discoverPacketCandidates({ workspaceId: 'workspace-1', query: 'login', maxCandidates: 1 });
+    expect(result).toMatchObject({ ok: true });
+    if (result.ok) expect(result.value.candidates.length).toBeLessThanOrEqual(1);
+    const controller = new AbortController(); controller.abort();
+    expect(await engine.discoverPacketCandidates({ workspaceId: 'workspace-1', query: 'login' }, controller.signal)).toMatchObject({ ok: false, error: { code: 'PROCESS_TIMEOUT' } });
+    expect(await engine.discoverPacketCandidates({ workspaceId: '', query: 'login' })).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+  });
+});
 
 function services(): McpApplicationServices {
   return {

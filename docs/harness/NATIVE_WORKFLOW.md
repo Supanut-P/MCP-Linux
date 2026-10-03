@@ -14,6 +14,14 @@ response establishes neither provider authentication nor model availability.
 The MCP server cannot invoke desktop collaboration APIs. `codex_run` remains
 an independent, opt-in CLI execution path with its existing permissions.
 
+## Task context packets (v1.39 candidate)
+
+The additive `workspace_context_packet` family prepares task-specific source
+context; it is currently under implementation and not accepted. The
+[context packet contract](contracts/v1.39-context-packets.md) defines budgets,
+fresh source verification and process-local reference boundaries. Existing
+`workspace_context` clients retain their accepted invocation and behavior.
+
 ## Caller sequence
 
 1. Lead defines the acceptance and file scope, obtains the prepared contract,

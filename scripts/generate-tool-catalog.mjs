@@ -13,6 +13,7 @@ const checkOnly = process.argv.includes('--check');
 const { ToolRegistry } = await import(pathToFileURL(registryModulePath).href);
 const registry = new ToolRegistry({
   workflowPlan: { execute: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Catalog schema provider only', recoverable: false } }) },
+  contextFile: { readContextFile: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Catalog schema provider only', recoverable: false } }) },
   targetCatalog: {
     list: async () => ({ ok: true, value: [] }),
     describe: async () => ({ ok: false, error: { code: 'INVALID_INPUT', message: 'Not available in catalog generation', recoverable: false } }),

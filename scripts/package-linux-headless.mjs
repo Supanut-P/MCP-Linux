@@ -17,7 +17,7 @@ const debRoot = path.join(root, 'dist', 'headless-deb');
 rmSync(packageRoot, { recursive: true, force: true });
 rmSync(debRoot, { recursive: true, force: true });
 mkdirSync(appDir, { recursive: true });
-for (const file of ['mcp-stdio.cjs', 'mcp-http.cjs', 'admin.cjs', 'baitonghub-linux-mcp-node', 'baitonghub-linux-mcp']) {
+for (const file of ['mcp-stdio.cjs', 'mcp-http.cjs', 'admin.cjs', 'workflow-benchmark.cjs', 'baitonghub-linux-mcp-node', 'baitonghub-linux-mcp']) {
   copyFileSync(path.join(buildDir, file), path.join(appDir, file));
 }
 for (const [source, destination] of [

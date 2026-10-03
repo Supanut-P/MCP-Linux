@@ -28,6 +28,7 @@ const bundle = async (entry, outfile) => build({
 await bundle('apps/cli/src/bin/mcp-stdio.ts', 'mcp-stdio.cjs');
 await bundle('apps/cli/src/bin/mcp-http.ts', 'mcp-http.cjs');
 await bundle('apps/cli/src/bin/headless-admin.ts', 'admin.cjs');
+await bundle('scripts/report-workflow-benchmark.mjs', 'workflow-benchmark.cjs');
 copyFileSync(process.execPath, path.join(output, 'baitonghub-linux-mcp-node'));
 chmodSync(path.join(output, 'baitonghub-linux-mcp-node'), 0o755);
 
@@ -48,7 +49,11 @@ fi
 if [ "\${1:-}" = "status" ] || [ "\${1:-}" = "doctor" ] || [ "\${1:-}" = "workspace" ] || [ "\${1:-}" = "database" ] || [ "\${1:-}" = "remote-host" ]; then
   exec "$NODE_BIN" "$BASE/admin.cjs" "$@"
 fi
-echo "Usage: baitonghub-linux-mcp status|doctor|workspace|database|remote-host|mcp --stdio|--http [--workspace PATH]" >&2
+if [ "\${1:-}" = "benchmark-workflow" ]; then
+  shift
+  exec "$NODE_BIN" "$BASE/workflow-benchmark.cjs" "$@"
+fi
+echo "Usage: baitonghub-linux-mcp status|doctor|workspace|database|remote-host|benchmark-workflow --evidence-dir PATH|mcp --stdio|--http [--workspace PATH]" >&2
 exit 2
 `;
 const launcherPath = path.join(output, 'baitonghub-linux-mcp');

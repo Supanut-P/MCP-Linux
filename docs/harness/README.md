@@ -70,9 +70,20 @@ v1.44 source-bound QA receipts and bounded failure routing are active under the
 [contract](contracts/v1.44-qa-receipts.md) and [caller guide](QA_RECEIPTS.md).
 Independent implementation QA passed 30 focused tests. Source candidate is
 1.44.0; [full local gates](evidence/2026-10-03-v1.44-local.md) passed.
-Ubuntu/package and installed acceptance remain open before v1.45. The approved [root capacity expansion](evidence/2026-10-03-vm39-root-capacity.md)
+The [Ubuntu closure receipt](evidence/2026-10-03-v1.44-ubuntu.md) closes
+v1.44 after independent QA verified 691 frozen files, 12 implementation hashes
+and 55 artifacts. Full Ubuntu and installed STDIO/HTTP gates, lifecycle and
+native connector restart checks passed. The configured VM runs accepted 1.44.0.
+v1.45 usage/benchmark work may begin; later milestones remain planned. The approved [root capacity expansion](evidence/2026-10-03-vm39-root-capacity.md)
 uses existing unallocated disk space and leaves approximately 17.2 GiB available
 for test work. Home LV size is unchanged.
+v1.45 bounded usage/report work is active under its
+[contract](contracts/v1.45-usage-benchmark.md) and
+[caller guide](USAGE_BENCHMARK.md). Native Windows returned-answer benchmark
+calls are retained separately; implementation QA and full release gates are
+pending. Unknown telemetry must remain null, and the experimental 25% goal is
+not a confirmed savings claim. Workflow execution and Linux native provider
+readiness remain separate boundaries.
 
 The [2026-10-01 tunnel follow-up](evidence/2026-10-01-existing-tunnel.md)
 verified the previously configured host through the native connector: MCP and

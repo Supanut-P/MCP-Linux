@@ -25,6 +25,11 @@ describe('headless Linux Secure MCP Tunnel packaging', () => {
           path.join(directory, 'admin.cjs'), command, 'list', 'argument with spaces',
         ]);
       }
+      const benchmark = spawnSync('/bin/sh', [launcher, 'benchmark-workflow', '--evidence-dir', 'fixture with spaces'], { encoding: 'utf8' });
+      expect(benchmark.status, benchmark.stderr).toBe(0);
+      expect(benchmark.stdout.trim().split('\n')).toEqual([
+        path.join(directory, 'workflow-benchmark.cjs'), '--evidence-dir', 'fixture with spaces',
+      ]);
       const unknown = spawnSync('/bin/sh', [launcher, 'unsupported-command'], { encoding: 'utf8' });
       expect(unknown.status).toBe(2);
       expect(unknown.stdout).toBe('');

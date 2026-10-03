@@ -630,8 +630,34 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "additionalProperties": false,
         "properties": {
+          "effort": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max",
+              "ultra"
+            ],
+            "type": "string"
+          },
           "instruction": {
             "minLength": 1,
+            "type": "string"
+          },
+          "model": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9.-]*$",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "lead",
+              "worker",
+              "qa",
+              "planner"
+            ],
             "type": "string"
           },
           "userConfirmed": {
@@ -660,7 +686,34 @@
       "inputSchema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "additionalProperties": false,
-        "properties": {},
+        "properties": {
+          "effort": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max",
+              "ultra"
+            ],
+            "type": "string"
+          },
+          "model": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9.-]*$",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "lead",
+              "worker",
+              "qa",
+              "planner"
+            ],
+            "type": "string"
+          }
+        },
         "type": "object"
       }
     },

@@ -51,7 +51,8 @@ semantic-version order.
 | v1.37.0 | Bounded remote fleet journal reads | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.37.0) |
 | v1.38.0 | Native task contract, role prompts and QA preparation (Ubuntu and independent QA passed) | [notes](docs/releases/v1.38.0.md) |
 | v1.39.0 | Task context packets (Ubuntu, installed transports and independent QA passed) | [notes](docs/releases/v1.39.0.md) |
-| v1.40.0 | Verified skill guidance (implementation reviewed; Ubuntu/package acceptance pending) | [notes](docs/releases/v1.40.0.md) |
+| v1.40.0 | Verified skill guidance (Ubuntu, installed transports and independent QA passed) | [notes](docs/releases/v1.40.0.md) |
+| v1.41.0 | Codex selection/results candidate (implementation QA passed; Ubuntu/package pending) | [notes](docs/releases/v1.41.0.md) |
 
 The old Windows desktop tags are intentionally not part of this sequence.
 They are not Linux releases and are not published from the Linux-only branch.

@@ -4,12 +4,14 @@ import { randomUUID } from 'node:crypto';
 import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
 import { PathExecutableResolver, type ExecutableResolver } from './executable-resolver.js';
 import { LogRingBuffer } from './ring-buffer.js';
+import { createSafeProcessEnvironment } from './safe-environment.js';
 import { createProcessTreeTerminator, type ProcessTreeTerminator } from './unix-process-tree.js';
 import type { LogQuery, ManagedProcess, ManagedProcessStart, ManagedProcessState, ProcessLogResult } from './process-types.js';
 
 const DEFAULT_TIMEOUT_MS = 60 * 60 * 1000;
 const MAX_TIMEOUT_MS = 4 * 60 * 60 * 1000;
 const START_CANCELLATION_RETRY_MS = 250;
+const TERMINATION_VERIFICATION_WAIT_MS = 5_000;
 
 interface ManagedRecord {
   readonly processId: string;
@@ -25,6 +27,7 @@ interface ManagedRecord {
   stopRequested?: 'stopped' | 'timed_out';
   terminationAttempt?: Promise<boolean>;
   terminationTarget?: 'stopped' | 'timed_out';
+  groupTerminationVerified?: boolean;
   terminationVerified?: Promise<void>;
   resolveTerminationVerified?: () => void;
 }
@@ -41,6 +44,7 @@ export class ProcessManager {
     spec: ManagedProcessStart,
     signal?: AbortSignal,
     onCreated?: (process: ManagedProcess) => void,
+    environment?: NodeJS.ProcessEnv,
   ): Promise<Result<ManagedProcess>> {
     const validation = this.validateSpec(spec);
     if (!validation.ok) return validation;
@@ -52,8 +56,10 @@ export class ProcessManager {
     const processId = randomUUID();
     const child = spawn(resolvedExecutable.value, [...spec.args], {
       cwd: spec.cwd,
-      env: createSafeEnvironment(process.env),
+      env: createSafeProcessEnvironment(environment ?? process.env),
       shell: false,
+      windowsHide: true,
+      stdio: ['ignore', 'pipe', 'pipe'],
       detached: true,
     });
     const record: ManagedRecord = {
@@ -68,6 +74,14 @@ export class ProcessManager {
     onCreated?.(this.snapshot(record));
     child.stdout?.on('data', (chunk: Buffer) => record.logs.append('stdout', chunk.toString('utf8')));
     child.stderr?.on('data', (chunk: Buffer) => record.logs.append('stderr', chunk.toString('utf8')));
+    const observeOwnership = (): void => {
+      const pid = child.pid;
+      if (pid !== undefined) {
+        try { this.terminator.observeOwnership?.(child, pid); } catch { /* Observation does not grant authority. */ }
+      }
+    };
+    child.stdout?.once('data', observeOwnership);
+    child.stderr?.once('data', observeOwnership);
     child.once('error', (error: Error & { code?: string }) => this.handleError(record, error));
     child.once('close', (exitCode: number | null) => this.handleClose(record, exitCode));
 
@@ -90,17 +104,24 @@ export class ProcessManager {
         cancellationInProgress = true;
         void (async (): Promise<void> => {
           let verified = false;
-          while (!verified) {
+          for (let attempt = 0; attempt < 2 && !verified; attempt++) {
             verified = await this.tryTerminate(record, 'stopped');
             if (!verified) {
-              if (!isChildLive(record.child)) await this.waitForVerifiedTermination(record);
               await delay(START_CANCELLATION_RETRY_MS);
             }
+          }
+          if (!verified && !await this.waitForBoundedVerification(record)) {
+            settle(err(appError('PROCESS_TIMEOUT', 'Cancellation termination could not be verified; the owned task handle remains available', true)));
+            return;
           }
           settle(cancelledStart());
         })();
       };
       child.once('spawn', () => {
+        const pid = child.pid;
+        if (pid !== undefined) {
+          try { this.terminator.captureOwnership?.(child, pid); } catch { /* stop will fail closed if launch identity was not captured */ }
+        }
         if (cancellationRequested || isAborted(signal)) {
           onAbort();
           return;
@@ -145,14 +166,15 @@ export class ProcessManager {
   public async stop(processId: string, autoRetry = false): Promise<Result<void>> {
     const record = this.records.get(processId);
     if (record === undefined) return err(appError('PROCESS_NOT_FOUND', 'Process was not found'));
-    if (record.state !== 'termination_unverified' && isTerminal(record.state)) return ok(undefined);
+    if (isVerifiedTerminal(record.state) || record.groupTerminationVerified === true) return ok(undefined);
+    if (record.state === 'failed' && record.child.pid === undefined) return ok(undefined);
     const targetState = record.terminationTarget ?? 'stopped';
     let verified = await this.tryTerminate(record, targetState);
-    while (!verified && autoRetry && isChildLive(record.child)) {
+    if (!verified && autoRetry && isChildLive(record.child)) {
       await delay(START_CANCELLATION_RETRY_MS);
       verified = await this.tryTerminate(record, targetState);
     }
-    if (!verified) await this.waitForVerifiedTermination(record);
+    if (!verified && !await this.waitForBoundedVerification(record)) return err(appError('PROCESS_TIMEOUT', 'Process termination could not be verified; retry the owned task handle', true));
     return ok(undefined);
   }
 
@@ -186,7 +208,7 @@ export class ProcessManager {
   }
 
   private async tryTerminate(record: ManagedRecord, targetState: 'stopped' | 'timed_out'): Promise<boolean> {
-    if (isVerifiedTerminal(record.state)) return true;
+    if (isVerifiedTerminal(record.state) || record.groupTerminationVerified === true) return true;
     if (record.terminationAttempt !== undefined) return record.terminationAttempt;
     const attempt = this.performTermination(record, targetState);
     record.terminationAttempt = attempt;
@@ -211,6 +233,7 @@ export class ProcessManager {
     }
     try {
       await this.terminator.stop(record.child, pid);
+      record.groupTerminationVerified = true;
       this.finish(record, targetState);
       return true;
     } catch {
@@ -252,6 +275,16 @@ export class ProcessManager {
     return record.terminationVerified;
   }
 
+  private async waitForBoundedVerification(record: ManagedRecord): Promise<boolean> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        this.waitForVerifiedTermination(record).then((): boolean => true),
+        new Promise<boolean>((resolve) => { timer = setTimeout(() => resolve(false), TERMINATION_VERIFICATION_WAIT_MS); }),
+      ]);
+    } finally { clearTimeout(timer); }
+  }
+
   private snapshot(record: ManagedRecord): ManagedProcess {
     return {
       processId: record.processId,
@@ -272,7 +305,7 @@ function isTerminal(state: ManagedProcessState): boolean {
 }
 
 function isVerifiedTerminal(state: ManagedProcessState): boolean {
-  return state === 'exited' || state === 'failed' || state === 'stopped' || state === 'timed_out';
+  return state === 'stopped' || state === 'timed_out';
 }
 
 function cancelledStart(): Result<never> {
@@ -292,13 +325,3 @@ function isChildLive(child: ChildProcess): boolean {
 }
 
 
-function createSafeEnvironment(source: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
-  const allowed = new Set([
-    'PATH', 'HOME', 'LANG', 'LC_ALL', 'LC_CTYPE', 'TMPDIR',
-    'XDG_DATA_HOME', 'XDG_CONFIG_HOME', 'XDG_STATE_HOME', 'XDG_RUNTIME_DIR',
-    'DBUS_SESSION_BUS_ADDRESS', 'DISPLAY', 'WAYLAND_DISPLAY',
-  ]);
-  return Object.fromEntries(Object.entries(source).filter(([key, value]) => {
-    return allowed.has(key) && value !== undefined;
-  }));
-}

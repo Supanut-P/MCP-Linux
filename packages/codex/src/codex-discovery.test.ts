@@ -5,6 +5,23 @@ import { err, ok, type Result } from '@baitonghub-linux-mcp/domain';
 import { CodexDiscovery, DirectCodexCommandRunner, formatCodexDiscoveryError, type CodexCommandResult, type CodexCommandRunner, type CodexExecutableResolver } from './codex-discovery.js';
 
 describe('CodexDiscovery', () => {
+  it('requires reviewed enhanced controls and never assumes future versions are compatible', async () => {
+    const resolver: CodexExecutableResolver = { resolve: async (): Promise<Result<string>> => ok('/codex') };
+    for (const version of ['0.145.0', '0.146.0', '0.147.0', '1.0.0']) {
+      const runner: CodexCommandRunner = { run: async (_exe, args): Promise<CodexCommandResult> => ({ exitCode: 0, stderr: '', stdout: args[0] === '--version' ? version : args[0] === '--help' ? 'Commands: exec' : '--model --config --json --ephemeral --sandbox --ignore-user-config --strict-config' }) };
+      const result = await new CodexDiscovery(resolver, runner).discover(undefined, true);
+      expect(result.ok && result.value.capabilities.enhanced).toBe(version === '0.146.0');
+    }
+  });
+
+  it('propagates cancellation between bounded discovery commands', async () => {
+    const controller = new AbortController();
+    let calls = 0;
+    const resolver: CodexExecutableResolver = { resolve: async (): Promise<Result<string>> => ok('/codex') };
+    const runner: CodexCommandRunner = { run: async (_exe, _args, signal): Promise<CodexCommandResult> => { expect(signal).toBe(controller.signal); calls++; controller.abort(); return { exitCode: 0, stdout: '0.146.0', stderr: '' }; } };
+    await expect(new CodexDiscovery(resolver, runner).discover(controller.signal, true)).resolves.toMatchObject({ ok: false, error: { code: 'PROCESS_TIMEOUT' } });
+    expect(calls).toBe(1);
+  });
   it('discovers version and supported instruction capabilities without reading credentials', async () => {
     const calls: { executable: string; args: readonly string[] }[] = [];
     const resolver: CodexExecutableResolver = { async resolve(): Promise<Result<string>> { return ok('/opt/codex/bin/codex'); } };

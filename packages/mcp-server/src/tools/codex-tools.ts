@@ -1,5 +1,11 @@
 import { defineTool, missingService, type McpToolContext, type McpToolDefinition } from './tool-types.js';
 import { codexRunSchema, codexStatusSchema, codexTaskHandleSchema, codexTaskLogsSchema } from './schemas.js';
+import type { CodexRunOptions } from '@baitonghub-linux-mcp/codex';
+
+function selectionOptions(input: { readonly role?: CodexRunOptions['role']; readonly model?: string | undefined; readonly effort?: CodexRunOptions['effort'] }): CodexRunOptions | undefined {
+  if (input.role === undefined && input.model === undefined && input.effort === undefined) return undefined;
+  return { ...(input.role === undefined ? {} : { role: input.role }), ...(input.model === undefined ? {} : { model: input.model }), ...(input.effort === undefined ? {} : { effort: input.effort }) };
+}
 
 export const CODEX_TOOL_NAMES = Object.freeze([
   'codex_status',
@@ -18,7 +24,11 @@ export function codexTools(context: McpToolContext): McpToolDefinition[] {
       permission: 'READ',
       annotations: { readOnlyHint: true, destructiveHint: false },
       inputSchema: codexStatusSchema,
-      handler: async () => context.services.codex === undefined ? missingService() : context.services.codex.status(context.actor),
+      handler: async (input, signal) => {
+        if (context.services.codex === undefined) return missingService();
+        const options = selectionOptions(input);
+        return options === undefined ? context.services.codex.status(context.actor) : context.services.codex.status(context.actor, options, signal);
+      },
     }),
     defineTool({
       name: 'codex_run',
@@ -28,7 +38,9 @@ export function codexTools(context: McpToolContext): McpToolDefinition[] {
       inputSchema: codexRunSchema,
       handler: async (input, signal) => context.services.codex === undefined
         ? missingService()
-        : context.services.codex.run(context.actor, input.workspaceId, input.instruction, signal),
+        : selectionOptions(input) === undefined
+          ? context.services.codex.run(context.actor, input.workspaceId, input.instruction, signal)
+          : context.services.codex.run(context.actor, input.workspaceId, input.instruction, signal, selectionOptions(input)),
     }),
     defineTool({
       name: 'codex_task_list',

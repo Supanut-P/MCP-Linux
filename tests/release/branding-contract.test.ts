@@ -6,7 +6,9 @@ import { describe, expect, it } from 'vitest';
 const repositoryRoot = path.resolve(import.meta.dirname, '..', '..');
 
 describe('Baitonghub Linux MCP branding contract', () => {
-  it('uses the v0.2.0 package namespace across every workspace package', () => {
+  it('uses the branded namespace and current root version across every workspace package', () => {
+    const current = JSON.parse(readFileSync(path.join(repositoryRoot, 'package.json'), 'utf8')) as { version: string };
+    expect(current.version).toMatch(/^\d+\.\d+\.\d+$/);
     const manifests = trackedFiles().filter((file) => file === 'package.json' || /^(apps|packages)\/.+\/package\.json$/.test(file));
     expect(manifests.length).toBeGreaterThan(10);
     for (const manifest of manifests) {
@@ -16,7 +18,7 @@ describe('Baitonghub Linux MCP branding contract', () => {
       } else {
         expect(parsed.name).toMatch(/^@baitonghub-linux-mcp\//);
       }
-      expect(parsed.version).toBe('0.2.0');
+      expect(parsed.version).toBe(current.version);
     }
   });
 

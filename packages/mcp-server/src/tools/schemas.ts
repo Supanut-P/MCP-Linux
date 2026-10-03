@@ -89,8 +89,13 @@ export const workspaceRegisterSchema = z.object({
 export const processStartSchema = z.object({ workspaceId: workspaceIdSchema, executable: z.string().trim().min(1).max(1024), args: z.array(z.string().max(32_768)).max(128), cwd: pathSchema.optional(), timeoutMs: z.number().int().min(1).max(4 * 60 * 60 * 1000).optional(), userConfirmed: z.boolean().optional() }).strict();
 export const processHandleSchema = z.object({ workspaceId: workspaceIdSchema, processId: z.string().trim().min(1).max(128) }).strict();
 export const processLogsSchema = processHandleSchema.extend({ tailLines: z.number().int().min(1).max(10_000).optional(), sinceSequence: z.number().int().min(0).optional() }).strict();
-export const codexStatusSchema = z.object({}).strict();
-export const codexRunSchema = z.object({ workspaceId: workspaceIdSchema, instruction: z.string().min(1).refine((value) => Buffer.byteLength(value, 'utf8') <= MAX_INSTRUCTION_BYTES, 'Instruction is too large'), userConfirmed: z.boolean().optional() }).strict();
+const codexSelectionFields = {
+  role: z.enum(['lead', 'worker', 'qa', 'planner']).optional(),
+  model: z.string().min(1).max(128).regex(/^[a-z0-9][a-z0-9.-]*$/).optional(),
+  effort: z.enum(['low', 'medium', 'high', 'xhigh', 'max', 'ultra']).optional(),
+};
+export const codexStatusSchema = z.object(codexSelectionFields).strict();
+export const codexRunSchema = z.object({ workspaceId: workspaceIdSchema, instruction: z.string().min(1).refine((value) => Buffer.byteLength(value, 'utf8') <= MAX_INSTRUCTION_BYTES, 'Instruction is too large'), userConfirmed: z.boolean().optional(), ...codexSelectionFields }).strict();
 export const codexTaskHandleSchema = z.object({ workspaceId: workspaceIdSchema, codexTaskId: z.string().trim().min(1).max(128) }).strict();
 export const codexTaskLogsSchema = codexTaskHandleSchema.extend({ tailLines: z.number().int().min(1).max(10_000).optional(), sinceSequence: z.number().int().min(0).optional() }).strict();
 

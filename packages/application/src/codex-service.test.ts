@@ -16,6 +16,30 @@ afterEach(async () => {
 });
 
 describe('CodexService', () => {
+  it('checks independent WRITE permission before a worker can launch', async () => {
+    const workspace = await createWorkspace();
+    const adapter = fakeAdapter();
+    const service = new CodexService(repository(workspace), { adapter, permissionEngine: { decide: (_profile, request): 'DENY' | 'ALLOW' => request.level === 'WRITE' ? 'DENY' : 'ALLOW' } });
+    await expect(service.run({ clientId: 'owner', clientName: 'test' }, workspace.id, 'edit', undefined, { role: 'worker' }))
+      .resolves.toMatchObject({ ok: false, error: { code: 'PERMISSION_DENIED' } });
+    expect(adapter.starts).toHaveLength(0);
+  });
+
+  it('attaches selected results only to authorized enhanced task handles', async () => {
+    const workspace = await createWorkspace();
+    const adapter = fakeAdapter();
+    adapter.statusProcess = (): Result<ManagedProcess> => ok({ processId: 'process-1', executable: 'codex', args: [], cwd: workspace.realRootPath, state: 'exited', exitCode: 0, startedAt: new Date(0).toISOString() });
+    adapter.logs = (): Result<ProcessLogResult> => ok({ entries: [{ sequence: 1, stream: 'stdout', timestamp: new Date(0).toISOString(), text: '{"type":"item.completed","item":{"type":"agent_message","text":"verified"}}\n{"type":"turn.completed","usage":{"input_tokens":10,"cached_input_tokens":2,"output_tokens":1}}\n' }], truncated: false, nextSequence: 2 });
+    let id = 0;
+    const service = new CodexService(repository(workspace), { adapter, taskIdFactory: (): string => `task-${++id}` });
+    const owner = { clientId: 'owner', clientName: 'test', sessionId: 'session-a' };
+    await service.run(owner, workspace.id, 'review', undefined, { role: 'qa' });
+    await expect(service.taskStatus({ ...owner, sessionId: 'session-b' }, workspace.id, 'task-1')).resolves.toMatchObject({ ok: false, error: { code: 'PERMISSION_DENIED' } });
+    await expect(service.taskStatus(owner, workspace.id, 'task-1')).resolves.toMatchObject({ ok: true, value: { result: { state: 'completed', finalText: 'verified', selection: { role: 'qa' }, usage: { inputTokens: 10 } } } });
+    await service.run(owner, workspace.id, 'legacy');
+    const legacy = await service.taskStatus(owner, workspace.id, 'task-2');
+    expect(legacy.ok && Object.hasOwn(legacy.value, 'result')).toBe(false);
+  });
   it('requires EXECUTE permission before starting a Codex task and audits only metadata', async () => {
     const workspace = await createWorkspace();
     const adapter = fakeAdapter();

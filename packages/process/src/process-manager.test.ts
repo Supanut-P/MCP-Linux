@@ -14,6 +14,34 @@ async function waitForState(manager: ProcessManager, processId: string, state: s
 }
 
 describe('ProcessManager', () => {
+  it('delivers EOF to noninteractive commands instead of leaving stdin open', async () => {
+    const manager = new ProcessManager();
+    const started = await manager.start({ executable: process.execPath, args: ['-e', "process.stdin.resume(); process.stdin.on('end', () => process.stdout.write('stdin-eof'));"], cwd: process.cwd() });
+    expect(started.ok).toBe(true);
+    if (!started.ok) return;
+    await waitForState(manager, started.value.processId, 'exited');
+    expect(manager.logs(started.value.processId, {})).toMatchObject({ ok: true, value: { entries: expect.arrayContaining([expect.objectContaining({ text: 'stdin-eof' })]) } });
+  });
+  it('returns a bounded unverified stop failure and preserves the handle for an explicit retry', async () => {
+    let allowed = false;
+    const terminator: ProcessTreeTerminator = {
+      stop: async (child): Promise<void> => {
+        if (!allowed) throw new Error('identity unavailable');
+        child.kill();
+      },
+    };
+    const manager = new ProcessManager(terminator);
+    const started = await manager.start({ executable: process.execPath, args: ['-e', 'setInterval(() => {}, 1000)'], cwd: process.cwd() });
+    expect(started.ok).toBe(true);
+    if (!started.ok) return;
+    try {
+      await expect(manager.stop(started.value.processId)).resolves.toMatchObject({ ok: false, error: { code: 'PROCESS_TIMEOUT', recoverable: true } });
+      expect(manager.status(started.value.processId)).toMatchObject({ ok: true, value: { state: 'termination_unverified' } });
+    } finally {
+      allowed = true;
+      await expect(manager.stop(started.value.processId)).resolves.toMatchObject({ ok: true });
+    }
+  }, 10_000);
   it('captures stdout/stderr and retains a managed process handle', async () => {
     const manager = new ProcessManager();
     const started = await manager.start({
@@ -119,6 +147,20 @@ describe('ProcessManager', () => {
     await expect(manager.stop(started.value.processId)).resolves.toMatchObject({ ok: true });
     await expect(stopping).resolves.toMatchObject({ ok: true });
     expect(manager.status(started.value.processId)).toMatchObject({ ok: true, value: { state: 'stopped' } });
+  });
+
+  it('verifies the retained process group when the direct parent already exited', async () => {
+    let calls = 0;
+    const terminator: ProcessTreeTerminator = { async stop(): Promise<void> { calls += 1; } };
+    const manager = new ProcessManager(terminator);
+    const started = await manager.start({ executable: process.execPath, args: ['-e', 'process.exit(0)'], cwd: process.cwd() });
+    expect(started.ok).toBe(true);
+    if (!started.ok) return;
+    await waitForState(manager, started.value.processId, 'exited');
+    await expect(manager.stop(started.value.processId)).resolves.toMatchObject({ ok: true });
+    expect(calls).toBe(1);
+    await expect(manager.stop(started.value.processId)).resolves.toMatchObject({ ok: true });
+    expect(calls).toBe(1);
   });
 
   it('keeps timeout termination failures contained and retries until verified', async () => {

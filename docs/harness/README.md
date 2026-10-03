@@ -31,10 +31,24 @@ and 49 evidence hashes with no material findings. v1.39 milestone verification
 is closed; the configured VM now runs accepted 1.39.0. Publication is unapproved.
 v1.40 skill registry implementation is active under the
 [verified-guidance contract](contracts/v1.40-verified-skills.md) and
-[usage guide](VERIFIED_SKILLS.md). Local focused checks and independent
-implementation review passed. Source candidate metadata is now 1.40; its own
-Ubuntu/package/installed gate and closure remain open before v1.41. The VM
-continues to run accepted 1.39 until the candidate passes source/package gates.
+[usage guide](VERIFIED_SKILLS.md). Local checks, full Ubuntu/package/installed
+acceptance and independent closure review passed. The
+[v1.40 receipt](evidence/2026-10-03-v1.40-ubuntu.md) binds 624 raw source files
+and 47 retained artifact hashes; the configured VM now runs accepted 1.40.0.
+Publication remains unapproved. v1.41 Codex adapter is active under its
+[contract](contracts/v1.41-codex-adapter.md). The
+[native progress receipt](evidence/2026-10-03-v1.41-native-progress.md) records
+successful Windows requests with explicit available-model overrides and rejected
+default aliases. The [process repair receipt](evidence/2026-10-03-v1.41-process-repair.md)
+records 25 passing Linux process tests and independent source approval. Native
+effective-config inspection found that an empty MCP table does not disable existing
+servers. Target-specific preflight is now implemented and independently approved:
+same-environment probes verify explicit server disables, restricted role controls
+and provider routing before launch. Windows native success and unsupported-model
+receipts remain distinct from Linux provider and Ubuntu/package readiness.
+The [effective-config receipt](evidence/2026-10-03-v1.41-config-preflight.md) binds
+reviewed source, actual canaries, native requests and local verification limits.
+v1.41 requires full Ubuntu/package proof and independent closure; v1.42 is not started.
 
 The [2026-10-01 tunnel follow-up](evidence/2026-10-01-existing-tunnel.md)
 verified the previously configured host through the native connector: MCP and

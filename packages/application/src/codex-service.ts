@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { appError, err, ok, type Result } from '@baitonghub-linux-mcp/domain';
-import { CodexAdapter, type CodexStatus } from '@baitonghub-linux-mcp/codex';
+import { CodexAdapter, resolveCodexSelection, parseCodexResult, type CodexPreflightStatus, type CodexRunOptions, type ResolvedCodexSelection, type CodexStructuredResult } from '@baitonghub-linux-mcp/codex';
 import type { CodexRunAuditInput } from '@baitonghub-linux-mcp/audit';
 import { DefaultPermissionEngine, permissionProfiles, type PermissionEngine, type PermissionProfile } from '@baitonghub-linux-mcp/permissions';
 import type { LogQuery, ManagedProcess, ProcessLogResult } from '@baitonghub-linux-mcp/process';
@@ -10,8 +10,8 @@ import type { FileActor } from './file-service.js';
 export const MAX_CODEX_INSTRUCTION_BYTES = 256 * 1024;
 
 export interface CodexAdapterPort {
-  status(): Promise<Result<CodexStatus>>;
-  start(cwd: string, instruction: string, signal?: AbortSignal, onCreated?: (process: ManagedProcess) => void): Promise<Result<ManagedProcess>>;
+  status(options?: CodexRunOptions, signal?: AbortSignal): Promise<Result<CodexPreflightStatus>>;
+  start(cwd: string, instruction: string, signal?: AbortSignal, onCreated?: (process: ManagedProcess) => void, options?: CodexRunOptions, writeAllowed?: boolean): Promise<Result<ManagedProcess>>;
   statusProcess(processId: string): Result<ManagedProcess>;
   logs(processId: string, query: LogQuery): Result<ProcessLogResult>;
   stop(processId: string, autoRetry?: boolean): Promise<Result<void>>;
@@ -37,7 +37,10 @@ interface CodexTaskOwner {
   readonly sessionId: string;
   readonly workspaceId: string;
   readonly processId: string;
+  readonly selection?: ResolvedCodexSelection;
 }
+
+export type CodexTaskStatus = ManagedProcess & { readonly result?: CodexStructuredResult };
 
 export interface CodexRunResult {
   readonly codexTaskId: string;
@@ -72,15 +75,19 @@ export class CodexService {
     this.diagnostic = dependencies.diagnostic ?? ((message: string): void => { console.error(message); });
   }
 
-  public async status(actor: FileActor): Promise<Result<CodexStatus>> {
+  public async status(actor: FileActor, options?: CodexRunOptions, signal?: AbortSignal): Promise<Result<CodexPreflightStatus>> {
     void actor;
     const permission = this.permissionEngine.decide(this.profileProvider(), { action: 'codex_status', level: 'READ', workspaceId: 'system', destructive: false });
     if (permission === 'DENY') return err(appError('PERMISSION_DENIED', 'Codex status is denied'));
     if (permission === 'ASK') return err(appError('PERMISSION_REQUIRED', 'Codex status requires permission'));
-    return this.adapter.status();
+    const selection = resolveCodexSelection(options);
+    if (!selection.ok) return selection;
+    return selection.value === null ? this.adapter.status() : this.adapter.status(options, signal);
   }
 
-  public async run(actor: FileActor, workspaceId: string, instruction: string, signal?: AbortSignal): Promise<Result<CodexRunResult>> {
+  public async run(actor: FileActor, workspaceId: string, instruction: string, signal?: AbortSignal, options?: CodexRunOptions): Promise<Result<CodexRunResult>> {
+    const selection = resolveCodexSelection(options);
+    if (!selection.ok) return selection;
     if (typeof instruction !== 'string' || instruction.trim().length === 0) return err(appError('INVALID_INPUT', 'Codex instruction is required'));
     if (Buffer.byteLength(instruction, 'utf8') > MAX_CODEX_INSTRUCTION_BYTES) return err(appError('FILE_TOO_LARGE', 'Codex instruction is too large'));
     if (isAborted(signal)) return cancelledCodexRun();
@@ -93,13 +100,22 @@ export class CodexService {
     const permission = this.permissionEngine.decide(this.profileProvider(), { action: 'codex_run', level: 'EXECUTE', workspaceId, target: '.', destructive: false });
     if (permission === 'DENY') return err(appError('PERMISSION_DENIED', 'Codex execution is denied'));
     if (permission === 'ASK') return err(appError('PERMISSION_REQUIRED', 'Codex execution requires permission'));
+    const writeAllowed = selection.value?.role === 'worker';
+    if (writeAllowed) {
+      const writePermission = this.permissionEngine.decide(this.profileProvider(), { action: 'codex_run', level: 'WRITE', workspaceId, target: '.', destructive: false });
+      if (writePermission === 'DENY') return err(appError('PERMISSION_DENIED', 'Codex worker workspace writes are denied'));
+      if (writePermission === 'ASK') return err(appError('PERMISSION_REQUIRED', 'Codex worker workspace writes require permission'));
+    }
 
     if (isAborted(signal)) return cancelledCodexRun();
     const codexTaskId = this.taskIdFactory();
     const registerOwner = (process: ManagedProcess): void => {
-      this.owners.set(codexTaskId, { actorId: actor.clientId, sessionId: actorSessionId(actor), workspaceId, processId: process.processId });
+      this.owners.set(codexTaskId, { actorId: actor.clientId, sessionId: actorSessionId(actor), workspaceId, processId: process.processId, ...(selection.value === null ? {} : { selection: selection.value }) });
     };
-    const started = await this.adapter.start(root.value.realPath ?? root.value.absolutePath, instruction, signal, registerOwner);
+    const cwd = root.value.realPath ?? root.value.absolutePath;
+    const started = selection.value === null
+      ? await this.adapter.start(cwd, instruction, signal, registerOwner)
+      : await this.adapter.start(cwd, instruction, signal, registerOwner, options, writeAllowed);
     if (!started.ok) return started;
     if (isAborted(signal)) {
       await this.adapter.stop(started.value.processId, true);
@@ -110,10 +126,14 @@ export class CodexService {
     return ok({ codexTaskId, processId: started.value.processId });
   }
 
-  public async taskStatus(actor: FileActor, workspaceId: string, codexTaskId: string): Promise<Result<ManagedProcess>> {
+  public async taskStatus(actor: FileActor, workspaceId: string, codexTaskId: string): Promise<Result<CodexTaskStatus>> {
     const owner = this.authorize(actor, workspaceId, codexTaskId);
     if (!owner.ok) return owner;
-    return this.adapter.statusProcess(owner.value.processId);
+    const process = this.adapter.statusProcess(owner.value.processId);
+    if (!process.ok || owner.value.selection === undefined) return process;
+    const logs = this.adapter.logs(owner.value.processId, {});
+    if (!logs.ok) return logs;
+    return ok({ ...process.value, result: parseCodexResult(process.value, logs.value, owner.value.selection) });
   }
 
   public async list(actor: FileActor, workspaceId: string): Promise<Result<readonly CodexTaskListItem[]>> {

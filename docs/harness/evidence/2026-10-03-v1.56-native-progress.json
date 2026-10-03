@@ -1,0 +1,148 @@
+{
+  "milestone": "1.56.0",
+  "status": "native-linux-progress-rc-open",
+  "acceptedSource": "1.55.0",
+  "sourceCommit": "81d048da6caf661d204b95e8b7e23f05b3046666",
+  "sourceManifestSha256": "dbf2b94a99aa026688c0a6a556d3f2b37436dfd90299f743bf3251eaab17fb46",
+  "vm": "192.168.1.39/adminops Ubuntu 24.04 x64",
+  "cliVersion": "0.146.0",
+  "auth": {
+    "browserConfirmation": "user-confirmed",
+    "loginExitCode": 0,
+    "loginStatus": "Logged in using ChatGPT",
+    "owner": "adminops",
+    "authDirectoryMode": "700",
+    "authFileMode": "600",
+    "secretContentsReadOrExported": false
+  },
+  "model": {
+    "role": "qa",
+    "model": "gpt-5.6-sol",
+    "effort": "low"
+  },
+  "actualUsage": {
+    "inputTokens": 9320,
+    "cachedInputTokens": 0,
+    "outputTokens": 10
+  },
+  "unsupportedDefault": [
+    "MODEL_UNAVAILABLE",
+    "PROVIDER_FAILED"
+  ],
+  "installedTransports": [
+    "stdio",
+    "http"
+  ],
+  "nativeActiveTurnCancellation": "passed",
+  "rejectedProofs": [
+    "untrusted nongit fixture failed before provider output",
+    "two subprocess cancellation probes lacked actual tool execution and are retained as failures"
+  ],
+  "artifacts": [
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-launcher-integrity.json",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/evidence/launcher-integrity.json",
+      "bytes": 98,
+      "sha256": "af045b0dabad4df88a161355e32453bab482b38a3318fffb18814ad8ce8e09fb"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-platform-integrity.json",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/evidence/platform-integrity.json",
+      "bytes": 98,
+      "sha256": "6023e12a20a3146927c8ccc598bb5e647dddea5956fd1867dfab1c0df2194c53"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-cli-source.sha256",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/evidence/cli-source.sha256",
+      "bytes": 187,
+      "sha256": "36dc02b3999e136697c3406d77913430bd901aad6eeac41ba62c0f7cd934ea34"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/cli-pnpm-lock.yaml",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/cli/pnpm-lock.yaml",
+      "bytes": 2595,
+      "sha256": "22ea9bc1676ebfd77aa3df0089eb6937fe73d62b5ad62624b6f380d3811d147c"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-adapter-gpt-5.6-sol.json",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/evidence/adapter-gpt-5.6-sol.json",
+      "bytes": 1298,
+      "sha256": "5183f4aa47e5238bb811fb0c5c14e8e0ec8ec31a6765b32088b42064ef6bcc1c"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-adapter-gpt-5.6-sol-diagnostic-r2.json",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/evidence/adapter-gpt-5.6-sol-diagnostic-r2.json",
+      "bytes": 1431,
+      "sha256": "7a89d4d67fd988e0ef2c1bd959ffc4654bacc670fae70214db6925ecd52ab3bb"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-adapter-gpt-5.6-sol-trusted-r3.json",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/evidence/adapter-gpt-5.6-sol-trusted-r3.json",
+      "bytes": 1386,
+      "sha256": "0cd587bc298a776a338131b96d3810e1ccd295958f73cba3cc99f2d81602ddb4"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-adapter-gpt-5.6-sol-trusted-r3.stdout.jsonl",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/evidence/adapter-gpt-5.6-sol-trusted-r3.stdout.jsonl",
+      "bytes": 358,
+      "sha256": "fa8a20e067505426303e034df258c51dabc6dcdb2574acc5c2ca6ea7a229ac34"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-adapter-gpt-6.1-sol-trusted-r3.json",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/evidence/adapter-gpt-6.1-sol-trusted-r3.json",
+      "bytes": 1357,
+      "sha256": "c0d65c8544b7476e93121296215457724615b88cf77bd94a8884c602d0a2e3ed"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-adapter-gpt-6.1-sol-trusted-r3.stdout.jsonl",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/evidence/adapter-gpt-6.1-sol-trusted-r3.stdout.jsonl",
+      "bytes": 737,
+      "sha256": "491fc397fb32de17035144c00f573f1533d1d1874001970546230c28b4036d7c"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-native-cancellation-r1.json",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/evidence/native-cancellation-r1.json",
+      "bytes": 999,
+      "sha256": "608e6b80dea0e9cd985355ce4ea0c2bbbe94853a497ad7effd80271ec18a20e3"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-native-cancellation-r2.json",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/evidence/native-cancellation-r2.json",
+      "bytes": 999,
+      "sha256": "ddf0557dc4c19c672671f9982a3a8b458992377ab18d100b460fac114dd74b99"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-native-cancellation-r2.logs.json",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/evidence/native-cancellation-r2.logs.json",
+      "bytes": 1108,
+      "sha256": "e3bf62d27b673bded0693942ee37161669cddedc990a1ffa41ada98c7568a273"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-native-active-turn-cancellation-r3.json",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/evidence/native-active-turn-cancellation-r3.json",
+      "bytes": 1182,
+      "sha256": "3d8329fd05a5ca771dda8129474488ea833cba0c74936e56ebf4b1e0364d4835"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-installed-native-1.55.0-stdio.json",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/evidence/installed-native-1.55.0-stdio.json",
+      "bytes": 2500,
+      "sha256": "51088d84a11cd71a3f10ebb1550d9d298949c1b204eae821a3e526bf000a674f"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-installed-native-1.55.0-http.json",
+      "remotePath": "/var/tmp/mcp-linux-v156-20261003-native/evidence/installed-native-1.55.0-http.json",
+      "bytes": 2501,
+      "sha256": "5e343b677d0ae5ffaa3bd2bb66437d2d6e7c1bfe94cd4de296c48642104f7f8a"
+    }
+  ],
+  "remaining": [
+    "executable paired benchmark",
+    "actual native file-edit/tool evidence",
+    "workflow resume acceptance mapping",
+    "owner usability trials",
+    "candidate-specific full local/Ubuntu/package/lifecycle gates and independent closure QA",
+    "final 2.0 release gate and human publication approval"
+  ],
+  "boundary": "Actual Linux authentication, selected model response, installed literal-task transports and cancellation of an active CLI turn. No actual tool subprocess cancellation, server-side provider cancellation, token savings, provider-session resume, final RC closure or publication is claimed. Original failed artifacts are retained. Auth-home stays isolated on VM."
+}

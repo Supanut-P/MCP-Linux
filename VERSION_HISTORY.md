@@ -65,3 +65,10 @@ semantic-version order.
 
 The old Windows desktop tags are intentionally not part of this sequence.
 They are not Linux releases and are not published from the Linux-only branch.
+
+## v1.55.0 verified local milestone
+
+Shared diagnostic secret redaction, literal service-unit boundaries and pinned
+patched dependencies passed full local/Ubuntu/package/installed gates and
+independent QA. [Evidence](docs/harness/evidence/2026-10-03-v1.55-ubuntu.md).
+No tag or publication is approved. P1 versions151–154 remain reserved.

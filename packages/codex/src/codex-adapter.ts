@@ -4,6 +4,7 @@ import { CodexDiscovery } from './codex-discovery.js';
 import { CodexInvocationBuilder, type CodexDiscoveryResult, type CodexInvocation, type CodexStatus } from './codex-capabilities.js';
 import { resolveCodexSelection, type CodexRunOptions, type ResolvedCodexSelection } from './codex-selection.js';
 import { CodexConfigInspector, type CodexConfigInspectorPort } from './codex-config-inspector.js';
+import { DirectCodexSandboxProbe, type CodexSandboxProbePort } from './codex-sandbox-probe.js';
 
 export interface CodexPreflight {
   readonly selection: ResolvedCodexSelection;
@@ -39,6 +40,7 @@ export class CodexAdapter {
     private readonly processManager: CodexProcessManagerPort = new ProcessManager(),
     builder: CodexInvocationBuilderPort = new CodexInvocationBuilder(),
     private readonly configInspector: CodexConfigInspectorPort = new CodexConfigInspector(),
+    private readonly sandboxProbe: CodexSandboxProbePort = new DirectCodexSandboxProbe(),
   ) {
     this.builder = builder;
   }
@@ -80,6 +82,10 @@ export class CodexAdapter {
       const verified = await this.configInspector.verify(discovered.value.status.executablePath, cwd, selection.value.role === 'worker' ? 'workspace-write' : 'read-only', signal, environment);
       if (isAborted(signal)) return cancelledCodexStart();
       if (!verified.ok) return verified;
+      const sandbox = selection.value.role === 'worker' ? 'workspace-write' : 'read-only';
+      const usable = await this.sandboxProbe.verify(discovered.value.status.executablePath, cwd, sandbox, signal, environment);
+      if (isAborted(signal)) return cancelledCodexStart();
+      if (!usable.ok) return usable;
       capabilities = { ...capabilities, integrationControlsVerified: true, disabledServerIds: verified.value.disabledServerIds };
     }
     const invocation = selection.value === null

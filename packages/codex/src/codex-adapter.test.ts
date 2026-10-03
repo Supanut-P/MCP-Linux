@@ -6,6 +6,60 @@ import type { CodexDiscoveryResult } from './codex-capabilities.js';
 import type { CodexVerifiedConfig } from './codex-config-inspector.js';
 
 describe('CodexAdapter', () => {
+  it('rejects an unusable sandbox before model dispatch and passes the same effective environment', async () => {
+    let starts = 0;
+    const manager: CodexProcessManagerPort = {
+      start: async () => { starts++; return ok(processHandle()); },
+      status: () => ok(processHandle()), logs: () => ok({ entries: [], truncated: false, nextSequence: 0 }), stop: async () => ok(undefined),
+    };
+    const discovery: CodexDiscoveryPort = { discover: async () => ok({ ...discovered(), capabilities: { instructionMode: 'exec-argument', names: ['exec'], enhanced: true } }) };
+    let effectiveEnvironment: NodeJS.ProcessEnv | undefined;
+    let probes = 0;
+    const adapter = new CodexAdapter(discovery, manager, undefined,
+      { verify: async (_executable, _cwd, _sandbox, _signal, environment): Promise<Result<CodexVerifiedConfig>> => {
+        effectiveEnvironment = environment;
+        return ok({ disabledServerIds: [], configFingerprint: 'fixture' });
+      } },
+      { verify: async (executable, cwd, sandbox, _signal, environment): Promise<Result<void>> => {
+        probes++;
+        expect(executable).toBe('C:\\tools\\codex.exe');
+        expect(cwd).toBe('/workspace');
+        expect(sandbox).toBe('workspace-write');
+        expect(environment).toBe(effectiveEnvironment);
+        return err({ code: 'CODEX_NOT_AVAILABLE', message: 'Sandbox unavailable', recoverable: true, details: { stage: 'sandbox-probe' } });
+      } });
+    await expect(adapter.start('/workspace', 'fix', undefined, undefined, { role: 'worker' }, true)).resolves.toMatchObject({ ok: false, error: { code: 'CODEX_NOT_AVAILABLE', details: { stage: 'sandbox-probe' } } });
+    expect(probes).toBe(1);
+    expect(starts).toBe(0);
+  });
+
+  it('does not dispatch when cancellation arrives during sandbox verification', async () => {
+    const controller = new AbortController();
+    let starts = 0;
+    const manager: CodexProcessManagerPort = {
+      start: async () => { starts++; return ok(processHandle()); },
+      status: () => ok(processHandle()), logs: () => ok({ entries: [], truncated: false, nextSequence: 0 }), stop: async () => ok(undefined),
+    };
+    const discovery: CodexDiscoveryPort = { discover: async () => ok({ ...discovered(), capabilities: { instructionMode: 'exec-argument', names: ['exec'], enhanced: true } }) };
+    const adapter = new CodexAdapter(discovery, manager, undefined,
+      { verify: async (): Promise<Result<CodexVerifiedConfig>> => ok({ disabledServerIds: [], configFingerprint: 'fixture' }) },
+      { verify: async (): Promise<Result<void>> => { controller.abort(); return ok(undefined); } });
+    await expect(adapter.start('/workspace', 'review', controller.signal, undefined, { role: 'qa' })).resolves.toMatchObject({ ok: false, error: { code: 'PROCESS_TIMEOUT' } });
+    expect(starts).toBe(0);
+  });
+
+  it('preserves legacy invocation without adding sandbox probes', async () => {
+    let probes = 0;
+    const manager: CodexProcessManagerPort = {
+      start: async () => ok(processHandle()), status: () => ok(processHandle()),
+      logs: () => ok({ entries: [], truncated: false, nextSequence: 0 }), stop: async () => ok(undefined),
+    };
+    const discovery: CodexDiscoveryPort = { discover: async () => ok(discovered()) };
+    const adapter = new CodexAdapter(discovery, manager, undefined, undefined, { verify: async (): Promise<Result<void>> => { probes++; return ok(undefined); } });
+    await expect(adapter.start('/workspace', 'legacy instruction')).resolves.toMatchObject({ ok: true });
+    expect(probes).toBe(0);
+  });
+
   it('does not launch after cancellation during effective-config verification', async () => {
     const controller = new AbortController();
     let starts = 0;
@@ -38,7 +92,7 @@ describe('CodexAdapter', () => {
       status: () => ok(processHandle()), logs: () => ok({ entries: [], truncated: false, nextSequence: 0 }), stop: async () => ok(undefined),
     };
     const discovery: CodexDiscoveryPort = { discover: async () => ok({ ...discovered(), capabilities: { instructionMode: 'exec-argument', names: ['exec'], enhanced: true, integrationControlsVerified: true } }) };
-    const adapter = new CodexAdapter(discovery, manager, undefined, { verify: async (): Promise<Result<CodexVerifiedConfig>> => ok({ disabledServerIds: ['registered'], configFingerprint: 'fixture' }) });
+    const adapter = new CodexAdapter(discovery, manager, undefined, { verify: async (): Promise<Result<CodexVerifiedConfig>> => ok({ disabledServerIds: ['registered'], configFingerprint: 'fixture' }) }, { verify: async (): Promise<Result<void>> => ok(undefined) });
     await expect(adapter.status({ role: 'qa' })).resolves.toMatchObject({ ok: true, value: { preflight: { localReady: false, reasonCodes: ['workspace_preflight_required'], authentication: 'unknown', accountAvailability: 'unknown', evidence: 'cli_help_only' } } });
     await adapter.start('workspace', 'review --danger', undefined, undefined, { role: 'qa', effort: 'high' });
     expect(calls[0]?.args).toContain('gpt-6.1-sol');

@@ -1,0 +1,196 @@
+{
+  "milestone": "1.56.0",
+  "status": "local-passed-ubuntu-open",
+  "implementationReview": "v156_acceptance_audit scoped approval; test return annotations added after review with no behavior change",
+  "sources": [
+    {
+      "path": "packages/codex/src/codex-sandbox-probe.ts",
+      "sha256": "53f00e9632ba0457180a9ab671edb43699d7d91b584dbcbed15ae66c241e4b44"
+    },
+    {
+      "path": "packages/codex/src/codex-sandbox-probe.test.ts",
+      "sha256": "9ad4c8fb80db64d8f304d99e361241f65bb4b295c56136a3a72e57147d34482c"
+    },
+    {
+      "path": "packages/codex/src/codex-adapter.ts",
+      "sha256": "55dc9d17da644f0be015d06fc9d42f355f68dcc8a9e696bc8189b47538d1f4e1"
+    },
+    {
+      "path": "packages/codex/src/codex-adapter.test.ts",
+      "sha256": "65315724eb613df5e7ee2aaf5a57ba939e865e7abea41d117d0673fbaf86c532"
+    },
+    {
+      "path": "packages/codex/src/index.ts",
+      "sha256": "6a9ae818617fff9d60ec4e67a44a447fb32e295152ac92699299f38239e57fae"
+    },
+    {
+      "path": "packages/codex/src/codex-config-policy.ts",
+      "sha256": "227f14347d768165d161a9adeb2ea53bd048996407539f7e81781d49de29ac3b"
+    },
+    {
+      "path": "packages/process/src/process-manager.ts",
+      "sha256": "ff81e25d3d94152431abd2aed9e94bfe93aa9f0e2adfc3bdbdfdb41eb9fa217d"
+    },
+    {
+      "path": "packages/process/src/safe-environment.ts",
+      "sha256": "3fe6cff1d48b9d308cd122d29d9f395af609c56a4f97bbf118c5750ee61c805a"
+    },
+    {
+      "path": "package.json",
+      "sha256": "e063b624bdf80b7ea8ecb1c2bec738b1c350b5ce2207184cec3dfcb3496047ae"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "8f84201f29fe36339a8462f107fcfbe8ba79d25a2d3059118916a984702c9ff4"
+    },
+    {
+      "path": "packages/shared/src/index.ts",
+      "sha256": "feb4ae371d03294212db0d31dd0ba8a35ff284a54b483b44d44e4e311adef5ac"
+    }
+  ],
+  "gates": [
+    {
+      "name": "typecheck",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--build"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 280
+    },
+    {
+      "name": "lint",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "."
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 11266
+    },
+    {
+      "name": "focused",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages/codex/src/codex-sandbox-probe.test.ts",
+        "packages/codex/src/codex-adapter.test.ts",
+        "packages/capabilities/src/dbus-introspection.test.ts",
+        "packages/capabilities/src/remote-host-backend.test.ts",
+        "packages/mcp-server/src/remote-fleet-runtime.test.ts",
+        "packages/application/src/fleet-catalog-service.test.ts",
+        "packages/mcp-server/src/tools/incident-tools.test.ts",
+        "packages/storage/src/incident-fix-repository.test.ts",
+        "packages/mcp-server/src/incident-fix-contract.test.ts",
+        "packages/mcp-server/src/incident-fix-service.test.ts",
+        "packages/mcp-server/src/tools/incident-fix-tools.test.ts",
+        "packages/mcp-server/src/incident-service.test.ts",
+        "packages/storage/src/incident-repository.test.ts",
+        "packages/application/src/workflow-state-service.test.ts",
+        "packages/mcp-server/src/tools/workflow-state-tools.test.ts"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 12860
+    },
+    {
+      "name": "unit",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages",
+        "apps",
+        "--maxWorkers=4"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 51049
+    },
+    {
+      "name": "other",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/integration",
+        "tests/packaging",
+        "tests/release",
+        "tests/acceptance",
+        "--maxWorkers=4"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 6749
+    },
+    {
+      "name": "catalog",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-catalog.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 682
+    },
+    {
+      "name": "contract",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-contract-v1.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 629
+    }
+  ],
+  "focused": {
+    "passed": 129,
+    "skipped": 0
+  },
+  "unit": {
+    "passed": 938,
+    "skipped": 47
+  },
+  "other": {
+    "passed": 35,
+    "skipped": 6
+  },
+  "artifacts": [
+    {
+      "path": "dist/v1.56.0-local-20261003/full-local-logs/typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/full-local-logs/lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/full-local-logs/focused.log",
+      "sha256": "9bb38b010d222d6190dcf3aa747d4a4094567ad222f0c44fb225fbf4378a8206"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/full-local-logs/unit.log",
+      "sha256": "e33eaf7824b4abfba91acf1e54f90415767a41fcfa2a6d974c6b1a9f96449e1c"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/full-local-logs/other.log",
+      "sha256": "67462a457e557357692bb7190f4af7b8c97a934c6476434387c084f66deca503"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/full-local-logs/catalog.log",
+      "sha256": "4dedbcdac41ac6a57836e2a09ff7b9f1e866b19c1e9b85fa1e17f07f8af6a439"
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/full-local-logs/contract.log",
+      "sha256": "a319fb660b3ea0eaaa62d6d6efb8521ce7037526e99801e1bffb4e5224a8128e"
+    }
+  ],
+  "boundary": "Windows source verification only; native receipts from the accepted 1.55 baseline do not establish current candidate provider/package verification. Ubuntu and publication gates remain open."
+}

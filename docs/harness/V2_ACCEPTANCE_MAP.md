@@ -1,24 +1,54 @@
 # v2 acceptance evidence map
 
-This maps the ten scenarios in the [roadmap](../superpowers/plans/2026-09-30-mcp-linux-v2-roadmap.md) to retained source-bound receipts. Historical milestone proofs establish their recorded snapshots, not the current release candidate. The accepted package baseline is v1.56, independently closed in [its receipt](evidence/2026-10-04-v1.56-ubuntu.json). v2.0.0 is a compatible metadata/documentation promotion under [its contract](contracts/v2.0-compatible-product.md). Current package replay remains open until its own source-bound receipt is closed. Replay relevant checks against the frozen RC source and installed package, recording commands, exits, source/diff/artifact hashes and independent QA.
+Technical verification is closed under the [v2 receipt](evidence/2026-10-04-v2.0.0-ubuntu.md).
+It binds 807 frozen source files, 87 current artifacts and 180 revalidated
+historical artifact bindings. The approved test VM runs 2.0.0.
+Seven Windows and twenty Ubuntu gates passed; v1 contracts remain compatible.
+Owner milestone delivery and Git push are approved; personal trial results
+remain unreported and publication is separately gated in the [approval record](evidence/2026-10-04-v2.0.0-owner-acceptance.md).
 
-| Scenario | Historical proof and boundary | Current-candidate acceptance still needed |
-| --- | --- | --- |
-| Coding | [v1.38 native round](evidence/2026-10-03-v1.38-native-flow.json) and [Ubuntu receipt](evidence/2026-10-03-v1.38-ubuntu.json) bind a real script bugfix and independent QA. [v1.50](evidence/2026-10-03-v1.50-ubuntu.json) binds actual fixture regression red/green and patch artifacts. | Repeat an approved local code change with real file/diff verification and independent QA; distinguish caller-native work from installed CLI execution. |
-| Refactoring | [v1.45 benchmark](evidence/2026-10-03-v1.45-native-benchmark.json) includes a returned-answer refactor fixture, not filesystem refactoring. | Execute the change in a disposable workspace and verify preserved behavior, scope and diff. Retain failure outcomes. |
-| Recovery | [v1.42](evidence/2026-10-03-v1.42-ubuntu.json) binds installed STDIO/HTTP checkpoint/restart recovery without redispatch; older binary compatibility was tested. | Replay restart/reopen and explicit reconciliation on RC; establish absence of duplicate effects using actual bounded execution evidence where claimed. |
-| Concurrent work | [v1.43](evidence/2026-10-03-v1.43-ubuntu.json) binds overlap rejection, stale leases/results, quarantine/reconciliation and disjoint acknowledgement. [v1.44](evidence/2026-10-03-v1.44-ubuntu.json) adds source/artifact freshness and dependency release. | Replay ownership/scope rejection and disjoint work on RC. Locks and caller attestations do not establish OS containment or physical authorship. |
-| Stale context | [v1.39](evidence/2026-10-03-v1.39-ubuntu.json) binds installed collect/resolve/continue, changed/missing sources, wrong-task rejection and byte limits. References are process-local. | Replay changed-source continuation and expired/restarted reference handling; do not infer durable context from a process-local packet. |
-| Skill injection | [v1.40](evidence/2026-10-03-v1.40-ubuntu.json) binds reviewed document/license hashes, role filtering, stale/forged/unregistered rejection and adjacent-hook exclusion. | Replay exact reviewed guidance and negative ingestion cases on RC. Guidance remains untrusted and grants no execution permission. |
-| Partial incident data | [v1.46](evidence/2026-10-03-v1.46-ubuntu.json) binds stale/unavailable catalog members; [v1.47](evidence/2026-10-03-v1.47-ubuntu.json) binds partial collection/reopen; [v1.48](evidence/2026-10-03-v1.48-ubuntu.json) binds incomplete drift; [v1.49](evidence/2026-10-03-v1.49-ubuntu.json) binds evidence-linked hypotheses/unknowns. Remote fixtures were unavailable loopback targets. | Replay missing/truncated/stale evidence and bounded diagnosis on RC. These historical fixtures do not prove successful fleet SSH capture or a confirmed cause. |
-| Incident-to-patch boundaries | [v1.50](evidence/2026-10-03-v1.50-ubuntu.json) binds registered disposable fixtures, actual Node red/green, exact patch bytes, source-linked independent QA and done state. No deployment occurred. | Repeat a bounded incident-to-local-fix trial on RC, including source/link drift and unauthorized-scope rejection. Deployment remains separately gated. |
-| Security | [v1.41](evidence/2026-10-03-v1.41-ubuntu.json) binds effective-config/permission negatives; [v1.55](evidence/2026-10-03-v1.55-ubuntu.json) binds credential redaction, option-admission rejection and package security checks. Known-canary scans are bounded. | Run current security regressions and installed negative checks. Do not equate configuration inspection, no-op sandbox usability or observed tool events with proven containment. |
-| Package installation/use | [v1.55](evidence/2026-10-03-v1.55-ubuntu.json) binds Ubuntu gates, DEB/TAR provenance, both transports and upgrade/rollback/uninstall/reinstall preserving 99 stopped state files and four config files. | Freeze RC, rerun full source/release/documentation/v1 compatibility gates and package lifecycle/use checks. Startup migrations may change running state; stopped equality is the tested boundary. |
+The compatible promotion changes version metadata/documentation only.
+Historical native proofs keep their original source, inputs and execution time;
+459 package src files are byte-identical to the closed v1.56 snapshot and the
+shared constant differs only by version. Current v2 package/native replay is
+separate. Closure documentation is codified after the frozen artifact snapshot.
 
-## Provider and owner acceptance
+| Scenario | Verified technical evidence and boundary |
+| --- | --- |
+| Coding | Real v1.38 repo bugfix round and v1.56 native worker mirror patch, baseline-checked integration, regression and independent QA. Exact code fingerprints carried to v2; current v2 source gates and authenticated installed calls replayed. Literal native v2 calls execute no tools. |
+| Refactoring | v1.56 executable paired refactor fixture preserves behavior and checks actual fixture results; historical inputs retained. Current v2 full unit/v1 acceptance replayed. Updated v2 guidance was not benchmarked. |
+| Recovery | Current installed STDIO/HTTP workflow restart preserves claims, rejects duplicate starts and retains receipts/done state. Coordination executes no task commands; resume requires explicit reconciliation, not redispatch. Provider-session resume is unimplemented. |
+| Concurrent work | Current installed workflow fixtures reject overlap/forged/stale claims and validate disjoint digest-bound review, quarantine and bounded retries. Locks and caller identities are coordination controls, not OS containment. |
+| Stale context | Current unit gates replay packet source/fingerprint/continuation negatives; unchanged implementation binds prior v1.39 installed proofs. Context references remain process-local and restart/changed source requires rereading. |
+| Skill injection | Current installed STDIO/HTTP reviewed-skill loads and negative permission/provenance tests replayed; configured connector project remains unchanged. Skills are untrusted guidance and grant no permissions. |
+| Partial incident data | Current installed fleet/incident/drift/diagnosis fixtures replay unavailable targets, partial evidence, linked hypotheses, source hashes and owner isolation. Loopback unavailable fixtures do not prove successful fleet SSH capture or a confirmed cause. |
+| Incident to patch | Source-bound v1.56 real native worker snapshot, registered baseline match, actual red/green, independent reviewer and workflow done are carried unchanged. Current v2 installed incident/diagnosis/workflow fixtures replayed. No deployment occurred. |
+| Safety | Current security regressions, installed permission/owner/scope negatives, eight bounded known-credential canaries and configured diagnostics scans passed. Historical actual CLI/tool cancellation and sandbox canaries carried within their stated bounds; no general containment claim. |
+| Packaging | Current Ubuntu source/package gates, six provenance artifacts, upgrade 1.56 to 2.0, rollback/uninstall/reinstall, both installed transports and nine DEB/TAR runtime identities passed. Four stopped-state phases preserve 99 state/four config files; running migrations have a separate boundary. |
 
-[Closed v1.56 acceptance](evidence/2026-10-04-v1.56-ubuntu.json) records actual installed STDIO/HTTP native calls, real worker file changes, scoped Linux sandbox canaries, owned nested tool cancellation, incident-to-patch red/green and independent QA. The selected gpt-5.6 models worked; gpt-6.1-sol returned MODEL_UNAVAILABLE without fallback. Historical failed probes remain failed. v2 carries these specific native proofs only where the tested implementation fingerprints remain identical, and separately replays installed v2 package/native calls. No provider-session resume is claimed. [Native acceptance guide](NATIVE_LINUX_ACCEPTANCE.md) records the temporary-profile cleanup and normal lab execution boundary.
+## Native provider and measured routing
 
-[Native workflow preparation](NATIVE_WORKFLOW.md) returns `dispatch: "caller_native"`, `executionStarted: false` and `availability: "not_verified"`. It prepares prompts/contracts; the caller dispatches workers. Durable workflow resume reconciles coordination metadata and claims, while provider-session resume concerns an actual CLI/provider execution session. Neither substitutes for the other, and metadata cancellation does not terminate a worker.
+Current installed STDIO/HTTP native calls authenticated through isolated Linux
+Codex subscription login and exact pinned CLI 0.146.0. Selected gpt-5.6-sol
+worked; gpt-6.1-sol returned MODEL_UNAVAILABLE without fallback. The approved
+exact-binary AppArmor profile was temporary and is unloaded; kernel restriction
+remains 1 and no persistent profile exists. Normal lab native execution needs
+approved host policy readiness. See [native acceptance](NATIVE_LINUX_ACCEPTANCE.md).
 
-Owner actual-use coding and incident trials must record task completion, usability friction, recovery behavior and explicit owner acceptance. Automated fixture success cannot supply owner acceptance. Keep the six paired executable benchmark runs source/check matched, retain all role calls and failures, and use actual usage or `null`. The executable v1.56 paired benchmark recorded 4/6 success in each topology, zero safety violations and median total tokens increased 114.85%; the 25% reduction target was missed. Historical failed runs are retained. No savings are established. Seven-day soak remains waived, not passed. Publication requires explicit human approval after the remaining gates.
+workflow_plan prepares caller-native contracts/prompts and starts no execution.
+Coordination cancellation does not terminate a worker; owned codex_stop and
+actual tool cancellation have separate retained native evidence.
+
+Historical benchmark r3 accepted 4/6 fixtures in both topologies, with zero
+observed tool-policy failures and median total token increase 114.85%.
+Conservative incident/resume answer checks stayed failed. All earlier runs
+are retained; no token savings or new v2-guidance result is claimed.
+Seven-day soak is waived, not passed. Automated fixtures and independent QA
+do not supply owner usability acceptance or publication approval.
+
+## Owner approval and Git delivery — 2026-10-04
+
+The owner approved milestone delivery and pushing all verified versions to the
+existing origin/main. Personal coding/incident trial results remain unreported;
+automated fixture evidence is not relabeled as an owner trial. Publication/tagging
+remains a separate human gate. See [approval record](evidence/2026-10-04-v2.0.0-owner-acceptance.md).

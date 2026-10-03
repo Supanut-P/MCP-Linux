@@ -48,7 +48,7 @@ semantic-version order.
 | v1.34.0 | Workspace checkpoint prune | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.34.0) |
 | v1.35.0 | Workspace checkpoint stats | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.35.0) |
 | v1.36.0 | Workspace checkpoint summary and stable v1 contract | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.36.0) |
-| v1.37.0 | Bounded remote fleet journal reads | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.37.0) |
+| v1.37.0 | Bounded remote fleet journal reads | [notes](docs/releases/v1.37.0.md) |
 | v1.38.0 | Native task contract, role prompts and QA preparation (Ubuntu and independent QA passed) | [notes](docs/releases/v1.38.0.md) |
 | v1.39.0 | Task context packets (Ubuntu, installed transports and independent QA passed) | [notes](docs/releases/v1.39.0.md) |
 | v1.40.0 | Verified skill guidance (Ubuntu, installed transports and independent QA passed) | [notes](docs/releases/v1.40.0.md) |
@@ -72,3 +72,35 @@ Shared diagnostic secret redaction, literal service-unit boundaries and pinned
 patched dependencies passed full local/Ubuntu/package/installed gates and
 independent QA. [Evidence](docs/harness/evidence/2026-10-03-v1.55-ubuntu.md).
 No tag or publication is approved. P1 versions151–154 remain reserved.
+
+## Approved ordered roadmap Git history
+
+Owner approved pushing all verified versions on 2026-10-04. These commits
+import the verified milestone snapshots in delivery order. P1 v1.51–v1.54
+remain unimplemented; no empty releases are created. No tags or GitHub release
+publication are performed by this source push. Packages retain original lab
+provenance, as recorded in each linked receipt.
+
+| Version | Source commit | Verified snapshot files |
+| --- | --- | --- |
+| v1.37.0 | [d2535cf3](https://github.com/Supanut-P/MCP-Linux/commit/d2535cf32ad2c7fb7d1efa729f43e541fc55ac10) | 580 |
+| v1.38.0 | [99785ee1](https://github.com/Supanut-P/MCP-Linux/commit/99785ee1e6a0379651d3fba58ba2c216b4373ab7) | 600 |
+| v1.39.0 | [282954da](https://github.com/Supanut-P/MCP-Linux/commit/282954da855b63d6d109cbb83adfa8232dd3b682) | 613 |
+| v1.40.0 | [fc26b455](https://github.com/Supanut-P/MCP-Linux/commit/fc26b45519561df023bdcf411e798d17a2cd2be2) | 624 |
+| v1.41.0 | [9e002d05](https://github.com/Supanut-P/MCP-Linux/commit/9e002d05989bc5d9436a5379dea1ced0651401d9) | 646 |
+| v1.42.0 | [27fecb61](https://github.com/Supanut-P/MCP-Linux/commit/27fecb6156846cf64f44298fa7ed3882f2a3d972) | 660 |
+| v1.43.0 | [1a97ff4d](https://github.com/Supanut-P/MCP-Linux/commit/1a97ff4d5b2b356ec9a0fdedb57817cbb6c473c2) | 675 |
+| v1.44.0 | [d0516a0a](https://github.com/Supanut-P/MCP-Linux/commit/d0516a0ad3504686d149b94c0b42757d131f0648) | 691 |
+| v1.45.0 | [ea367c26](https://github.com/Supanut-P/MCP-Linux/commit/ea367c26577c45e71e768ad2cc903c274f317164) | 704 |
+| v1.46.0 | [195f5d3d](https://github.com/Supanut-P/MCP-Linux/commit/195f5d3d33e440f8be43208732782e8b7ab215f9) | 717 |
+| v1.47.0 | [61d6d8fd](https://github.com/Supanut-P/MCP-Linux/commit/61d6d8fd8c86b867549bd58f974096d2c9bd119b) | 733 |
+| v1.48.0 | [477cb217](https://github.com/Supanut-P/MCP-Linux/commit/477cb217710879789c2945fba7db9d34a2cf5dd7) | 749 |
+| v1.49.0 | [8b6f4218](https://github.com/Supanut-P/MCP-Linux/commit/8b6f42181dcf1b5d1f2066c8b2a82bba2f735668) | 765 |
+| v1.50.0 | [220765c1](https://github.com/Supanut-P/MCP-Linux/commit/220765c16491e5e3d3aa7ef35f18d1ee49aef45f) | 781 |
+| v1.55.0 | [b17da52a](https://github.com/Supanut-P/MCP-Linux/commit/b17da52acf73b30f4758b2b90e9042547e433c7e) | 789 |
+| v1.56.0 | [b6036c44](https://github.com/Supanut-P/MCP-Linux/commit/b6036c4484de2289b82ea3c5feae5eb264272637) | 800 |
+| v2.0.0 | [93fe8fc2](https://github.com/Supanut-P/MCP-Linux/commit/93fe8fc23f3196d174f7f8b1766cffda0018b9bd) | 807 |
+
+[Import/source evidence](docs/harness/evidence/2026-10-04-ordered-git-history.json).
+Personal owner coding/incident trials remain unreported; milestone delivery
+was approved from the reviewed technical evidence. Token savings were not achieved.

@@ -1,26 +1,24 @@
 # MCP-Linux harness state
 
-v1.47 incident workspace verification is closed under its
-[contract](contracts/v1.47-incident-workspace.md), [caller guide](INCIDENT_WORKSPACE.md)
-and [Ubuntu receipt](evidence/2026-10-03-v1.47-ubuntu.md). Independent QA verified
-733 source files, 20 implementation hashes and 67 artifacts. The configured VM
-runs accepted 1.55.0. Approved baseline drift verification is closed under its
-[contract](contracts/v1.48-approved-drift.md), [caller guide](APPROVED_DRIFT.md) and
-[Ubuntu receipt](evidence/2026-10-03-v1.48-ubuntu.md): 749 frozen source files,
-17 implementation fingerprints and 72 artifacts independently verified. v1.49
-diagnosis verification is closed under the [Ubuntu receipt](evidence/2026-10-03-v1.49-ubuntu.md): 765 frozen files, 19 implementation hashes and 74 artifacts independently verified. v1.50 verification is closed under its [Ubuntu receipt](evidence/2026-10-03-v1.50-ubuntu.md): 781 frozen files, 29 implementation hashes and88 artifacts independently verified. v1.55 hardening verification is closed under its [Ubuntu receipt](evidence/2026-10-03-v1.55-ubuntu.md):789 source files,42 implementation hashes and88 artifacts independently verified. v1.56 verification is closed under the [Ubuntu/native receipt](evidence/2026-10-04-v1.56-ubuntu.md): 800 source files and 180 artifacts independently verified. Configured test VM runs accepted 1.56.0; v2.0 compatible product-candidate preparation is next. Owner usability/publication remain human gates.
-No publication is approved.
+Current technical candidate: **2.0.0**, installed on the approved disposable VM.
+P0 v1.37–v1.50 and v1.55–v1.56 are verified; P1 v1.51–v1.54 remain backlog.
+The [v2 technical receipt](evidence/2026-10-04-v2.0.0-ubuntu.md) records seven Windows
+and twenty Ubuntu gates, 807 frozen files, 87 current artifacts, 180 revalidated
+historical bindings, package lifecycle and installed native STDIO/HTTP checks.
+Independent QA approved closure. Owner approved milestone delivery and Git push. Personal owner trial results
+remain unreported; publication/tagging requires separate approval.
 
-v1.50 incident-to-local-fix verification is closed under its
-[contract](contracts/v1.50-incident-fix.md) and [caller guide](INCIDENT_FIX.md).
-Source/package and both fixture transports passed; the configured VM runs accepted1.55.0. Final provider/usability and publication gates remain open.
+See [native execution/routing](NATIVE_LINUX_ACCEPTANCE.md),
+[acceptance evidence](V2_ACCEPTANCE_MAP.md), and the
+[roadmap](../superpowers/plans/2026-09-30-mcp-linux-v2-roadmap.md).
+Benchmark median total tokens increased 114.85%; no savings are established.
 
-The authoritative [v2 roadmap](../superpowers/plans/2026-09-30-mcp-linux-v2-roadmap.md)
-defines the accepted product and model-routing policy. Root `AGENTS.md` routes
-to three compact repo-local skills; it does not install global configuration or
-grant execution authority.
+## Historical milestone log
 
-## Current milestone
+Running versions and open-gate descriptions below are point-in-time historical
+entries; the current state and technical receipt above are authoritative.
+
+### Earlier milestones
 
 The disposable Ubuntu source and package gates for v1.37.0 passed, including
 install, upgrade, rollback, and reinstall checks. The
@@ -146,3 +144,10 @@ a remote target. Existing v1.36 artifacts are historical evidence only.
 
 
 
+
+## Owner approval and Git delivery — 2026-10-04
+
+The owner approved milestone delivery and pushing all verified versions to the
+existing origin/main. Personal coding/incident trial results remain unreported;
+automated fixture evidence is not relabeled as an owner trial. Publication/tagging
+remains a separate human gate. See [approval record](evidence/2026-10-04-v2.0.0-owner-acceptance.md).

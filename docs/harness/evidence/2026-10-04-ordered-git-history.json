@@ -1,0 +1,197 @@
+{
+  "base": "45c940014fe7fb4e7017be8c67c9bdfd75f227a3",
+  "head": "93fe8fc23f3196d174f7f8b1766cffda0018b9bd",
+  "records": [
+    {
+      "version": "1.37.0",
+      "commit": "d2535cf32ad2c7fb7d1efa729f43e541fc55ac10",
+      "tree": "a2e6bcb74a28920c49ad124ea2604fab6f9a834a",
+      "parent": "45c940014fe7fb4e7017be8c67c9bdfd75f227a3",
+      "sourceManifest": "dist/v1.37.0-local-20260930/source-manifest-launcher-followup.json",
+      "sourceManifestSha256": "c216a5486d7dd6a1a800850bc6e79c309675a07d3f9b2d9d0a709e2e2486dac8",
+      "sourceFiles": 580,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-02-configured-tunnel.json"
+    },
+    {
+      "version": "1.38.0",
+      "commit": "99785ee1e6a0379651d3fba58ba2c216b4373ab7",
+      "tree": "2831ade545feba93e361baeddd09fd24d51575d7",
+      "parent": "d2535cf32ad2c7fb7d1efa729f43e541fc55ac10",
+      "sourceManifest": "dist/v1.38.0-local-20261003-r2/source-manifest.json",
+      "sourceManifestSha256": "e2297106acb6a4fe13adbcc68c9268f36d6e0566127b138003371044f6d03eec",
+      "sourceFiles": 600,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-03-v1.38-ubuntu.json"
+    },
+    {
+      "version": "1.39.0",
+      "commit": "282954da855b63d6d109cbb83adfa8232dd3b682",
+      "tree": "2294721d158a442bb62c6d48e5ab80a1e89976a3",
+      "parent": "99785ee1e6a0379651d3fba58ba2c216b4373ab7",
+      "sourceManifest": "dist/v1.39.0-local-20261003-r2/source-manifest.json",
+      "sourceManifestSha256": "65cbe30b52d869d28de48b759c67d43f6d8314cbc17fd86a1f50fb7c0bd21ffa",
+      "sourceFiles": 613,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-03-v1.39-ubuntu.json"
+    },
+    {
+      "version": "1.40.0",
+      "commit": "fc26b45519561df023bdcf411e798d17a2cd2be2",
+      "tree": "4c7cab4c6470db004cef2d9cd2e79a4fbde1aebf",
+      "parent": "282954da855b63d6d109cbb83adfa8232dd3b682",
+      "sourceManifest": "dist/v1.40.0-local-20261003-r1/source-manifest.json",
+      "sourceManifestSha256": "d63ffcd12f12af6a7cd40dacb13b7739e09bb40fd05252ba214a82331150b24d",
+      "sourceFiles": 624,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-03-v1.40-ubuntu.json"
+    },
+    {
+      "version": "1.41.0",
+      "commit": "9e002d05989bc5d9436a5379dea1ced0651401d9",
+      "tree": "d206d5f53ab6a082c647b136068803038e759d6d",
+      "parent": "fc26b45519561df023bdcf411e798d17a2cd2be2",
+      "sourceManifest": "dist/v1.41.0-local-20261003-r1/source-manifest.json",
+      "sourceManifestSha256": "d70dbfeaaae6519b0074310b52ad7d99f4b181d8236606f7244713e0da1c4222",
+      "sourceFiles": 646,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-03-v1.41-ubuntu.json"
+    },
+    {
+      "version": "1.42.0",
+      "commit": "27fecb6156846cf64f44298fa7ed3882f2a3d972",
+      "tree": "048b2a028a05b186499ff1b166ae50f585c65a73",
+      "parent": "9e002d05989bc5d9436a5379dea1ced0651401d9",
+      "sourceManifest": "dist/v1.42.0-local-20261003-r1/source-manifest.json",
+      "sourceManifestSha256": "bea00265750564f0b3ea8767186e207e935a432fe7125b6c2fec68ad6898795f",
+      "sourceFiles": 660,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-03-v1.42-ubuntu.json"
+    },
+    {
+      "version": "1.43.0",
+      "commit": "1a97ff4d5b2b356ec9a0fdedb57817cbb6c473c2",
+      "tree": "55b127f5c48b802406081198e557c0b6965554c7",
+      "parent": "27fecb6156846cf64f44298fa7ed3882f2a3d972",
+      "sourceManifest": "dist/v1.43.0-local-20261003-r4/source-manifest.json",
+      "sourceManifestSha256": "5e583c1c956b3e0577720cf6ec8c14643926a59ab317f54e157bb88fc2f6d1ab",
+      "sourceFiles": 675,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-03-v1.43-ubuntu.json"
+    },
+    {
+      "version": "1.44.0",
+      "commit": "d0516a0ad3504686d149b94c0b42757d131f0648",
+      "tree": "1caffcad09051c7eeb30f332a2a99a2002e8ba7d",
+      "parent": "1a97ff4d5b2b356ec9a0fdedb57817cbb6c473c2",
+      "sourceManifest": "dist/v1.44.0-local-20261003/source-manifest.json",
+      "sourceManifestSha256": "fcbf8f0c6b8b2faf7f62f360cc85c0f32b689ebca643475f2ac0040104041f09",
+      "sourceFiles": 691,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-03-v1.44-ubuntu.json"
+    },
+    {
+      "version": "1.45.0",
+      "commit": "ea367c26577c45e71e768ad2cc903c274f317164",
+      "tree": "c3e281643ebbcb1658d6a403df029c36f659badd",
+      "parent": "d0516a0ad3504686d149b94c0b42757d131f0648",
+      "sourceManifest": "dist/v1.45.0-local-20261003/source-manifest.json",
+      "sourceManifestSha256": "3a735867caea70e4da61ed6987635699462deee52b39fb6df20f71178436409e",
+      "sourceFiles": 704,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-03-v1.45-ubuntu.json"
+    },
+    {
+      "version": "1.46.0",
+      "commit": "195f5d3d33e440f8be43208732782e8b7ab215f9",
+      "tree": "947a490b85be3f3bd115ca62ea9d177d557829fb",
+      "parent": "ea367c26577c45e71e768ad2cc903c274f317164",
+      "sourceManifest": "dist/v1.46.0-local-20261003/source-manifest.json",
+      "sourceManifestSha256": "99db8899c27d46cf1c8da4974c7c00a835322c974067e9027af35505fa3042c7",
+      "sourceFiles": 717,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-03-v1.46-ubuntu.json"
+    },
+    {
+      "version": "1.47.0",
+      "commit": "61d6d8fd8c86b867549bd58f974096d2c9bd119b",
+      "tree": "9c2edc288e2ce7ea2385f3b9a9fab3f3f48fdf27",
+      "parent": "195f5d3d33e440f8be43208732782e8b7ab215f9",
+      "sourceManifest": "dist/v1.47.0-local-20261003/source-manifest.json",
+      "sourceManifestSha256": "6a9fe0c049d20ffd69e9ecd42628c72681774ad53d872ff20e663e7e659ba6f8",
+      "sourceFiles": 733,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-03-v1.47-ubuntu.json"
+    },
+    {
+      "version": "1.48.0",
+      "commit": "477cb217710879789c2945fba7db9d34a2cf5dd7",
+      "tree": "2260fb1332b699a8edd633d41260d49ecac7a36d",
+      "parent": "61d6d8fd8c86b867549bd58f974096d2c9bd119b",
+      "sourceManifest": "dist/v1.48.0-local-20261003-r2/source-manifest.json",
+      "sourceManifestSha256": "ca9f7141967be2ecae895cf37ecfe3a5c2f2dd6311bf7ace920a7f3d03c3b96a",
+      "sourceFiles": 749,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-03-v1.48-ubuntu.json"
+    },
+    {
+      "version": "1.49.0",
+      "commit": "8b6f42181dcf1b5d1f2066c8b2a82bba2f735668",
+      "tree": "b0650847acb45b4edeb88f41e41f55029652552a",
+      "parent": "477cb217710879789c2945fba7db9d34a2cf5dd7",
+      "sourceManifest": "dist/v1.49.0-local-20261003/source-manifest.json",
+      "sourceManifestSha256": "30ada71c065f8146754cb2f96475bbce693da3c943d88165ecafb99b7facec77",
+      "sourceFiles": 765,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-03-v1.49-ubuntu.json"
+    },
+    {
+      "version": "1.50.0",
+      "commit": "220765c16491e5e3d3aa7ef35f18d1ee49aef45f",
+      "tree": "eb00284ac824b51968b8928121f4b03993d0b351",
+      "parent": "8b6f42181dcf1b5d1f2066c8b2a82bba2f735668",
+      "sourceManifest": "dist/v1.50.0-local-20261003-r3/source-manifest.json",
+      "sourceManifestSha256": "e0a93c1fba201d64855612c7349fb368e46ef3ef72ba886db74091996e6d52dc",
+      "sourceFiles": 781,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-03-v1.50-ubuntu.json"
+    },
+    {
+      "version": "1.55.0",
+      "commit": "b17da52acf73b30f4758b2b90e9042547e433c7e",
+      "tree": "8b79643437a0e7f301bdec6758b83a5d45a84d73",
+      "parent": "220765c16491e5e3d3aa7ef35f18d1ee49aef45f",
+      "sourceManifest": "dist/v1.55.0-local-20261003/source-manifest.json",
+      "sourceManifestSha256": "dbf2b94a99aa026688c0a6a556d3f2b37436dfd90299f743bf3251eaab17fb46",
+      "sourceFiles": 789,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-03-v1.55-ubuntu.json"
+    },
+    {
+      "version": "1.56.0",
+      "commit": "b6036c4484de2289b82ea3c5feae5eb264272637",
+      "tree": "6c3eafa1f7bfd557f1991ca0ae17e980fa42f1c1",
+      "parent": "b17da52acf73b30f4758b2b90e9042547e433c7e",
+      "sourceManifest": "dist/v1.56.0-local-20261003/source-manifest.json",
+      "sourceManifestSha256": "5ae1e631aed5d584ef9202f52aecbabd0bb238b908d1ee6ed36725106424998a",
+      "sourceFiles": 800,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-04-v1.56-ubuntu.json"
+    },
+    {
+      "version": "2.0.0",
+      "commit": "93fe8fc23f3196d174f7f8b1766cffda0018b9bd",
+      "tree": "1958b51f9cfbb9b30c0f6f3fe38b822734fb2a3d",
+      "parent": "b6036c4484de2289b82ea3c5feae5eb264272637",
+      "sourceManifest": "dist/v2.0.0-local-20261004/source-manifest.json",
+      "sourceManifestSha256": "b3f102aec3eb6a4ea60f65a1527b126d95c6360311ec5a6837fbf16c9a96b3bf",
+      "sourceFiles": 807,
+      "gitTextNormalization": true,
+      "verifiedReceipt": "docs/harness/evidence/2026-10-04-v2.0.0-ubuntu.json"
+    }
+  ],
+  "boundary": "Ordered history reconstructed from verified snapshots with normal Git text normalization; commit dates reflect this import, not fabricated original dates. Binary artifacts retain their original private-lab source commit and hashes; this push publishes source history, not GitHub releases.",
+  "ownerApprovalDate": "2026-10-04",
+  "ownerApprovalScope": "Git push of all verified versions to existing origin/main",
+  "publicationApproval": "not-granted"
+}

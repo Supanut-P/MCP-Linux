@@ -1,0 +1,9 @@
+name: release-check
+description: Inspect Git state and run the regression benchmark gate.
+sequential:
+  - git_context
+  - regression_report
+  - benchmark_run
+permissions:
+  - git.read
+  - process.read

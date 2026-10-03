@@ -1,0 +1,364 @@
+{
+  "milestone": "1.40.0",
+  "status": "milestone-verification-closed-independent-qa-approved",
+  "sourceCommit": "3a031c5d1f531925b66bac780c5e6509fef79a7a",
+  "sourceManifestSha256": "d63ffcd12f12af6a7cd40dacb13b7739e09bb40fd05252ba214a82331150b24d",
+  "sourceFiles": 624,
+  "ubuntu": "24.04 x64",
+  "runtime": "Node24.14.0",
+  "unitPassed": 741,
+  "unitSkipped": 1,
+  "integrationPassed": 3,
+  "packagingPassed": 16,
+  "releasePassed": 12,
+  "v1AcceptancePassed": 5,
+  "catalogTools": 234,
+  "frozenV1Tools": 227,
+  "packagedLinuxTools": 228,
+  "gates": [
+    [
+      "install",
+      "0"
+    ],
+    [
+      "rebrand",
+      "0"
+    ],
+    [
+      "lint",
+      "0"
+    ],
+    [
+      "typecheck",
+      "0"
+    ],
+    [
+      "unit",
+      "0"
+    ],
+    [
+      "integration",
+      "0"
+    ],
+    [
+      "packaging-tests",
+      "0"
+    ],
+    [
+      "release-gate",
+      "0"
+    ],
+    [
+      "catalog",
+      "0"
+    ],
+    [
+      "v1-contract",
+      "0"
+    ],
+    [
+      "v1-acceptance",
+      "0"
+    ],
+    [
+      "build-package",
+      "0"
+    ],
+    [
+      "verify-package",
+      "0"
+    ],
+    [
+      "provenance",
+      "0"
+    ],
+    [
+      "upgrade-preflight",
+      "0"
+    ],
+    [
+      "diff-check",
+      "0"
+    ],
+    [
+      "diff-check",
+      "0"
+    ],
+    [
+      "source-fingerprints",
+      "0"
+    ],
+    [
+      "installed-stdio",
+      "0"
+    ]
+  ],
+  "packageCycle": {
+    "sourceCommit": "3a031c5d1f531925b66bac780c5e6509fef79a7a",
+    "versions": [
+      "1.39.0",
+      "1.40.0",
+      "1.39.0",
+      "uninstalled",
+      "1.40.0"
+    ],
+    "commandsExitCode": 0,
+    "stoppedStateFilesUnchangedEachStep": 83,
+    "preservedConfigFilesUnchangedEachStep": 4,
+    "sqliteIntegrity": "ok",
+    "sqliteOwner": "adminops",
+    "finalInstalledVersion": "1.40.0",
+    "mcpActive": true,
+    "tunnelActive": true,
+    "healthz": 200,
+    "readyz": 200,
+    "boundary": "Lead-executed disposable VM cycle; sanitized follow-up checked retained private state/config verification logs. Backups and credential hashes remain on VM, not exported. Restart can legitimately append runtime state/events."
+  },
+  "artifacts": [
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/artifacts/dist/Baitonghub-Linux-mcp-1.40.0-amd64.deb",
+      "bytes": 32826850,
+      "sha256": "3b865093b00e68763c86cbd2ae628f586bfa739c60d339072e0de60485030e23"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/artifacts/dist/Baitonghub-Linux-mcp-1.40.0-BUILD-METADATA.json",
+      "bytes": 918,
+      "sha256": "c04f9b9f6223378079c394180bd52099bb02d1008e0ce7fff7009a398a0007e2"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/artifacts/dist/Baitonghub-Linux-mcp-1.40.0-linux-x64.tar.gz",
+      "bytes": 44918829,
+      "sha256": "78952bb537559676ca5b0d2e5d3366488554d42a7c7783ae64bd0534ec30367e"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/artifacts/dist/Baitonghub-Linux-mcp-1.40.0-PROVENANCE-SHA256SUMS",
+      "bytes": 542,
+      "sha256": "b9a896a4877e1ad9e775bc3fc6916fb6646ad1c4bf638fa666cc8b90d6cc705b"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/artifacts/dist/Baitonghub-Linux-mcp-1.40.0-SBOM.cdx.json",
+      "bytes": 27989,
+      "sha256": "d6453ba25fd8385c2f0860e592a676a048888ff6c4a367e5a40cb31bce0a4cb3"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/artifacts/dist/Baitonghub-Linux-mcp-1.40.0-SHA256SUMS",
+      "bytes": 215,
+      "sha256": "4cc8c544702ed46ed6c6fd7bc9b4366a70d1e2e8f8a471a6f1acb57a1e6a6c9f"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/build-package.log",
+      "bytes": 2992,
+      "sha256": "f58e954f24f94040b685909ed41808c9625d531fb25f9fe85ba6e2105b1ea3ca"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/catalog.log",
+      "bytes": 569,
+      "sha256": "be72bf9335eb09fae14fa50697640104d9febfcba9fded09e0e46309faf6325e"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/diff-check.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/gates.tsv",
+      "bytes": 265,
+      "sha256": "54117f3d933801be699cfce69bddf254ba87f9be9f57e03e3eccb1de1b9a7004"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/install.log",
+      "bytes": 1859,
+      "sha256": "9e2b935b29155a862ea6a9997529567207c4261291ed27f3d35ccb94f94a04bc"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/installed-skills-configured-http.json",
+      "bytes": 597,
+      "sha256": "f586075cc30e437992d8ddcddcb931e57434cb7ff46ccdf6d29c51e51d738a78"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/installed-skills-http.json",
+      "bytes": 1176,
+      "sha256": "8a563cc0a125856afa83d919e778d867e2139f2b098bd81245a2277c05d656fe"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/installed-skills-stdio.json",
+      "bytes": 1177,
+      "sha256": "8a3f94dc0d86b978faca87a33ad2f9dd6797d5b7da0067cc49665f9cc62a31fa"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/installed-stdio-retry.log",
+      "bytes": 900,
+      "sha256": "b7bace6a63936ebd0495636506d5f4afcb8f0fbbd31935d7617d1b71125032ac"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/integration.log",
+      "bytes": 908,
+      "sha256": "80ce149b9436a79b2ef823477502a72098162eb5c4b92796809a4140d08d7a78"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/lint.log",
+      "bytes": 91,
+      "sha256": "55e8327b03a93cce7c31567be7dfd387adbb3a69acbc96ccb090d968063338bc"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/packaging-tests.log",
+      "bytes": 564,
+      "sha256": "bd4ed32308ea1e54dbac6778aabe8e57f8bc2584c158ed00fada94f4314863b6"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/provenance.log",
+      "bytes": 114,
+      "sha256": "06dd5b59995da1f58774e860c8ef38fb520f89bb6a6d73e7ca49e15087e4396a"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/rebrand.log",
+      "bytes": 149,
+      "sha256": "038182e03e83cb37d8539f41f32dc9e133988efba65d958e17c42ba1c2d2bc11"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/release-gate.log",
+      "bytes": 532,
+      "sha256": "9c3b8513adac9514ebee1d1673ad100895c5c66a069aafef29118451ae532291"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/runtime-summary.json",
+      "bytes": 2705,
+      "sha256": "5fa4c32a7b77a146051ed1600628fc496ad589d4cf2f687a9b5f9054a0f4582e"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/source-commit.txt",
+      "bytes": 41,
+      "sha256": "4553d424d85dd6f98afceee20993106ac6864e5ef09bac09e5d2cfec01ede811"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/typecheck.log",
+      "bytes": 99,
+      "sha256": "74e0cc72fff7771e60a9f5e41984f6df873c239da9a2ebad4e1824c4379e89e1"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/unit.log",
+      "bytes": 22002,
+      "sha256": "5bd99f4873422f962c43ad5a9bc562a1a6a435b75fc3131c04ef4fcd83096296"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/upgrade-preflight.log",
+      "bytes": 507,
+      "sha256": "08b808463d8794cc394b9f14388a4f4d273a3fda0d3e3a1c82595e8b0a7d9cce"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/v1-acceptance.log",
+      "bytes": 1002,
+      "sha256": "d85a81cafaf6263eb7d3173d288a58ab4e95403920dac04246130914cf561507"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/v1-contract.log",
+      "bytes": 564,
+      "sha256": "5ce4fb3ce58acea3d788e89ae84c030eb65671ead66acffc1f750eca0783e12e"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/verify-package.log",
+      "bytes": 2464,
+      "sha256": "4c0061000a89fa1a21f67d03b7ee289b34fc5568ed19578fb44d6ba18816b75f"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-logs/workflow-summary.json",
+      "bytes": 979,
+      "sha256": "a40f37851b092e669b7310c11db3170c0fcc03060c66a3b36bb4b8667cef707a"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/runtime-receipts/incident-check.json",
+      "bytes": 502,
+      "sha256": "d53d575aa38da08b50d91f5b18d8b580600ef0e6720932846e78c163488ab026"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/runtime-receipts/native-connector.json",
+      "bytes": 1037,
+      "sha256": "49a03b69e93aa180ca0d218a7698cc20b718617bfabffb8ce5f50e0edd6098a6"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/runtime-receipts/package-cycle.json",
+      "bytes": 665,
+      "sha256": "43ab5fb0e102aaa92ffc877cfb967eee10451d7371f0d07b3daa962085335448"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/runtime-receipts/reinstall.log",
+      "bytes": 290,
+      "sha256": "4adde1e11f46bca126a63ddda837bc4e4d5f09ddb5b6588ce0c2d582c50a96bf"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/runtime-receipts/rollback.log",
+      "bytes": 312,
+      "sha256": "8329d0aef46d5fb1ba851bca4914339f4d053c0e54954369d23e49212e78c56f"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/runtime-receipts/runtime-check.json",
+      "bytes": 2705,
+      "sha256": "5fa4c32a7b77a146051ed1600628fc496ad589d4cf2f687a9b5f9054a0f4582e"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/runtime-receipts/uninstall.log",
+      "bytes": 231,
+      "sha256": "f0582be7c20586f9e899fd8aa63e6852459f8b07dd6ad8138283323017ed9cdb"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/runtime-receipts/upgrade.log",
+      "bytes": 242,
+      "sha256": "e77db08faacc9fceb14143b6477bc0553cf7ff875946fb751f788d8c440cb319"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/runtime-receipts/workflow-check.json",
+      "bytes": 539,
+      "sha256": "8355e4869fe83692f3cc1e32d0931dbe1ac5f7f026c9755a115f200a2d6f49e4"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/source-manifest.json",
+      "bytes": 123148,
+      "sha256": "d63ffcd12f12af6a7cd40dacb13b7739e09bb40fd05252ba214a82331150b24d"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/source-candidate.tar.gz",
+      "bytes": 3060163,
+      "sha256": "584ecbb1faf0e7d53dd146fea5e35951cf6328fcbebb541d19d43a62eb2c5c0a"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-source-gates.sh",
+      "bytes": 3215,
+      "sha256": "07b2c6f89fd4fba8f9a93f3503219c8e0e0b81b24c8abc9ce804b6b9ac6d34b2"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/vm39-package-cycle.sh",
+      "bytes": 3658,
+      "sha256": "d520960f156f85dab686e5bac672a8cea1be568b8997df3e5822dffe2c4a9736"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/installed-skills-check.mjs",
+      "bytes": 9130,
+      "sha256": "bb88a9f8c1fb2c7779dfcc5032367d3d7090433617f495e50aa21bf020383108"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/ubuntu-installed-smoke.sh",
+      "bytes": 1348,
+      "sha256": "854f07263769b770be30803177604422c72dc27aae68ad9a7add502ed0aed4a2"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/vm39-runtime-check.py",
+      "bytes": 4134,
+      "sha256": "91eb482a50cd09edc83ec1e2deda0dea03a127c30c84f12681b247bf2c46186b"
+    },
+    {
+      "path": "dist/v1.40.0-local-20261003-r1/vm39-workflow-check.py",
+      "bytes": 5593,
+      "sha256": "64680b46dec767b11a30549e792ae3796e87af9e2d22857a357f45b71251cfbc"
+    }
+  ],
+  "boundaries": [
+    "Private isolated verification commit; primary dirty Git checkout unchanged",
+    "Positive verified-skill acceptance uses disposable isolated installed STDIO/loopback HTTP fixtures",
+    "Configured HTTP preserves existing registration/project/license and tests negative verified ingestion plus legacy workflow/incident",
+    "Native connector calls are lead-observed before/after explicit service restart",
+    "Only known credential values and encoded forms scanned on bounded surfaces",
+    "Supplemental formal Security plugin preflight ready; exported incremental baseline unsupported; no formal scan completed",
+    "Automatic approval review initially rejected registration fallback; safer helper removed workspace_register and explicitly isolated DATA/CONFIG/STATE, then approved tests passed",
+    "No model dispatch/provider readiness/durable workflow/token savings/production/publication claim; seven-day soak waived"
+  ]
+}

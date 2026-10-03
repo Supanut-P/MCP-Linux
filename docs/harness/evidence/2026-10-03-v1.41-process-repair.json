@@ -1,0 +1,123 @@
+{
+  "status": "focused-process-repair-approved-milestone-open",
+  "recordedAt": "2026-10-02T21:01:46.656Z",
+  "versionMetadata": "1.40.0",
+  "lab": "/var/tmp/mcp-linux-v141-20261003-cancellation-r1",
+  "sourceFiles": [
+    {
+      "path": "packages/process/src/executable-resolver.ts",
+      "bytes": 1328,
+      "sha256": "d725962eb16c4a0ec63438f7a6460b90b27263fdb01281ee6bf8a63dd07cfde4"
+    },
+    {
+      "path": "packages/process/src/index.ts",
+      "bytes": 193,
+      "sha256": "4281c550da58406d773597a8d80dfd4090f559064d23f534adf7af3310e3d437"
+    },
+    {
+      "path": "packages/process/src/linux-process-group.test.ts",
+      "bytes": 1163,
+      "sha256": "2a65990ee7a2db48bd1a0519a83a975b0d287c6f2c8dab0a6aac1fc029c755df"
+    },
+    {
+      "path": "packages/process/src/linux-process-group.ts",
+      "bytes": 3348,
+      "sha256": "0c7821b70fb31795b645794ab27350ecdd61ec5e973edbec256cd3944422d889"
+    },
+    {
+      "path": "packages/process/src/process-group-cancellation.test.ts",
+      "bytes": 3379,
+      "sha256": "c27f21511ed229620cd93527dc093ca30de932fc32102f3ab16d8eea46b4b75e"
+    },
+    {
+      "path": "packages/process/src/process-manager.test.ts",
+      "bytes": 9705,
+      "sha256": "a1827cb2dea78b91baafd438f61e9e7dc4ca9209773004f0367f9e42e7fc8991"
+    },
+    {
+      "path": "packages/process/src/process-manager.ts",
+      "bytes": 14550,
+      "sha256": "dfb537949ac4bac608b9a263d476a97e6b382ea737c62d2632b704a44574dcb0"
+    },
+    {
+      "path": "packages/process/src/process-types.ts",
+      "bytes": 1082,
+      "sha256": "48bbfbafeaba4c50d9b00206e369e02006ee774adacd9ff6c993a47540451c65"
+    },
+    {
+      "path": "packages/process/src/ring-buffer.test.ts",
+      "bytes": 1007,
+      "sha256": "48d4f7fc59ea3ff401a6c263a20509318779ae6a7d0fd11d14ec11441f808b0a"
+    },
+    {
+      "path": "packages/process/src/ring-buffer.ts",
+      "bytes": 1984,
+      "sha256": "653cc2dc5240fd674b781ebbf339935f8d0e49638030502ccdd8393e812644d8"
+    },
+    {
+      "path": "packages/process/src/unix-process-tree.test.ts",
+      "bytes": 7437,
+      "sha256": "9078c1a40c4d0d9c4272054f4aab57edcb51bd4b5fce717f6a9208dfb4e41e80"
+    },
+    {
+      "path": "packages/process/src/unix-process-tree.ts",
+      "bytes": 8139,
+      "sha256": "386a3273a14df87de49a1540ba72ac0bfe6b8f674ae5f282902d58af6b78b0b7"
+    },
+    {
+      "path": "packages/process/package.json",
+      "bytes": 489,
+      "sha256": "bfd8260a88d97c0de934551b19feb3e33c0cea983cdbb8fc42ed981b95fe5e4e"
+    },
+    {
+      "path": "packages/process/tsconfig.json",
+      "bytes": 283,
+      "sha256": "ab65fe0949f0427eb81a65d311075808dec08a1b33db08d17bbefe9dc8a0b3d2"
+    },
+    {
+      "path": "tsconfig.base.json",
+      "bytes": 417,
+      "sha256": "26d90b0836d3e7bfe5c670134e731930b7fc7a76310896e9740fbdbf6479994a"
+    }
+  ],
+  "sourceHashesMatchRemote": true,
+  "linux": {
+    "passed": 25,
+    "failed": 0,
+    "artifact": {
+      "path": "dist/v1.41.0-local-20261003/native/linux-cancellation-sol-final-focused.log",
+      "bytes": 834,
+      "sha256": "fb2a12fcfb9008b6ced3a34641de4c20615c532e629f977b56d34101c1044716"
+    }
+  },
+  "windows": {
+    "passed": 59,
+    "platformSkipped": 2,
+    "boundary": "lead observed focused run; not full release"
+  },
+  "independentReview": {
+    "reviewer": "Sol",
+    "disposition": "process repair approved; source/tests reviewed, execution lead reported",
+    "limitations": [
+      "aggregate process sampling cost not load-tested",
+      "ordinary-process observation is not atomic OS containment"
+    ]
+  },
+  "integrationCounterexample": {
+    "baselineMcpServers": 1,
+    "fixedEmptyTableMcpServers": 1,
+    "hooksDisabled": true,
+    "pluginsDisabled": true,
+    "multiAgentDisabled": true,
+    "artifactSha256": "dc68b53c6675d967ef81627b9a7be79a5ea384a286e2f5b19f8208765bfa252d",
+    "consequence": "enhanced launch is fail-closed pending target-specific effective preflight"
+  },
+  "dependencyBoundary": "unchanged accepted v1.40 dependencies/domain shared read-only; focused isolated lab, not packaged acceptance",
+  "remaining": [
+    "effective integration isolation preflight",
+    "canonical optional schemas and complete regression gates",
+    "immutable Ubuntu/package acceptance",
+    "installed transport/provider checks",
+    "independent closure review"
+  ]
+}

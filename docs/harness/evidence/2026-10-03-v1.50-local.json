@@ -1,0 +1,265 @@
+{
+  "milestone": "1.50.0",
+  "status": "implementation-reviewed-local-passed-ubuntu-open",
+  "reviewer": "v150_scope_review: qa-approved",
+  "focused": {
+    "passed": 70,
+    "skipped": 0
+  },
+  "unit": {
+    "passed": 916,
+    "skipped": 47
+  },
+  "other": {
+    "passed": 35,
+    "skipped": 6
+  },
+  "sources": [
+    {
+      "path": "packages/mcp-server/package.json",
+      "sha256": "2ae21e8971f1e353c822cee987a61b01191cd5d9f42b196f852b75ac05dd1fe3"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "da9aa921d1ef673aea1436c6d42e35b6a5660dbb298d06e7898772e7885c564a"
+    },
+    {
+      "path": "scripts/generate-tool-catalog.mjs",
+      "sha256": "58672233291923758e92f636be1405a947d763d0970b1110d5211a0d064354d1"
+    },
+    {
+      "path": "apps/cli/src/runtime/stdio-mcp-runtime.ts",
+      "sha256": "efae45e0c7f9dc86ce9e44ff9e049eda7e2a867cbc7a5cbc0fb6379e216d231b"
+    },
+    {
+      "path": "packages/application/src/fleet-catalog-service.ts",
+      "sha256": "cc7121198f0c7af0988200cb2aca33b04e4f5ca492dddceda383d4b1f3d259b1"
+    },
+    {
+      "path": "packages/application/src/workflow-state-service.ts",
+      "sha256": "73b788e60ae27ffe4a5a3397294df346f064ba46c850632d7b75af653a63ac32"
+    },
+    {
+      "path": "packages/application/src/workflow-state-service.test.ts",
+      "sha256": "3c8646b0c015223e24c8ae9e80d05fa1d0839322820f58685487e75b9cabaf4a"
+    },
+    {
+      "path": "packages/mcp-server/src/diagnosis-service.ts",
+      "sha256": "455ab80794649b4497740e195b4300c78ac41db972cc287f7f3ec7e0d5934da7"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-service.ts",
+      "sha256": "9230d2e64676c892dd655ca08ba8862dbe5a59dbff9b1d01a0108710b5e2d57e"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-service.test.ts",
+      "sha256": "d1794f9b5d3eed8f1531d6426cee60c166786911fd1c2aff75a10af329c70e80"
+    },
+    {
+      "path": "packages/mcp-server/src/index.ts",
+      "sha256": "9eba1f0a2911116d4daec2ca6757ca2ae26a53d4382dbd074ea804c2bf695e4d"
+    },
+    {
+      "path": "packages/mcp-server/src/server-profile.ts",
+      "sha256": "e272c19614673609fc5ad6e07312210eb3d64fd426774e2a7b65fced0f38cb56"
+    },
+    {
+      "path": "packages/mcp-server/src/tool-registry.ts",
+      "sha256": "61b9c753e85599386864ea3aa021b41fb473bc9cfd6961877febea92bb55a198"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/tool-types.ts",
+      "sha256": "9175117bdd45868396ad743d0e4df6734acda2800e6b634ff392c923fe72bda9"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/incident-tools.ts",
+      "sha256": "6b51c39d5452bf23734225f216597b28d8743093bdd61ad80f7f37b658cd19da"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/diagnosis-tools.ts",
+      "sha256": "e3a7d323c937314511c1d186c83bc6cad5b8fac51a00cbe34dc016c210a21863"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/workflow-state-tools.ts",
+      "sha256": "6818592a4b485d1da8f2cd57158844f0975d4e7ceef752ac624a13f4bdd68d11"
+    },
+    {
+      "path": "packages/storage/src/database.ts",
+      "sha256": "1997d7c130d39ca620be432c53e2914dac515b818678ff19328144b21ac5f36e"
+    },
+    {
+      "path": "packages/storage/src/index.ts",
+      "sha256": "aac920dc1c2f28fdcb99eeefde037adff2ab120497def1d9cca17827357c25be"
+    },
+    {
+      "path": "packages/storage/src/workflow-repository.ts",
+      "sha256": "b676e4cd892ad8b11803fda2bafd846115c5e0d6674aa988583d837cde7d31ab"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-fix-contract.ts",
+      "sha256": "ff57871eae1249e6d51f6f0ab3fe0871f7ea7cc7fbc58ad26d3a76d4a8bf9986"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-fix-contract.test.ts",
+      "sha256": "c050f8ff605ffdb220a635d6de9bf790cf76c0237bf621bf84444bb3d867d4e7"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-fix-service.ts",
+      "sha256": "54f9d5dad700520ba54c1f02a6990422940a6537f3639c78b237d94fa2e0b61a"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-fix-service.test.ts",
+      "sha256": "ed913714e27e9f905b686de24b4f940935df14b82e44236b86b219e4f37176fc"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/incident-fix-tools.ts",
+      "sha256": "209419d9228a21ecc9c0625efd29630a724b36412a852b33fb17729e668f926f"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/incident-fix-tools.test.ts",
+      "sha256": "c271a2954b19ab98965811d4b260b3d42f093a0d15577b9d0a6c70e486d1c28c"
+    },
+    {
+      "path": "packages/storage/src/incident-fix-repository.ts",
+      "sha256": "6036091e3a4c40faa95354d11e75197b10b8fbbceee5f267b41dc11e13faa92b"
+    },
+    {
+      "path": "packages/storage/src/incident-fix-repository.test.ts",
+      "sha256": "be255902bb7bff8a9cd62e9f131f7acecd21bc7caef2f2034d7a0f1ec5de3520"
+    },
+    {
+      "path": "packages/storage/src/migrations/incident-fix-migration.ts",
+      "sha256": "b0eefb18fd08422506adf8bb60f0d74a1dbdaf4e6127e2e37747bf2efeb47bdb"
+    }
+  ],
+  "gates": [
+    {
+      "name": "typecheck",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--build"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 187
+    },
+    {
+      "name": "lint",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "."
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 5695
+    },
+    {
+      "name": "focused",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages/storage/src/incident-fix-repository.test.ts",
+        "packages/mcp-server/src/incident-fix-contract.test.ts",
+        "packages/mcp-server/src/incident-fix-service.test.ts",
+        "packages/mcp-server/src/tools/incident-fix-tools.test.ts",
+        "packages/mcp-server/src/incident-service.test.ts",
+        "packages/storage/src/incident-repository.test.ts",
+        "packages/application/src/workflow-state-service.test.ts",
+        "packages/mcp-server/src/tools/workflow-state-tools.test.ts"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 5922
+    },
+    {
+      "name": "unit",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages",
+        "apps",
+        "--maxWorkers=4"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 31828
+    },
+    {
+      "name": "other",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/integration",
+        "tests/packaging",
+        "tests/release",
+        "tests/acceptance",
+        "--maxWorkers=4"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 4027
+    },
+    {
+      "name": "catalog",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-catalog.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 490
+    },
+    {
+      "name": "contract",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-contract-v1.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 394
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "dist/v1.50.0-local-20261003-r3/full-local-logs/typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.50.0-local-20261003-r3/full-local-logs/lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.50.0-local-20261003-r3/full-local-logs/focused.log",
+      "sha256": "f0273466756a9420bbec9052e4fc34513d5ac55d07ecc8c3747586d5dc11de59"
+    },
+    {
+      "path": "dist/v1.50.0-local-20261003-r3/full-local-logs/unit.log",
+      "sha256": "34b1938087bb152e6cbdf75f048336f96815731cd8590469356146bfbeb25ccb"
+    },
+    {
+      "path": "dist/v1.50.0-local-20261003-r3/full-local-logs/other.log",
+      "sha256": "03726ca5c362d610eb19d32068066c6d63bc286f0baa5e63cc1691b7c0020d66"
+    },
+    {
+      "path": "dist/v1.50.0-local-20261003-r3/full-local-logs/catalog.log",
+      "sha256": "f84a394141fccf796da7629c83c537a191ef86695d9541f900d9d27e79bd02dd"
+    },
+    {
+      "path": "dist/v1.50.0-local-20261003-r3/full-local-logs/contract.log",
+      "sha256": "ebbebb0660ce372788f258b3c0ee3e6c489cca1f53e5389f1f602c4030a96748"
+    },
+    {
+      "path": "dist/v1.50.0-local-20261003-r3/full-local-logs/gates.json",
+      "sha256": "ccb3ffdcc02167bfba6da414827e2a856195c22e2ce8216a5a6d482114dad5c9"
+    }
+  ],
+  "boundary": "Windows local source checks only. Ubuntu/package/installed transport and lifecycle/native provider verification remain separate. No publication or production readiness is claimed."
+}

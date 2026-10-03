@@ -1,0 +1,187 @@
+{
+  "milestone": "1.43.0",
+  "status": "implementation-approved-local-passed-ubuntu-open",
+  "sources": [
+    {
+      "path": "packages/capabilities/src/durable-shell-task-store.ts",
+      "sha256": "a206c3b46352164086375b961b761c6b1a05ad2da4fb8340c4b17ac9bdf4a5bc"
+    },
+    {
+      "path": "packages/capabilities/src/durable-shell-task-store.test.ts",
+      "sha256": "5fd9764f5fead7fd70222d4e9c6476b8e131f31c46f8216a98cd3160e6d215c7"
+    },
+    {
+      "path": "packages/domain/src/workflow-state.ts",
+      "sha256": "d898274a9d7926e6fbce0f73b7a9e8c9e1c390ece6f2c85a3532dbef69de1ac1"
+    },
+    {
+      "path": "packages/storage/src/workflow-repository.ts",
+      "sha256": "dd4b25dac975cfb2b8300d5a355a82d50b7ff46b8072a4dd2a814441256e5ce0"
+    },
+    {
+      "path": "packages/storage/src/workflow-repository.integration.test.ts",
+      "sha256": "bfbfc079880bd03b10e6b5a657195447a3e9f3362c594aa6c84117a3cac2175f"
+    },
+    {
+      "path": "packages/storage/src/workflow-repository.worker.test.ts",
+      "sha256": "78b20879b011aa177ce3a22970a9ef9ea1d26d8e789cf17bf60dceec0f8d4875"
+    },
+    {
+      "path": "packages/storage/src/migrations/workflow-scope-migration.ts",
+      "sha256": "5ce63ff3ba2b81567da9c49d8c22fe981df8ae3f371117904fe76a1d88f8b907"
+    },
+    {
+      "path": "packages/storage/src/database.ts",
+      "sha256": "6b6c564d7296c9268b2c2138e1f656167cbb70a53de00e9c708d836ec3676d75"
+    },
+    {
+      "path": "packages/application/src/workflow-scope.ts",
+      "sha256": "97f55954daa498afa635cdf9dc9d8ff01869feaaa8aee16514bf544d0d2c7851"
+    },
+    {
+      "path": "packages/application/src/workflow-scope.test.ts",
+      "sha256": "c4ccb0339dd38a958ae5ba80c69309cdb737c4568649bda6b3a32126e1914d9b"
+    },
+    {
+      "path": "packages/application/src/workflow-state-service.ts",
+      "sha256": "1e49639bdb3a4fcf1bd2f0c31fd9e9a2f5593171f75b0fbd671f81f0e2e9497e"
+    },
+    {
+      "path": "packages/application/src/workflow-state-service.test.ts",
+      "sha256": "d87fc0ca394eae71162383c4186111dd735bf44e13d722014762d675c2915250"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/workflow-state-tools.ts",
+      "sha256": "f18340b5bee7d2012e6618aaaa9e3fb3b2ad0d62876d3e92733edf4faeecad1f"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/workflow-state-tools.test.ts",
+      "sha256": "4ac3815c152907e1308f1e01a4437c91c7b0f36387c5fa133391abdd8fb1255a"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/schemas.ts",
+      "sha256": "61d96d0afad5a55f989c468336f0e7bd25e36106f2dc64ec8929e5f16b982c00"
+    },
+    {
+      "path": "packages/mcp-server/src/result-mapper.ts",
+      "sha256": "85fa5460b0909919e45db02487095e2dc2318a2b75f3965b7d916b11665e518c"
+    },
+    {
+      "path": "packages/mcp-server/src/result-mapper.test.ts",
+      "sha256": "775175e392ecd03d19d100a837330a708e2657138e60334d8f47831c1fc1f869"
+    }
+  ],
+  "gates": [
+    {
+      "name": "typecheck",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--build"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 157
+    },
+    {
+      "name": "lint",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "."
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 4450
+    },
+    {
+      "name": "focused",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages/storage/src/workflow-repository.integration.test.ts",
+        "packages/application/src/workflow-state-service.test.ts",
+        "packages/application/src/workflow-scope.test.ts",
+        "packages/capabilities/src/durable-shell-task-store.test.ts",
+        "packages/mcp-server/src/tools/workflow-state-tools.test.ts"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 3181
+    },
+    {
+      "name": "unit",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages",
+        "apps"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 13237
+    },
+    {
+      "name": "other",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/integration",
+        "tests/packaging",
+        "tests/release",
+        "tests/acceptance"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 2916
+    },
+    {
+      "name": "catalog",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-catalog.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 340
+    },
+    {
+      "name": "contract",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-contract-v1.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 332
+    }
+  ],
+  "focusedPassed": 25,
+  "focusedSkipped": 14,
+  "unitPassed": 768,
+  "unitSkipped": 47,
+  "otherPassed": 34,
+  "otherSkipped": 5,
+  "catalogTools": 235,
+  "frozenV1Tools": 227,
+  "reviewer": "v143_scope_review: gpt-6.1-sol high",
+  "reviewBoundary": "independent source review and reviewer focused reruns; lead full checks",
+  "windowsCodex": {
+    "version": "0.146.0",
+    "loginStatus": "Logged in using ChatGPT",
+    "nativeExecutionEvidence": "accepted v1.41 config/native receipts; not repeated for metadata coordination"
+  },
+  "limits": [
+    "metadata coordination; not OS sandbox",
+    "filesystem may change after final check",
+    "native authorship and writer termination caller-attested",
+    "QA references not verified until v1.44",
+    "Linux FIFO test skipped on Windows",
+    "Ubuntu/package pending; publication unapproved"
+  ]
+}

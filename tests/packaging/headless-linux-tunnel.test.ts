@@ -1,0 +1,125 @@
+import { chmod, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
+import os from 'node:os';
+import path from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+const root = path.resolve(import.meta.dirname, '..', '..');
+
+describe('headless Linux Secure MCP Tunnel packaging', () => {
+  it.skipIf(process.platform !== 'linux')('routes registered-target admin commands through the public launcher', async () => {
+    const builder = await readFile(path.join(root, 'scripts', 'build-headless.mjs'), 'utf8');
+    const template = builder.match(/const launcher = `([\s\S]*?)`;/)?.[1];
+    expect(template).toBeDefined();
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'mcp-launcher-routing-'));
+    try {
+      const launcher = path.join(directory, 'baitonghub-linux-mcp');
+      const node = path.join(directory, 'baitonghub-linux-mcp-node');
+      await writeFile(launcher, template!.replace(/\r\n?/g, '\n').replaceAll('\\${', '${'));
+      await writeFile(node, '#!/bin/sh\nprintf "%s\\n" "$@"\n');
+      await chmod(node, 0o700);
+      for (const command of ['remote-host', 'database', 'status', 'doctor', 'workspace']) {
+        const result = spawnSync('/bin/sh', [launcher, command, 'list', 'argument with spaces'], { encoding: 'utf8' });
+        expect(result.status, `${command}: ${result.stderr}`).toBe(0);
+        expect(result.stdout.trim().split('\n')).toEqual([
+          path.join(directory, 'admin.cjs'), command, 'list', 'argument with spaces',
+        ]);
+      }
+      const unknown = spawnSync('/bin/sh', [launcher, 'unsupported-command'], { encoding: 'utf8' });
+      expect(unknown.status).toBe(2);
+      expect(unknown.stdout).toBe('');
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  it('installs the latest official client only after checksum verification', async () => {
+    const installer = await readFile(path.join(root, 'scripts', 'install-linux-tunnel-client.sh'), 'utf8');
+    expect(installer).toContain('openai/tunnel-client/releases/latest');
+    expect(installer).toContain('SHA256SUMS.txt');
+    expect(installer).toContain('sha256sum --check');
+    expect(installer).not.toMatch(/tunnel-client-v\d/);
+    expect(installer).not.toContain('.exe');
+  });
+
+  it('runs the tunnel as full strict-root stdio with systemd credentials', async () => {
+    const launcher = await readFile(path.join(root, 'scripts', 'start-baitonghub-linux-mcp-tunnel.sh'), 'utf8');
+    const unit = await readFile(path.join(root, 'packaging', 'linux-headless', 'baitonghub-linux-mcp-tunnel@.service'), 'utf8');
+    expect(launcher).toContain('BAITONGHUB_LINUX_MCP_STDIO_PROFILE=full');
+    expect(launcher).toContain('BAITONGHUB_LINUX_MCP_STRICT_ROOTS=1');
+    expect(launcher).toContain('doctor');
+    expect(launcher).toContain('exec "$tunnel_client" run');
+    expect(unit).toContain('LoadCredential=control_plane_api_key:');
+    expect(unit).toContain('LoadCredential=checkpoint_key_base64:');
+    expect(unit).toContain('KillMode=control-group');
+    expect(unit).toContain('Restart=always');
+  });
+
+  it('keeps tunnel identity out of package source and uses the direct stdio launcher', async () => {
+    const configure = await readFile(path.join(root, 'scripts', 'configure-linux-tunnel.sh'), 'utf8');
+    expect(configure).toContain('sample_mcp_stdio_local');
+    expect(configure).toContain('/usr/bin/baitonghub-linux-mcp mcp --stdio');
+    expect(configure).toContain('env:CONTROL_PLANE_API_KEY');
+    expect(configure).not.toMatch(/tunnel_[a-z0-9]{32}/);
+  });
+
+  it('packages tunnel installer dependencies and reloads systemd units', async () => {
+    const packager = await readFile(path.join(root, 'scripts', 'package-linux-headless.mjs'), 'utf8');
+    expect(packager).toContain('Depends: ca-certificates, curl, git, ripgrep, unzip');
+    expect(packager).toContain('systemctl daemon-reload');
+  });
+
+  it('normalizes packaged POSIX launchers to LF from any checkout', async () => {
+    const packager = await readFile(path.join(root, 'scripts', 'package-linux-headless.mjs'), 'utf8');
+    expect(packager).toContain("replace(/\\r\\n?/g, '\\n')");
+    expect(packager).toContain('copyTextFileWithLf');
+  });
+
+  it('runs the extracted DEB and tar launchers through the same MCP smoke workflow', async () => {
+    const verifier = await readFile(path.join(root, 'scripts', 'verify-linux-package.sh'), 'utf8');
+    const smoke = await readFile(path.join(root, 'scripts', 'smoke-packaged-mcp.mjs'), 'utf8');
+    expect(verifier).toContain('smoke-packaged-mcp.mjs');
+    expect(verifier).toContain('run_packaged_smoke deb');
+    expect(verifier).toContain('run_packaged_smoke tar');
+    expect(smoke).toContain("['mcp', '--stdio', '--workspace', workspace]");
+    expect(smoke).toContain("'workspace_list'");
+    expect(smoke).toContain("'workspace_register'");
+    expect(smoke).toContain("'apply_patch'");
+    expect(smoke).toContain("'workspace_snapshot'");
+    expect(smoke).toContain("operation: 'manifest'");
+    expect(smoke).toContain("'task_events'");
+    expect(smoke).toContain("'task_history'");
+    expect(smoke).toContain('taskHistoryCount');
+    expect(smoke).toContain("'diagnostics_snapshot'");
+    expect(smoke).toContain('diagnosticsStatus');
+    expect(smoke).toContain("tool.name === 'remote_fleet_diff'");
+    expect(smoke).toContain('remoteFleetDiffAdvertised');
+    expect(smoke).toContain('releaseVerifyAdvertised');
+    expect(smoke).toContain("tool.name === 'release_verify'");
+    expect(smoke).toContain('environmentPreflightAdvertised');
+    expect(smoke).toContain("tool.name === 'environment_preflight'");
+    expect(smoke).toContain("tool.name === 'workspace_checkpoint'");
+    expect(smoke).toContain('workspaceCheckpointEntries');
+    expect(smoke).toContain("operation: 'diff'");
+    expect(smoke).toContain('workspaceCheckpointDiffUnchanged');
+    expect(smoke).toContain("operation: 'stats'");
+    expect(smoke).toContain('workspaceCheckpointStatsCount');
+    expect(smoke).toContain("operation: 'summary'");
+    expect(smoke).toContain('workspaceCheckpointSummaryChanged');
+    expect(smoke).toContain("operation: 'compare'");
+    expect(smoke).toContain('workspaceCheckpointCompareUnchanged');
+    expect(smoke).toContain("operation: 'prune'");
+    expect(smoke).toContain('workspaceCheckpointPruned');
+    expect(smoke).toContain("'/usr/bin/printf'");
+  });
+
+  it('publishes the tagged release from Ubuntu with headless artifacts only', async () => {
+    const workflow = await readFile(path.join(root, '.github', 'workflows', 'release.yml'), 'utf8');
+    expect(workflow).toContain('runs-on: ubuntu-24.04');
+    expect(workflow).toContain('pnpm package:linux:headless');
+    expect(workflow).toContain('Baitonghub-Linux-mcp-*-amd64.deb');
+    expect(workflow).toContain('Baitonghub-Linux-mcp-*-linux-x64.tar.gz');
+    expect(workflow).not.toContain('windows-latest');
+    expect(workflow).not.toMatch(/\.exe\s*$/m);
+  });
+});

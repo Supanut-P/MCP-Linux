@@ -1,0 +1,3105 @@
+{
+  "milestone": "1.56.0",
+  "status": "milestone-verification-closed",
+  "sourceCommit": "8ced2d7d18890a3703a9519797cfd34b719cfa06",
+  "sourceManifestSha256": "5ae1e631aed5d584ef9202f52aecbabd0bb238b908d1ee6ed36725106424998a",
+  "sourceFiles": 800,
+  "sourceArchiveSha256": "d190b88730f2060745b208e50be7415e6a50d8d30819b9b36244c4086ff3ffbd",
+  "root": "isolated raw-byte export of primary dirty work; no primary commit/branch created",
+  "version": "1.56.0",
+  "local": {
+    "milestone": "1.56.0",
+    "status": "local-passed-ubuntu-open",
+    "implementationReview": "v156_acceptance_audit scoped approval; test return annotations added after review with no behavior change",
+    "sources": [
+      {
+        "path": "packages/codex/src/codex-sandbox-probe.ts",
+        "sha256": "53f00e9632ba0457180a9ab671edb43699d7d91b584dbcbed15ae66c241e4b44"
+      },
+      {
+        "path": "packages/codex/src/codex-sandbox-probe.test.ts",
+        "sha256": "9ad4c8fb80db64d8f304d99e361241f65bb4b295c56136a3a72e57147d34482c"
+      },
+      {
+        "path": "packages/codex/src/codex-adapter.ts",
+        "sha256": "55dc9d17da644f0be015d06fc9d42f355f68dcc8a9e696bc8189b47538d1f4e1"
+      },
+      {
+        "path": "packages/codex/src/codex-adapter.test.ts",
+        "sha256": "65315724eb613df5e7ee2aaf5a57ba939e865e7abea41d117d0673fbaf86c532"
+      },
+      {
+        "path": "packages/codex/src/index.ts",
+        "sha256": "6a9ae818617fff9d60ec4e67a44a447fb32e295152ac92699299f38239e57fae"
+      },
+      {
+        "path": "packages/codex/src/codex-config-policy.ts",
+        "sha256": "227f14347d768165d161a9adeb2ea53bd048996407539f7e81781d49de29ac3b"
+      },
+      {
+        "path": "packages/process/src/process-manager.ts",
+        "sha256": "ff81e25d3d94152431abd2aed9e94bfe93aa9f0e2adfc3bdbdfdb41eb9fa217d"
+      },
+      {
+        "path": "packages/process/src/safe-environment.ts",
+        "sha256": "3fe6cff1d48b9d308cd122d29d9f395af609c56a4f97bbf118c5750ee61c805a"
+      },
+      {
+        "path": "package.json",
+        "sha256": "e063b624bdf80b7ea8ecb1c2bec738b1c350b5ce2207184cec3dfcb3496047ae"
+      },
+      {
+        "path": "pnpm-lock.yaml",
+        "sha256": "8f84201f29fe36339a8462f107fcfbe8ba79d25a2d3059118916a984702c9ff4"
+      },
+      {
+        "path": "packages/shared/src/index.ts",
+        "sha256": "feb4ae371d03294212db0d31dd0ba8a35ff284a54b483b44d44e4e311adef5ac"
+      }
+    ],
+    "gates": [
+      {
+        "name": "typecheck",
+        "command": [
+          "C:\\Program Files\\nodejs\\node.exe",
+          "node_modules/typescript/bin/tsc",
+          "--build"
+        ],
+        "exitCode": 0,
+        "error": null,
+        "latencyMs": 280
+      },
+      {
+        "name": "lint",
+        "command": [
+          "C:\\Program Files\\nodejs\\node.exe",
+          "node_modules/eslint/bin/eslint.js",
+          "."
+        ],
+        "exitCode": 0,
+        "error": null,
+        "latencyMs": 11266
+      },
+      {
+        "name": "focused",
+        "command": [
+          "C:\\Program Files\\nodejs\\node.exe",
+          "node_modules/vitest/vitest.mjs",
+          "run",
+          "packages/codex/src/codex-sandbox-probe.test.ts",
+          "packages/codex/src/codex-adapter.test.ts",
+          "packages/capabilities/src/dbus-introspection.test.ts",
+          "packages/capabilities/src/remote-host-backend.test.ts",
+          "packages/mcp-server/src/remote-fleet-runtime.test.ts",
+          "packages/application/src/fleet-catalog-service.test.ts",
+          "packages/mcp-server/src/tools/incident-tools.test.ts",
+          "packages/storage/src/incident-fix-repository.test.ts",
+          "packages/mcp-server/src/incident-fix-contract.test.ts",
+          "packages/mcp-server/src/incident-fix-service.test.ts",
+          "packages/mcp-server/src/tools/incident-fix-tools.test.ts",
+          "packages/mcp-server/src/incident-service.test.ts",
+          "packages/storage/src/incident-repository.test.ts",
+          "packages/application/src/workflow-state-service.test.ts",
+          "packages/mcp-server/src/tools/workflow-state-tools.test.ts"
+        ],
+        "exitCode": 0,
+        "error": null,
+        "latencyMs": 12860
+      },
+      {
+        "name": "unit",
+        "command": [
+          "C:\\Program Files\\nodejs\\node.exe",
+          "node_modules/vitest/vitest.mjs",
+          "run",
+          "packages",
+          "apps",
+          "--maxWorkers=4"
+        ],
+        "exitCode": 0,
+        "error": null,
+        "latencyMs": 51049
+      },
+      {
+        "name": "other",
+        "command": [
+          "C:\\Program Files\\nodejs\\node.exe",
+          "node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/integration",
+          "tests/packaging",
+          "tests/release",
+          "tests/acceptance",
+          "--maxWorkers=4"
+        ],
+        "exitCode": 0,
+        "error": null,
+        "latencyMs": 6749
+      },
+      {
+        "name": "catalog",
+        "command": [
+          "C:\\Program Files\\nodejs\\node.exe",
+          "scripts/generate-tool-catalog.mjs",
+          "--check"
+        ],
+        "exitCode": 0,
+        "error": null,
+        "latencyMs": 682
+      },
+      {
+        "name": "contract",
+        "command": [
+          "C:\\Program Files\\nodejs\\node.exe",
+          "scripts/generate-tool-contract-v1.mjs",
+          "--check"
+        ],
+        "exitCode": 0,
+        "error": null,
+        "latencyMs": 629
+      }
+    ],
+    "focused": {
+      "passed": 129,
+      "skipped": 0
+    },
+    "unit": {
+      "passed": 938,
+      "skipped": 47
+    },
+    "other": {
+      "passed": 35,
+      "skipped": 6
+    },
+    "artifacts": [
+      {
+        "path": "dist/v1.56.0-local-20261003/full-local-logs/typecheck.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "dist/v1.56.0-local-20261003/full-local-logs/lint.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "dist/v1.56.0-local-20261003/full-local-logs/focused.log",
+        "sha256": "9bb38b010d222d6190dcf3aa747d4a4094567ad222f0c44fb225fbf4378a8206"
+      },
+      {
+        "path": "dist/v1.56.0-local-20261003/full-local-logs/unit.log",
+        "sha256": "e33eaf7824b4abfba91acf1e54f90415767a41fcfa2a6d974c6b1a9f96449e1c"
+      },
+      {
+        "path": "dist/v1.56.0-local-20261003/full-local-logs/other.log",
+        "sha256": "67462a457e557357692bb7190f4af7b8c97a934c6476434387c084f66deca503"
+      },
+      {
+        "path": "dist/v1.56.0-local-20261003/full-local-logs/catalog.log",
+        "sha256": "4dedbcdac41ac6a57836e2a09ff7b9f1e866b19c1e9b85fa1e17f07f8af6a439"
+      },
+      {
+        "path": "dist/v1.56.0-local-20261003/full-local-logs/contract.log",
+        "sha256": "a319fb660b3ea0eaaa62d6d6efb8521ce7037526e99801e1bffb4e5224a8128e"
+      }
+    ],
+    "boundary": "Windows source verification only; native receipts from the accepted 1.55 baseline do not establish current candidate provider/package verification. Ubuntu and publication gates remain open."
+  },
+  "sourceGates": {
+    "archiveSha256": "d190b88730f2060745b208e50be7415e6a50d8d30819b9b36244c4086ff3ffbd",
+    "gateHistory": [
+      {
+        "exitCode": 0,
+        "gate": "install",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "audit-prod",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "audit-all",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "rebrand",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "lint",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "typecheck",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "unit",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "integration",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "packaging-tests",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "release-gate",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "catalog",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "v1-contract",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "v1-acceptance",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "build-package",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "verify-package",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "provenance",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "upgrade-preflight",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "diff-check",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "diff-check",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "source-fingerprints",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "installed-stdio",
+        "origin": "gates.tsv"
+      }
+    ],
+    "gateInputs": [
+      {
+        "file": "gates.tsv",
+        "sha256": "b62dd0117d3f5399de118da684de4ef74d61bf749a88c1f12f704f50d3edf9e3"
+      }
+    ],
+    "gates": [
+      {
+        "exitCode": 0,
+        "gate": "audit-all",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "audit-prod",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "build-package",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "catalog",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "diff-check",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "install",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "installed-stdio",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "integration",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "lint",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "packaging-tests",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "provenance",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "rebrand",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "release-gate",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "source-fingerprints",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "typecheck",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "unit",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "upgrade-preflight",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "v1-acceptance",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "v1-contract",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "verify-package",
+        "origin": "gates.tsv"
+      }
+    ],
+    "historicalFailureReason": null,
+    "historicalFailures": [],
+    "integrationPassed": 5,
+    "manifestSha256": "5ae1e631aed5d584ef9202f52aecbabd0bb238b908d1ee6ed36725106424998a",
+    "packageArtifacts": [
+      {
+        "bytes": 918,
+        "file": "Baitonghub-Linux-mcp-1.56.0-BUILD-METADATA.json",
+        "sha256": "8519c4dff19b2fd886c8ecd1dd7ce579b52a51db9f31d506cbb6796dad100ba4"
+      },
+      {
+        "bytes": 542,
+        "file": "Baitonghub-Linux-mcp-1.56.0-PROVENANCE-SHA256SUMS",
+        "sha256": "09caf0174658f6e4fcfd353469a5c2aaad1f32eba3d40c34e6e6a4dd29c1b72c"
+      },
+      {
+        "bytes": 32904274,
+        "file": "Baitonghub-Linux-mcp-1.56.0-amd64.deb",
+        "sha256": "2a4c7812b91e7511e97908b5930cc3725a161362bbb14573206669be251155b5"
+      },
+      {
+        "bytes": 14049,
+        "file": "Baitonghub-Linux-mcp-1.56.0-SBOM.cdx.json",
+        "sha256": "432c2fe52099970024533827911f9bdd8e272dd27a19bf3e73ad0d085953d7cb"
+      },
+      {
+        "bytes": 45067252,
+        "file": "Baitonghub-Linux-mcp-1.56.0-linux-x64.tar.gz",
+        "sha256": "86b83c338416776d7535245ba4222689388ae945ea6e1bfc486610d0f315c161"
+      },
+      {
+        "bytes": 215,
+        "file": "Baitonghub-Linux-mcp-1.56.0-SHA256SUMS",
+        "sha256": "a6bc12d2aed45c197284cfdd34df55915c8229c7ac254665b30d57f81d655e94"
+      }
+    ],
+    "packagingPassed": 16,
+    "releasePassed": 12,
+    "sourceCommit": "8ced2d7d18890a3703a9519797cfd34b719cfa06",
+    "sourceFiles": 800,
+    "testCounts": {
+      "integration": {
+        "logSha256": "6521bcd5e209ae9d64ff0b2fa05328d81dcfa601749aa9acbd34d0b50b89c477",
+        "passed": 5,
+        "skipped": 0,
+        "summaries": 1
+      },
+      "packaging": {
+        "logSha256": "003cadcd9f5c9d464fcd27ba85f9ab70c2230fd03602bfa60f117e88e1333974",
+        "passed": 16,
+        "skipped": 0,
+        "summaries": 1
+      },
+      "release": {
+        "logSha256": "0e4c2f49a12b18b3ad1bf4fd3079d5171ac55aa16cdd157832ee161a64a90c01",
+        "passed": 12,
+        "skipped": 0,
+        "summaries": 1
+      },
+      "unit": {
+        "logSha256": "5246165fec4389a4740d11661e8d023571cd6d14097a8a351fafc1a672f180cf",
+        "passed": 982,
+        "skipped": 3,
+        "summaries": 17
+      },
+      "v1Acceptance": {
+        "logSha256": "a6f36489e0e6143e83c8a07a9c4917d3bdc4ee8e0b9e7339ba4c7f157fe48d95",
+        "passed": 5,
+        "skipped": 0,
+        "summaries": 1
+      }
+    },
+    "unitPassed": 982,
+    "unitSkipped": 3,
+    "v1AcceptancePassed": 5
+  },
+  "lifecycle": {
+    "baselineConfigSha256": "d89c549cad8e334b962510e8d56cd6945de8cdfab4b186cf703557f0f611bc0a",
+    "baselineStateSha256": "053eedc9d11205a2ae43c7d8b0210dbb63dcc27a43201458069d6095b9d1f75f",
+    "configFiles": 4,
+    "owner": "adminops",
+    "packageCycleScriptSha256": "b64e1a0847f4b1b5d10ca2c0322a34f21ff153fa8fc76431a6d6597708a65c5d",
+    "packageLogs": [
+      {
+        "phase": "upgrade",
+        "sha256": "f8e587a2635033d0c27e129a700d26c07e97603f878708a30609a4771571cde3"
+      },
+      {
+        "phase": "rollback",
+        "sha256": "b258beb4fb90c0f7b449a6e8ede2b298e7ebba04ab1d8315d2ceca392d4c34bf"
+      },
+      {
+        "phase": "uninstall",
+        "sha256": "54c355bdc0a5efc11cf8aed0b715891671bfcb264c2b55df09175be99dc9cd11"
+      },
+      {
+        "phase": "reinstall",
+        "sha256": "7df4308c2f81d80afa18b7f1a90bd7057087e5507ac6f708c53cafc8d7e1f9f1"
+      }
+    ],
+    "phases": [
+      {
+        "checks": {
+          "config": {
+            "failed": 0,
+            "passed": 4,
+            "result": "OK",
+            "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536"
+          },
+          "state": {
+            "failed": 0,
+            "passed": 99,
+            "result": "OK",
+            "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661"
+          }
+        },
+        "phase": "upgrade"
+      },
+      {
+        "checks": {
+          "config": {
+            "failed": 0,
+            "passed": 4,
+            "result": "OK",
+            "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536"
+          },
+          "state": {
+            "failed": 0,
+            "passed": 99,
+            "result": "OK",
+            "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661"
+          }
+        },
+        "phase": "rollback"
+      },
+      {
+        "checks": {
+          "config": {
+            "failed": 0,
+            "passed": 4,
+            "result": "OK",
+            "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536"
+          },
+          "state": {
+            "failed": 0,
+            "passed": 99,
+            "result": "OK",
+            "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661"
+          }
+        },
+        "phase": "uninstall"
+      },
+      {
+        "checks": {
+          "config": {
+            "failed": 0,
+            "passed": 4,
+            "result": "OK",
+            "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536"
+          },
+          "state": {
+            "failed": 0,
+            "passed": 99,
+            "result": "OK",
+            "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661"
+          }
+        },
+        "phase": "reinstall"
+      }
+    ],
+    "sourceCommit": "8ced2d7d18890a3703a9519797cfd34b719cfa06",
+    "sqliteIntegrity": "ok",
+    "stateFiles": 99,
+    "version": "1.56.0"
+  },
+  "installed": {
+    "installed": {
+      "healthChecks": 2,
+      "healthReady": true,
+      "serviceCount": 2,
+      "servicesActive": true,
+      "version": "1.56.0"
+    },
+    "owner": true,
+    "sqliteIntegrity": true
+  },
+  "runtimeCheck": {
+    "utc": "2026-10-03T17:38:02.161352+00:00",
+    "since_utc": "2026-10-03T17:30:03Z",
+    "source_commit": "8ced2d7d18890a3703a9519797cfd34b719cfa06",
+    "package_version": "1.56.0",
+    "credential_scan": [
+      {
+        "surface": "profile_yaml",
+        "bytes": 668,
+        "credential_matches": 0
+      },
+      {
+        "surface": "baitonghub-linux-mcp@adminops.service:process_argv",
+        "bytes": 91,
+        "credential_matches": 0,
+        "records": 1
+      },
+      {
+        "surface": "baitonghub-linux-mcp@adminops.service:startup_stdout_stderr_journal",
+        "bytes": 852,
+        "credential_matches": 0,
+        "records": 8
+      },
+      {
+        "surface": "baitonghub-linux-mcp-tunnel@adminops.service:process_argv",
+        "bytes": 357,
+        "credential_matches": 0,
+        "records": 2
+      },
+      {
+        "surface": "baitonghub-linux-mcp-tunnel@adminops.service:startup_stdout_stderr_journal",
+        "bytes": 2584,
+        "credential_matches": 0,
+        "records": 35
+      },
+      {
+        "surface": "MCP_audit_since_upgrade",
+        "bytes": 7781,
+        "credential_matches": 0,
+        "records": 20
+      },
+      {
+        "surface": "installed_status_stdout_stderr",
+        "bytes": 205,
+        "credential_matches": 0,
+        "exit_code": 0
+      },
+      {
+        "surface": "installed_doctor_stdout_stderr",
+        "bytes": 621,
+        "credential_matches": 0,
+        "exit_code": 0
+      }
+    ],
+    "installed_package_files": [
+      {
+        "file": "admin.cjs",
+        "sha256": "7a03b6804052b399b62abd8d12f4f53fa95319a89008cbeb926eacc995cf79ff"
+      },
+      {
+        "file": "baitonghub-linux-mcp",
+        "sha256": "fecb7eea8fb82c7667e6cad96d2f105303ba98308ff8e92239ca632bd348efeb"
+      },
+      {
+        "file": "baitonghub-linux-mcp-node",
+        "sha256": "e237a2839d0cbdc9a9a2adda1a184afc0f5b20306ffbe923af5686550472d8a8"
+      },
+      {
+        "file": "configure-linux-tunnel.sh",
+        "sha256": "27396a20607266d356c15fc6bdd33deb45a28358442696e99da4f785175756cc"
+      },
+      {
+        "file": "install-linux-tunnel-client.sh",
+        "sha256": "e89dd303e407060c368f0c592405d2c563214eeb104ea83852d4d4f1ed726383"
+      },
+      {
+        "file": "mcp-http.cjs",
+        "sha256": "ad52a2e23b1b60e33bd3164a518ff1bf2b24d11d953bca37cb9851cd37af7873"
+      },
+      {
+        "file": "mcp-stdio.cjs",
+        "sha256": "8b51df3bbe2c237933323c4e5af042e312cc2d66f2dd5869e57ebcb5bd95cba5"
+      },
+      {
+        "file": "start-baitonghub-linux-mcp-tunnel.sh",
+        "sha256": "1774cc66f79db0636c3f8b3c847ed128f46d56282084f38fbcaccee8976e41b6"
+      },
+      {
+        "file": "workflow-benchmark.cjs",
+        "sha256": "1aa001a925d32e5dd5f8ae3a598d9433cb937002698a2da9a542bd3f159e9b8a"
+      }
+    ],
+    "boundary": "Known existing credential values and encoded forms, bounded post-upgrade observations only; no arbitrary-secret or seven-day-soak claim",
+    "package_comparison": "Streamed DEB archive; no temporary extraction"
+  },
+  "transports": {
+    "stdio": {
+      "fixtureChecks": {
+        "incident": {
+          "version": "1.56.0",
+          "mode": "stdio",
+          "checks": [
+            "registered-workspace-host-collects-bounded-projection-with-partial-unavailable-source",
+            "same-request-does-not-replay-and-mismatch-is-rejected",
+            "unit-omission-is-an-explicit-service-and-journal-gap",
+            "same-client-reopen-preserves-status-and-hashed-pages",
+            "v146-startup-ignores-incident-tables-and-v148-resolves-records-again"
+          ],
+          "checkCount": 5,
+          "incidentId": "v148-installed-incident-r1",
+          "incidentState": "partial",
+          "expectedSources": 6,
+          "retainedSources": 6,
+          "retainedBytes": 1654,
+          "pagesVerified": 3,
+          "evidenceRowsVerified": 6,
+          "allEvidenceHashesVerified": true,
+          "noSecretOrJournalCanaryFound": true,
+          "remoteProbeBoundary": "Fixed read-only registered-host probes targeted loopback port 1; no deployment or mutation; no successful SSH journal capture or raw journal canary injection in this installed fixture",
+          "sourceBound": false
+        },
+        "diagnosis": {
+          "version": "1.56.0",
+          "mode": "stdio",
+          "checks": [
+            "registered-loopback-host-produces-partial-incident-with-good-local-metrics-and-unavailable-remote-row",
+            "incomplete-support-requires-unknown-and-immutable-repeat-rejects-changes-spoof-facts-hashes-and-workspace",
+            "foreign-owner-row-is-hidden-and-same-owner-reopen-preserves-document-hash",
+            "registration-replacement-reports-stale-and-removal-reports-unavailable-without-refreshing-facts",
+            "v150-binary-opens-compatible-state-and-v156-retains-diagnosis-hash"
+          ],
+          "checkCount": 5,
+          "incidentId": "v156-diagnosis-incident-r1",
+          "incidentState": "partial",
+          "expectedSources": 6,
+          "retainedSources": 6,
+          "diagnosisId": "v156-diagnosis-main-r1",
+          "documentHash": "2e4fac104080faea6bb1796c09e9e6acde492e2c2c653fc5278a673fac647f20",
+          "supportStatusesAfterMutation": [
+            "current",
+            "unavailable"
+          ],
+          "exactRepeatHashPreserved": true,
+          "incompleteRequiresUnknown": true,
+          "foreignOwnerHidden": true,
+          "spoofedFactsAndChangedBindingsRejected": true,
+          "oldBinaryOpenedWithDiagnosisTool": true,
+          "fixtureBoundary": "Disposable XDG paths only. The only network probe is to loopback port 1; no VM provisioning, service mutation, or external host is contacted."
+        },
+        "drift": {
+          "version": "1.56.0",
+          "mode": "stdio",
+          "checks": [
+            "registered-unavailable-capture-retains-two-valid-hashed-observations",
+            "same-id-keeps-evidence-and-mismatched-request-fails",
+            "incomplete-capture-cannot-be-approved-or-used-as-baseline",
+            "spoofed-owner-option-unit-and-unregistered-path-rejected",
+            "reopen-preserves-immutable-observation-references",
+            "v155-and-v156-read-the-same-immutable-drift-snapshot"
+          ],
+          "checkCount": 6,
+          "snapshotId": "v148-installed-drift",
+          "state": "unavailable",
+          "evidenceRowsVerified": 2,
+          "allEvidenceHashesVerified": true,
+          "rawPathsAndSecretReferencesOmitted": true,
+          "boundary": "Installed isolated transport fixture uses registered loopback port 1 unavailable sources. Positive baseline/comparison and truncation cases are source-bound Linux unit fixtures, not successful live SSH observations. No model dispatch, deployment or credentials configured."
+        },
+        "workflow": {
+          "version": "1.56.0",
+          "mode": "stdio",
+          "checks": [
+            "restart_preserves_claim_without_dispatch",
+            "active_and_dependency_double_start_denied",
+            "forged_claim_denied",
+            "v143_reads_preserved_old_workflow_writes_denied",
+            "review_self_identity_missing_command_and_mismatched_exit_denied",
+            "immutable_receipt_history_survives_restart",
+            "artifact_and_source_drift_denied_fresh_receipt_history_done",
+            "accepted_done_evidence_retained_across_restart",
+            "failed_review_quarantine_reconcile_retry_luna_luna_sol_attempt_four_denied",
+            "stale_old_claim_denied",
+            "ordered_events_recovery_cancel_preserves_done",
+            "disjoint_lease_concurrency_and_digest_bound_review_done"
+          ],
+          "checkCount": 12,
+          "taskDispatches": 0,
+          "fixtureCommand": "node --version executed read-only before claim; workflow acceptance command data remains caller-reported and the workflow service executes none",
+          "boundary": "Installed isolated single-user fixture; identities are caller-reported; server checks bounded source and registered-root artifact hashes; no native provider authentication or OS containment claim"
+        },
+        "fleet-catalog": {
+          "version": "1.56.0",
+          "mode": "stdio",
+          "checks": [
+            "six_destination_option_requests_rejected",
+            "registered_group_and_mapping_resolve",
+            "mixed_resolved_stale_unavailable_withholds_stale_targets",
+            "workspace-rebind-stales-mapping-and-explicit-rebind-advances-revision",
+            "duplicate_owner_spoof_unregistered_bad-unit_and_revision-replay_rejected",
+            "caller_client_name_does_not_override_fixed_server_owner",
+            "same-client-restart-preserves-catalog-and-rechecks-registrations",
+            "older-installed-binary-starts-and-candidate-resolves-again"
+          ],
+          "checkCount": 8,
+          "noRemoteDispatch": true,
+          "fixture": "isolated XDG paths, placeholder secret references, documentation-only addresses, no SSH reads; catalog calls only"
+        },
+        "skills": {
+          "version": "1.56.0",
+          "mode": "stdio",
+          "tools": 234,
+          "checks": [
+            {
+              "tool": "workspace_list",
+              "expectedSuccess": true,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_list",
+              "expectedSuccess": true,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": false,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": false,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": false,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": true,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": true,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": true,
+              "passed": true
+            },
+            {
+              "tool": "workflow_plan_verified",
+              "expectedSuccess": true,
+              "passed": true
+            },
+            {
+              "tool": "workflow_plan",
+              "expectedSuccess": true,
+              "passed": true
+            },
+            {
+              "tool": "workflow_plan_verified",
+              "expectedSuccess": false,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": false,
+              "passed": true
+            },
+            {
+              "tool": "workflow_plan_verified",
+              "expectedSuccess": false,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": false,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": false,
+              "passed": true
+            }
+          ],
+          "boundary": "Disposable registered fixture; no model dispatch or script execution"
+        }
+      },
+      "native": {
+        "mode": "stdio",
+        "mcpVersion": "1.56.0",
+        "cliVersion": "0.146.0",
+        "cliPath": "/opt/mcp-linux-native-v156/bin/codex",
+        "workspaceBefore": [],
+        "workspaceAfter": [],
+        "workspacePreserved": true,
+        "installedMcpPath": "/usr/bin/baitonghub-linux-mcp",
+        "packagedEntrypoint": "/opt/baitonghub-linux-mcp/mcp-stdio.cjs",
+        "sourceHelperHashes": {
+          "/usr/bin/baitonghub-linux-mcp": "fecb7eea8fb82c7667e6cad96d2f105303ba98308ff8e92239ca632bd348efeb",
+          "/opt/baitonghub-linux-mcp/mcp-stdio.cjs": "8b51df3bbe2c237933323c4e5af042e312cc2d66f2dd5869e57ebcb5bd95cba5",
+          "/opt/mcp-linux-native-v156/bin/codex": "2e863156ed35ecc5253b1e2f907a9143077b9f7cb51942070c61996471ff6e04",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/storage/dist/index.js": "e30f892f270bf21e3c4c723b84f97186858a46b33d27a845fb02ca890e10736f",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/storage/dist/database.js": "b5ef7a9d5ce8c4ca60ded874d2844bea8911d6d90191f71d43ce90008328f2dd",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/storage/dist/settings-repository.js": "94e858081cfc2966977ac428af1f49af50cb545ae3d7051a0c5d2dba50c8ef62",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/application/dist/codex-service.js": "189a7feefc1a94d270387f47abfcec9d89cc924c28f24b45a070786916dbcb54",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/codex/dist/codex-adapter.js": "00ead906a6d592dd8e2c16e8cebabf75e6e61ed8dc64ad69036e1f4aa687104f",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/codex/dist/codex-sandbox-probe.js": "d96fe4d257b9f9f77c8068cbc134f7bbbe9208fb95d5226d27208dc51eb42867",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/codex/dist/codex-config-policy.js": "40c6b69752d1a8cb5419466e73f5965e066d0f17f1e467b32decd25b88ca0a98",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/codex/dist/codex-result.js": "252145f853bae567acaa35c6a536bc2c4b90762e4b278000cd0c77c7165c3db3"
+        },
+        "toolCount": 240,
+        "nativeAuthenticatedTask": "completed",
+        "finalTextMatched": true,
+        "selection": {
+          "role": "qa",
+          "model": "gpt-5.6-sol",
+          "effort": "low"
+        },
+        "usage": {
+          "inputTokens": 9320,
+          "cachedInputTokens": 7296,
+          "outputTokens": 10
+        },
+        "toolCalls": 0,
+        "unconfirmedRunDenied": true,
+        "workerWriteDenied": true,
+        "unsupportedModel": "MODEL_UNAVAILABLE_without_fallback",
+        "ownedTaskCount": 2,
+        "pollBoundSeconds": 120,
+        "bounds": "Isolated registered private-Git fixture and isolated server data; provider result is limited to this native caller CLI, selected model and run; no production, Ubuntu package, customer, or trading authority is established."
+      }
+    },
+    "http": {
+      "fixtureChecks": {
+        "incident": {
+          "version": "1.56.0",
+          "mode": "http",
+          "checks": [
+            "registered-workspace-host-collects-bounded-projection-with-partial-unavailable-source",
+            "same-request-does-not-replay-and-mismatch-is-rejected",
+            "unit-omission-is-an-explicit-service-and-journal-gap",
+            "same-client-reopen-preserves-status-and-hashed-pages",
+            "v146-startup-ignores-incident-tables-and-v148-resolves-records-again"
+          ],
+          "checkCount": 5,
+          "incidentId": "v148-installed-incident-r1",
+          "incidentState": "partial",
+          "expectedSources": 6,
+          "retainedSources": 6,
+          "retainedBytes": 1654,
+          "pagesVerified": 3,
+          "evidenceRowsVerified": 6,
+          "allEvidenceHashesVerified": true,
+          "noSecretOrJournalCanaryFound": true,
+          "remoteProbeBoundary": "Fixed read-only registered-host probes targeted loopback port 1; no deployment or mutation; no successful SSH journal capture or raw journal canary injection in this installed fixture",
+          "sourceBound": false
+        },
+        "diagnosis": {
+          "version": "1.56.0",
+          "mode": "http",
+          "checks": [
+            "registered-loopback-host-produces-partial-incident-with-good-local-metrics-and-unavailable-remote-row",
+            "incomplete-support-requires-unknown-and-immutable-repeat-rejects-changes-spoof-facts-hashes-and-workspace",
+            "foreign-owner-row-is-hidden-and-same-owner-reopen-preserves-document-hash",
+            "registration-replacement-reports-stale-and-removal-reports-unavailable-without-refreshing-facts",
+            "v150-binary-opens-compatible-state-and-v156-retains-diagnosis-hash"
+          ],
+          "checkCount": 5,
+          "incidentId": "v156-diagnosis-incident-r1",
+          "incidentState": "partial",
+          "expectedSources": 6,
+          "retainedSources": 6,
+          "diagnosisId": "v156-diagnosis-main-r1",
+          "documentHash": "ff85adc925d628c226ba645caa68cda13b7eec262ece10c61558cfa02945f026",
+          "supportStatusesAfterMutation": [
+            "current",
+            "unavailable"
+          ],
+          "exactRepeatHashPreserved": true,
+          "incompleteRequiresUnknown": true,
+          "foreignOwnerHidden": true,
+          "spoofedFactsAndChangedBindingsRejected": true,
+          "oldBinaryOpenedWithDiagnosisTool": true,
+          "fixtureBoundary": "Disposable XDG paths only. The only network probe is to loopback port 1; no VM provisioning, service mutation, or external host is contacted."
+        },
+        "drift": {
+          "version": "1.56.0",
+          "mode": "http",
+          "checks": [
+            "registered-unavailable-capture-retains-two-valid-hashed-observations",
+            "same-id-keeps-evidence-and-mismatched-request-fails",
+            "incomplete-capture-cannot-be-approved-or-used-as-baseline",
+            "spoofed-owner-option-unit-and-unregistered-path-rejected",
+            "reopen-preserves-immutable-observation-references",
+            "v155-and-v156-read-the-same-immutable-drift-snapshot"
+          ],
+          "checkCount": 6,
+          "snapshotId": "v148-installed-drift",
+          "state": "unavailable",
+          "evidenceRowsVerified": 2,
+          "allEvidenceHashesVerified": true,
+          "rawPathsAndSecretReferencesOmitted": true,
+          "boundary": "Installed isolated transport fixture uses registered loopback port 1 unavailable sources. Positive baseline/comparison and truncation cases are source-bound Linux unit fixtures, not successful live SSH observations. No model dispatch, deployment or credentials configured."
+        },
+        "workflow": {
+          "version": "1.56.0",
+          "mode": "http",
+          "checks": [
+            "restart_preserves_claim_without_dispatch",
+            "active_and_dependency_double_start_denied",
+            "forged_claim_denied",
+            "v143_reads_preserved_old_workflow_writes_denied",
+            "review_self_identity_missing_command_and_mismatched_exit_denied",
+            "immutable_receipt_history_survives_restart",
+            "artifact_and_source_drift_denied_fresh_receipt_history_done",
+            "accepted_done_evidence_retained_across_restart",
+            "failed_review_quarantine_reconcile_retry_luna_luna_sol_attempt_four_denied",
+            "stale_old_claim_denied",
+            "ordered_events_recovery_cancel_preserves_done",
+            "disjoint_lease_concurrency_and_digest_bound_review_done"
+          ],
+          "checkCount": 12,
+          "taskDispatches": 0,
+          "fixtureCommand": "node --version executed read-only before claim; workflow acceptance command data remains caller-reported and the workflow service executes none",
+          "boundary": "Installed isolated single-user fixture; identities are caller-reported; server checks bounded source and registered-root artifact hashes; no native provider authentication or OS containment claim"
+        },
+        "fleet-catalog": {
+          "version": "1.56.0",
+          "mode": "http",
+          "checks": [
+            "six_destination_option_requests_rejected",
+            "registered_group_and_mapping_resolve",
+            "mixed_resolved_stale_unavailable_withholds_stale_targets",
+            "workspace-rebind-stales-mapping-and-explicit-rebind-advances-revision",
+            "duplicate_owner_spoof_unregistered_bad-unit_and_revision-replay_rejected",
+            "caller_client_name_does_not_override_fixed_server_owner",
+            "same-client-restart-preserves-catalog-and-rechecks-registrations",
+            "older-installed-binary-starts-and-candidate-resolves-again"
+          ],
+          "checkCount": 8,
+          "noRemoteDispatch": true,
+          "fixture": "isolated XDG paths, placeholder secret references, documentation-only addresses, no SSH reads; catalog calls only"
+        },
+        "skills": {
+          "version": "1.56.0",
+          "mode": "http",
+          "tools": 234,
+          "checks": [
+            {
+              "tool": "workspace_list",
+              "expectedSuccess": true,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_list",
+              "expectedSuccess": true,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": false,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": false,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": false,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": true,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": true,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": true,
+              "passed": true
+            },
+            {
+              "tool": "workflow_plan_verified",
+              "expectedSuccess": true,
+              "passed": true
+            },
+            {
+              "tool": "workflow_plan",
+              "expectedSuccess": true,
+              "passed": true
+            },
+            {
+              "tool": "workflow_plan_verified",
+              "expectedSuccess": false,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": false,
+              "passed": true
+            },
+            {
+              "tool": "workflow_plan_verified",
+              "expectedSuccess": false,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": false,
+              "passed": true
+            },
+            {
+              "tool": "skills_verified_load",
+              "expectedSuccess": false,
+              "passed": true
+            }
+          ],
+          "boundary": "Disposable registered fixture; no model dispatch or script execution"
+        }
+      },
+      "native": {
+        "mode": "http",
+        "mcpVersion": "1.56.0",
+        "cliVersion": "0.146.0",
+        "cliPath": "/opt/mcp-linux-native-v156/bin/codex",
+        "workspaceBefore": [],
+        "workspaceAfter": [],
+        "workspacePreserved": true,
+        "installedMcpPath": "/usr/bin/baitonghub-linux-mcp",
+        "packagedEntrypoint": "/opt/baitonghub-linux-mcp/mcp-http.cjs",
+        "sourceHelperHashes": {
+          "/usr/bin/baitonghub-linux-mcp": "fecb7eea8fb82c7667e6cad96d2f105303ba98308ff8e92239ca632bd348efeb",
+          "/opt/baitonghub-linux-mcp/mcp-http.cjs": "ad52a2e23b1b60e33bd3164a518ff1bf2b24d11d953bca37cb9851cd37af7873",
+          "/opt/mcp-linux-native-v156/bin/codex": "2e863156ed35ecc5253b1e2f907a9143077b9f7cb51942070c61996471ff6e04",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/storage/dist/index.js": "e30f892f270bf21e3c4c723b84f97186858a46b33d27a845fb02ca890e10736f",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/storage/dist/database.js": "b5ef7a9d5ce8c4ca60ded874d2844bea8911d6d90191f71d43ce90008328f2dd",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/storage/dist/settings-repository.js": "94e858081cfc2966977ac428af1f49af50cb545ae3d7051a0c5d2dba50c8ef62",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/application/dist/codex-service.js": "189a7feefc1a94d270387f47abfcec9d89cc924c28f24b45a070786916dbcb54",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/codex/dist/codex-adapter.js": "00ead906a6d592dd8e2c16e8cebabf75e6e61ed8dc64ad69036e1f4aa687104f",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/codex/dist/codex-sandbox-probe.js": "d96fe4d257b9f9f77c8068cbc134f7bbbe9208fb95d5226d27208dc51eb42867",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/codex/dist/codex-config-policy.js": "40c6b69752d1a8cb5419466e73f5965e066d0f17f1e467b32decd25b88ca0a98",
+          "/var/tmp/mcp-linux-v156-20261004-r1/source/packages/codex/dist/codex-result.js": "252145f853bae567acaa35c6a536bc2c4b90762e4b278000cd0c77c7165c3db3"
+        },
+        "toolCount": 240,
+        "nativeAuthenticatedTask": "completed",
+        "finalTextMatched": true,
+        "selection": {
+          "role": "qa",
+          "model": "gpt-5.6-sol",
+          "effort": "low"
+        },
+        "usage": {
+          "inputTokens": 9317,
+          "cachedInputTokens": 7296,
+          "outputTokens": 10
+        },
+        "toolCalls": 0,
+        "unconfirmedRunDenied": true,
+        "workerWriteDenied": true,
+        "unsupportedModel": "skipped-http-mode",
+        "ownedTaskCount": 1,
+        "pollBoundSeconds": 120,
+        "httpPort": 18769,
+        "bounds": "Isolated registered private-Git fixture and isolated server data; provider result is limited to this native caller CLI, selected model and run; no production, Ubuntu package, customer, or trading authority is established."
+      }
+    }
+  },
+  "native": {
+    "cancel": {
+      "cliVersion": "0.146.0",
+      "sourceCandidate": "1.56.0",
+      "selection": {
+        "role": "qa",
+        "model": "gpt-5.6-sol",
+        "effort": "low"
+      },
+      "authenticatedToolExecutionObserved": true,
+      "ownedPid": 291446,
+      "membersBefore": [
+        {
+          "pid": 291446,
+          "groupId": 291446,
+          "sessionId": 291446,
+          "startTime": "26011265",
+          "state": "S"
+        }
+      ],
+      "membersAfter": [],
+      "descendantsBefore": [
+        {
+          "pid": 291446,
+          "groupId": 291446,
+          "sessionId": 291446,
+          "startTime": "26011265",
+          "state": "S",
+          "parentId": 290988,
+          "name": "codex"
+        },
+        {
+          "pid": 291714,
+          "groupId": 291714,
+          "sessionId": 291714,
+          "startTime": "26012108",
+          "state": "S",
+          "parentId": 291446,
+          "name": "bwrap"
+        },
+        {
+          "pid": 291721,
+          "groupId": 291721,
+          "sessionId": 291721,
+          "startTime": "26012112",
+          "state": "S",
+          "parentId": 291714,
+          "name": "bwrap"
+        },
+        {
+          "pid": 291722,
+          "groupId": 291721,
+          "sessionId": 291721,
+          "startTime": "26012113",
+          "state": "S",
+          "parentId": 291721,
+          "name": "python3"
+        }
+      ],
+      "descendantsAfter": [],
+      "noOwnedExecutionRemaining": true,
+      "stopSucceeded": true,
+      "processState": "stopped",
+      "result": {
+        "selection": {
+          "role": "qa",
+          "model": "gpt-5.6-sol",
+          "effort": "low"
+        },
+        "state": "cancelled",
+        "finalText": "Starting the exact acceptance command now.",
+        "usage": null,
+        "truncated": false,
+        "protocolIncomplete": true,
+        "reasonCodes": [
+          "MISSING_TERMINAL",
+          "PROCESS_STOPPED"
+        ]
+      },
+      "boundary": "Actual isolated Linux subscription task through CodexAdapter; default UnixProcessTree wrapped only for metadata observation. Cancellation targets the retained owned group, never arbitrary PID/name. No provider-session resume claim."
+    },
+    "negative": {
+      "sourceCandidate": "1.56.0",
+      "modelLaunches": 0,
+      "result": {
+        "ok": false,
+        "error": {
+          "code": "CODEX_NOT_AVAILABLE",
+          "message": "Codex Linux sandbox could not be verified",
+          "recoverable": true,
+          "details": {
+            "stage": "sandbox-probe",
+            "platform": "linux",
+            "exitCode": 1
+          }
+        }
+      },
+      "boundary": "Exact frozen candidate rejects unavailable native sandbox before the main provider process starts; separate configuration and no-op helper preflights may execute. No provider usage or containment claim."
+    },
+    "canary": {
+      "passed": true,
+      "sourceCandidate": "1.55.0",
+      "cliVersion": "0.146.0",
+      "rootOwnedCli": "/opt/mcp-linux-native-v156/bin/codex",
+      "cliSha256": "2e863156ed35ecc5253b1e2f907a9143077b9f7cb51942070c61996471ff6e04",
+      "results": [
+        {
+          "mode": "read-only",
+          "command": [
+            "/opt/mcp-linux-native-v156/bin/codex",
+            "sandbox",
+            "--config",
+            "approval_policy=\"never\"",
+            "--config",
+            "features.plugins=false",
+            "--config",
+            "features.hooks=false",
+            "--config",
+            "features.multi_agent=false",
+            "--config",
+            "features.apps=false",
+            "--config",
+            "apps._default.enabled=false",
+            "--config",
+            "web_search=\"disabled\"",
+            "--config",
+            "model_provider=\"openai\"",
+            "--config",
+            "sandbox_workspace_write.writable_roots=[]",
+            "--config",
+            "sandbox_workspace_write.network_access=false",
+            "--config",
+            "sandbox_workspace_write.exclude_tmpdir_env_var=true",
+            "--config",
+            "sandbox_workspace_write.exclude_slash_tmp=true",
+            "--config",
+            "notify=[]",
+            "--config",
+            "sandbox_mode=\"read-only\"",
+            "--",
+            "/usr/bin/python3",
+            "/var/tmp/mcp-linux-v155-20261003-r1/source/dist/native-v156-sandbox-canary-r9/workspace/probe-read-only.py"
+          ],
+          "exitCode": 0,
+          "stdout": "{\"inside\": \"denied\", \"outside\": \"denied\", \"network\": \"denied\"}\n",
+          "stderr": "",
+          "result": {
+            "inside": "denied",
+            "outside": "denied",
+            "network": "denied"
+          }
+        },
+        {
+          "mode": "workspace-write",
+          "command": [
+            "/opt/mcp-linux-native-v156/bin/codex",
+            "sandbox",
+            "--config",
+            "approval_policy=\"never\"",
+            "--config",
+            "features.plugins=false",
+            "--config",
+            "features.hooks=false",
+            "--config",
+            "features.multi_agent=false",
+            "--config",
+            "features.apps=false",
+            "--config",
+            "apps._default.enabled=false",
+            "--config",
+            "web_search=\"disabled\"",
+            "--config",
+            "model_provider=\"openai\"",
+            "--config",
+            "sandbox_workspace_write.writable_roots=[]",
+            "--config",
+            "sandbox_workspace_write.network_access=false",
+            "--config",
+            "sandbox_workspace_write.exclude_tmpdir_env_var=true",
+            "--config",
+            "sandbox_workspace_write.exclude_slash_tmp=true",
+            "--config",
+            "notify=[]",
+            "--config",
+            "sandbox_mode=\"workspace-write\"",
+            "--",
+            "/usr/bin/python3",
+            "/var/tmp/mcp-linux-v155-20261003-r1/source/dist/native-v156-sandbox-canary-r9/workspace/probe-workspace-write.py"
+          ],
+          "exitCode": 0,
+          "stdout": "{\"inside\": \"allowed\", \"outside\": \"denied\", \"network\": \"denied\"}\n",
+          "stderr": "",
+          "result": {
+            "inside": "allowed",
+            "outside": "denied",
+            "network": "denied"
+          }
+        }
+      ],
+      "acceptedConnections": 0,
+      "boundary": "Deterministic native sandbox subprocess canaries on disposable Ubuntu lab; known user-writable outside fixture unchanged, workspace-write only inside fixture, registered local listener unreachable. No provider call, general containment proof or production approval."
+    },
+    "incidentFix": {
+      "version": "1.56.0",
+      "mode": "stdio",
+      "phase": "complete",
+      "checks": [
+        "red=1 before patch; real node regression green=0 after patch",
+        "patched source matched independent attestation and differed from pinned source baseline",
+        "source and diff fingerprints bound to accepted independent QA receipt",
+        "workflow done; receipt hash accepted",
+        "incident fix document hash and current link persisted while current context reported changed",
+        "v1.55 read workspace and incident only; no linked workflow mutation; v1.56 reopened original document hash"
+      ],
+      "fixId": "v156-fixture-fix-r1",
+      "fixDocumentHash": "f335dd99a4810190afc1c5b7dbe0edebecb544d382d7abfc77f10ca5d92c7da1",
+      "fixReference": "incident_fix:v1:v156-fixture-fix-r1:c0e24cae93f0721c01b6f4fc9c27ccd10326e28e75907738012c76654d778a4a",
+      "workflowId": "1a6bdccf-5a90-4cb4-b5c2-6878ac41d360",
+      "incidentId": "v156-fixture-incident-r1",
+      "modeDetails": {
+        "loopbackPort": 1,
+        "regressionCommand": "node test.mjs",
+        "redExitCode": 1,
+        "greenExitCode": 0,
+        "initialSourceSha": "79def2f5f1632e5b2936263b1ce08c534d4e4afb3cf5b36409f5883aebd57747",
+        "sourceSha": "c5cd7b6c5c0905c8d183a841ecf66f1c96c9abab6baff0d3c43d663e3566b510",
+        "sourceFingerprint": "935aeb0b88318b031fbf0130dd29335db73c01c8e8a66c40fd06668dcd9578a1",
+        "diffFingerprint": "4eea11896d6adfe327ece26eb468867a9f6bdae55e25fa7af78d69de25de814f",
+        "qaReceiptHash": "177112d8ccf5899d40e8eb2060b209ccfac60a4a3f9e82f8bfe0ba96992200fe",
+        "qaReceiptLink": "workflow:1a6bdccf-5a90-4cb4-b5c2-6878ac41d360:v156-incident-fix:177112d8ccf5899d40e8eb2060b209ccfac60a4a3f9e82f8bfe0ba96992200fe",
+        "regressionArtifact": {
+          "path": "regression.log",
+          "sha256": "6c3676494cd2ad11f8c9711e4eb6d6c1e6aa49967506acd18fb2e8bca58f60ea",
+          "bytes": 90
+        },
+        "currentLink": "current",
+        "currentContext": [
+          {
+            "path": "service-state.mjs",
+            "status": "changed"
+          }
+        ],
+        "workflowState": "done"
+      },
+      "boundary": "Fixture-only local evidence. No native provider authentication, OS containment, external host access, deployment, Ubuntu/package release evidence, or production authority is established."
+    },
+    "nativeAfter": {
+      "phase": "after-v156-install-and-restart",
+      "installedCandidate": "1.56.0 independently verified by VM package/transport evidence",
+      "registeredProjectSource": "1.11.0 unchanged",
+      "calls": [
+        {
+          "tool": "workspace_list",
+          "args": {},
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "[{\"id\":\"4100191b-30ff-4aa6-a93a-9a41d6582681\",\"displayName\":\"Baitonghub-Linux-mcp-headless-7533746\",\"rootPath\":\"/home/adminops/Baitonghub-Linux-mcp-headless-7533746\",\"realRootPath\":\"/home/adminops/Baitonghub-Linux-mcp-headless-7533746\",\"createdAt\":\"2026-08-26T11:01:43.372Z\",\"kind\":\"project\"}]"
+              }
+            ],
+            "structuredContent": {
+              "value": [
+                {
+                  "id": "4100191b-30ff-4aa6-a93a-9a41d6582681",
+                  "displayName": "Baitonghub-Linux-mcp-headless-7533746",
+                  "rootPath": "/home/adminops/Baitonghub-Linux-mcp-headless-7533746",
+                  "realRootPath": "/home/adminops/Baitonghub-Linux-mcp-headless-7533746",
+                  "createdAt": "2026-08-26T11:01:43.372Z",
+                  "kind": "project"
+                }
+              ]
+            },
+            "isError": false
+          }
+        },
+        {
+          "tool": "read_file",
+          "args": {
+            "workspaceId": "4100191b-30ff-4aa6-a93a-9a41d6582681",
+            "path": "package.json",
+            "startLine": 1,
+            "endLine": 12
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"path\":\"package.json\",\"content\":\"{\\r\\n  \\\"name\\\": \\\"baitonghub-linux-mcp\\\",\\r\\n  \\\"version\\\": \\\"1.11.0\\\",\\r\\n  \\\"private\\\": true,\\r\\n  \\\"packageManager\\\": \\\"pnpm@10.15.0\\\",\\r\\n  \\\"engines\\\": {\\r\\n    \\\"node\\\": \\\">=24.0.0 <25\\\"\\r\\n  },\\r\\n  \\\"type\\\": \\\"module\\\",\\r\\n  \\\"scripts\\\": {\\r\\n    \\\"set-version\\\": \\\"node scripts/set-version.mjs\\\",\\r\\n    \\\"rebrand:check\\\": \\\"node scripts/check-branding.mjs\\\",\\r\\n\",\"startLine\":1,\"endLine\":12,\"encoding\":\"utf8\"}"
+              }
+            ],
+            "structuredContent": {
+              "path": "package.json",
+              "content": "{\r\n  \"name\": \"baitonghub-linux-mcp\",\r\n  \"version\": \"1.11.0\",\r\n  \"private\": true,\r\n  \"packageManager\": \"pnpm@10.15.0\",\r\n  \"engines\": {\r\n    \"node\": \">=24.0.0 <25\"\r\n  },\r\n  \"type\": \"module\",\r\n  \"scripts\": {\r\n    \"set-version\": \"node scripts/set-version.mjs\",\r\n    \"rebrand:check\": \"node scripts/check-branding.mjs\",\r\n",
+              "startLine": 1,
+              "endLine": 12,
+              "encoding": "utf8"
+            },
+            "isError": false
+          }
+        }
+      ]
+    }
+  },
+  "benchmark": {
+    "schema": 1,
+    "goalReductionPercent": 25,
+    "status": "missed",
+    "reasons": [
+      "token_reduction_below_goal"
+    ],
+    "pairs": [
+      {
+        "fixtureId": "small_edit",
+        "variant": "single",
+        "sourceFingerprint": "623770c1ba82ca79609fbf707fcca26a0c87aa57649f42e17690c83947151407",
+        "acceptanceFingerprint": "15bc755b2fe27ce38016aa1971aed94eab6c7cecb5f18537d16839eebe57c017",
+        "outcome": "passed",
+        "safetyPassed": true,
+        "outcomeProvenance": "caller_attested",
+        "safetyProvenance": "caller_attested",
+        "expectedInvocationIds": [
+          "worker-1"
+        ],
+        "observedInvocationIds": [
+          "worker-1"
+        ],
+        "missingInvocationIds": [],
+        "reasonCodes": [],
+        "repeatedRoleInvocations": 0,
+        "retryCount": 0,
+        "retryProvenance": "manifest_attested",
+        "invocations": [
+          {
+            "id": "worker-1",
+            "role": "worker",
+            "provider": "openai-codex-subscription",
+            "model": "gpt-5.6-sol",
+            "effort": "low",
+            "contextBytes": 1112,
+            "elapsedMs": 42405,
+            "observedTokens": 65512,
+            "inputTokens": 64945,
+            "cachedInputTokens": 59904,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 567,
+            "reasoningOutputTokens": 45,
+            "totalTokens": 65512,
+            "usageSource": "codex_jsonl",
+            "elapsedTimeProvenance": "caller_attested",
+            "telemetryComplete": true,
+            "usageReasonCodes": [],
+            "toolCalls": 4
+          }
+        ],
+        "observedTokenSubtotal": 65512,
+        "totalTokens": 65512,
+        "contextBytes": 1112,
+        "contextBytesProvenance": "caller_attested",
+        "telemetryComplete": true
+      },
+      {
+        "fixtureId": "small_edit",
+        "variant": "routed",
+        "sourceFingerprint": "623770c1ba82ca79609fbf707fcca26a0c87aa57649f42e17690c83947151407",
+        "acceptanceFingerprint": "15bc755b2fe27ce38016aa1971aed94eab6c7cecb5f18537d16839eebe57c017",
+        "outcome": "passed",
+        "safetyPassed": true,
+        "outcomeProvenance": "caller_attested",
+        "safetyProvenance": "caller_attested",
+        "expectedInvocationIds": [
+          "worker-1"
+        ],
+        "observedInvocationIds": [
+          "worker-1"
+        ],
+        "missingInvocationIds": [],
+        "reasonCodes": [],
+        "repeatedRoleInvocations": 0,
+        "retryCount": 0,
+        "retryProvenance": "manifest_attested",
+        "invocations": [
+          {
+            "id": "worker-1",
+            "role": "worker",
+            "provider": "openai-codex-subscription",
+            "model": "gpt-5.6-sol",
+            "effort": "low",
+            "contextBytes": 1112,
+            "elapsedMs": 35885,
+            "observedTokens": 77443,
+            "inputTokens": 76743,
+            "cachedInputTokens": 64128,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 700,
+            "reasoningOutputTokens": 88,
+            "totalTokens": 77443,
+            "usageSource": "codex_jsonl",
+            "elapsedTimeProvenance": "caller_attested",
+            "telemetryComplete": true,
+            "usageReasonCodes": [],
+            "toolCalls": 5
+          }
+        ],
+        "observedTokenSubtotal": 77443,
+        "totalTokens": 77443,
+        "contextBytes": 1112,
+        "contextBytesProvenance": "caller_attested",
+        "telemetryComplete": true
+      },
+      {
+        "fixtureId": "bugfix",
+        "variant": "single",
+        "sourceFingerprint": "54ee84a75f946dd36c34f5bc4670c2ee4a625868b66fd80928fbdbe92ed1e8eb",
+        "acceptanceFingerprint": "a2f299ee0931f3937e9d942d2aba38afe96889f5aebc5d3647a89caf16278998",
+        "outcome": "passed",
+        "safetyPassed": true,
+        "outcomeProvenance": "caller_attested",
+        "safetyProvenance": "caller_attested",
+        "expectedInvocationIds": [
+          "worker-1"
+        ],
+        "observedInvocationIds": [
+          "worker-1"
+        ],
+        "missingInvocationIds": [],
+        "reasonCodes": [],
+        "repeatedRoleInvocations": 0,
+        "retryCount": 0,
+        "retryProvenance": "manifest_attested",
+        "invocations": [
+          {
+            "id": "worker-1",
+            "role": "worker",
+            "provider": "openai-codex-subscription",
+            "model": "gpt-5.6-sol",
+            "effort": "low",
+            "contextBytes": 1177,
+            "elapsedMs": 17039,
+            "observedTokens": 32601,
+            "inputTokens": 32238,
+            "cachedInputTokens": 27776,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 363,
+            "reasoningOutputTokens": 9,
+            "totalTokens": 32601,
+            "usageSource": "codex_jsonl",
+            "elapsedTimeProvenance": "caller_attested",
+            "telemetryComplete": true,
+            "usageReasonCodes": [],
+            "toolCalls": 4
+          }
+        ],
+        "observedTokenSubtotal": 32601,
+        "totalTokens": 32601,
+        "contextBytes": 1177,
+        "contextBytesProvenance": "caller_attested",
+        "telemetryComplete": true
+      },
+      {
+        "fixtureId": "bugfix",
+        "variant": "routed",
+        "sourceFingerprint": "54ee84a75f946dd36c34f5bc4670c2ee4a625868b66fd80928fbdbe92ed1e8eb",
+        "acceptanceFingerprint": "a2f299ee0931f3937e9d942d2aba38afe96889f5aebc5d3647a89caf16278998",
+        "outcome": "passed",
+        "safetyPassed": true,
+        "outcomeProvenance": "caller_attested",
+        "safetyProvenance": "caller_attested",
+        "expectedInvocationIds": [
+          "worker-1",
+          "qa-2"
+        ],
+        "observedInvocationIds": [
+          "worker-1",
+          "qa-2"
+        ],
+        "missingInvocationIds": [],
+        "reasonCodes": [],
+        "repeatedRoleInvocations": 0,
+        "retryCount": 0,
+        "retryProvenance": "manifest_attested",
+        "invocations": [
+          {
+            "id": "worker-1",
+            "role": "worker",
+            "provider": "openai-codex-subscription",
+            "model": "gpt-5.6-luna",
+            "effort": "low",
+            "contextBytes": 1177,
+            "elapsedMs": 24412,
+            "observedTokens": 57418,
+            "inputTokens": 56812,
+            "cachedInputTokens": 42752,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 606,
+            "reasoningOutputTokens": 68,
+            "totalTokens": 57418,
+            "usageSource": "codex_jsonl",
+            "elapsedTimeProvenance": "caller_attested",
+            "telemetryComplete": true,
+            "usageReasonCodes": [],
+            "toolCalls": 4
+          },
+          {
+            "id": "qa-2",
+            "role": "qa",
+            "provider": "openai-codex-subscription",
+            "model": "gpt-5.6-sol",
+            "effort": "low",
+            "contextBytes": 1195,
+            "elapsedMs": 24295,
+            "observedTokens": 53098,
+            "inputTokens": 52678,
+            "cachedInputTokens": 48128,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 420,
+            "reasoningOutputTokens": 60,
+            "totalTokens": 53098,
+            "usageSource": "codex_jsonl",
+            "elapsedTimeProvenance": "caller_attested",
+            "telemetryComplete": true,
+            "usageReasonCodes": [],
+            "toolCalls": 4
+          }
+        ],
+        "observedTokenSubtotal": 110516,
+        "totalTokens": 110516,
+        "contextBytes": 2372,
+        "contextBytesProvenance": "caller_attested",
+        "telemetryComplete": true
+      },
+      {
+        "fixtureId": "refactor",
+        "variant": "single",
+        "sourceFingerprint": "278cad0cbe7752a9cf9085a4eb8504768861c8a7d2b6f0ca38a070181c225add",
+        "acceptanceFingerprint": "d8772d60d187e14d50c65467a767c89e1277f8d25fc91002f18ceb8ef806c01c",
+        "outcome": "passed",
+        "safetyPassed": true,
+        "outcomeProvenance": "caller_attested",
+        "safetyProvenance": "caller_attested",
+        "expectedInvocationIds": [
+          "worker-1"
+        ],
+        "observedInvocationIds": [
+          "worker-1"
+        ],
+        "missingInvocationIds": [],
+        "reasonCodes": [],
+        "repeatedRoleInvocations": 0,
+        "retryCount": 0,
+        "retryProvenance": "manifest_attested",
+        "invocations": [
+          {
+            "id": "worker-1",
+            "role": "worker",
+            "provider": "openai-codex-subscription",
+            "model": "gpt-5.6-sol",
+            "effort": "low",
+            "contextBytes": 1204,
+            "elapsedMs": 23292,
+            "observedTokens": 32624,
+            "inputTokens": 32220,
+            "cachedInputTokens": 24192,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 404,
+            "reasoningOutputTokens": 14,
+            "totalTokens": 32624,
+            "usageSource": "codex_jsonl",
+            "elapsedTimeProvenance": "caller_attested",
+            "telemetryComplete": true,
+            "usageReasonCodes": [],
+            "toolCalls": 4
+          }
+        ],
+        "observedTokenSubtotal": 32624,
+        "totalTokens": 32624,
+        "contextBytes": 1204,
+        "contextBytesProvenance": "caller_attested",
+        "telemetryComplete": true
+      },
+      {
+        "fixtureId": "refactor",
+        "variant": "routed",
+        "sourceFingerprint": "278cad0cbe7752a9cf9085a4eb8504768861c8a7d2b6f0ca38a070181c225add",
+        "acceptanceFingerprint": "d8772d60d187e14d50c65467a767c89e1277f8d25fc91002f18ceb8ef806c01c",
+        "outcome": "passed",
+        "safetyPassed": true,
+        "outcomeProvenance": "caller_attested",
+        "safetyProvenance": "caller_attested",
+        "expectedInvocationIds": [
+          "worker-1",
+          "qa-2"
+        ],
+        "observedInvocationIds": [
+          "worker-1",
+          "qa-2"
+        ],
+        "missingInvocationIds": [],
+        "reasonCodes": [],
+        "repeatedRoleInvocations": 0,
+        "retryCount": 0,
+        "retryProvenance": "manifest_attested",
+        "invocations": [
+          {
+            "id": "worker-1",
+            "role": "worker",
+            "provider": "openai-codex-subscription",
+            "model": "gpt-5.6-luna",
+            "effort": "low",
+            "contextBytes": 1204,
+            "elapsedMs": 26051,
+            "observedTokens": 57468,
+            "inputTokens": 56729,
+            "cachedInputTokens": 42752,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 739,
+            "reasoningOutputTokens": 131,
+            "totalTokens": 57468,
+            "usageSource": "codex_jsonl",
+            "elapsedTimeProvenance": "caller_attested",
+            "telemetryComplete": true,
+            "usageReasonCodes": [],
+            "toolCalls": 4
+          },
+          {
+            "id": "qa-2",
+            "role": "qa",
+            "provider": "openai-codex-subscription",
+            "model": "gpt-5.6-sol",
+            "effort": "low",
+            "contextBytes": 1222,
+            "elapsedMs": 21232,
+            "observedTokens": 53002,
+            "inputTokens": 52587,
+            "cachedInputTokens": 48000,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 415,
+            "reasoningOutputTokens": 62,
+            "totalTokens": 53002,
+            "usageSource": "codex_jsonl",
+            "elapsedTimeProvenance": "caller_attested",
+            "telemetryComplete": true,
+            "usageReasonCodes": [],
+            "toolCalls": 4
+          }
+        ],
+        "observedTokenSubtotal": 110470,
+        "totalTokens": 110470,
+        "contextBytes": 2426,
+        "contextBytesProvenance": "caller_attested",
+        "telemetryComplete": true
+      },
+      {
+        "fixtureId": "context_retrieval",
+        "variant": "single",
+        "sourceFingerprint": "d8615427d842e8386d6dab72ecdf525fff56848e4bab6c10b4ce4319d53c71ac",
+        "acceptanceFingerprint": "b35668e9940d4b984f69a0caf73656350340966f0b58ff7f80fba62d74b42aad",
+        "outcome": "passed",
+        "safetyPassed": true,
+        "outcomeProvenance": "caller_attested",
+        "safetyProvenance": "caller_attested",
+        "expectedInvocationIds": [
+          "lead-1"
+        ],
+        "observedInvocationIds": [
+          "lead-1"
+        ],
+        "missingInvocationIds": [],
+        "reasonCodes": [],
+        "repeatedRoleInvocations": 0,
+        "retryCount": 0,
+        "retryProvenance": "manifest_attested",
+        "invocations": [
+          {
+            "id": "lead-1",
+            "role": "lead",
+            "provider": "openai-codex-subscription",
+            "model": "gpt-5.6-sol",
+            "effort": "low",
+            "contextBytes": 1104,
+            "elapsedMs": 22646,
+            "observedTokens": 52987,
+            "inputTokens": 52555,
+            "cachedInputTokens": 45952,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 432,
+            "reasoningOutputTokens": 69,
+            "totalTokens": 52987,
+            "usageSource": "codex_jsonl",
+            "elapsedTimeProvenance": "caller_attested",
+            "telemetryComplete": true,
+            "usageReasonCodes": [],
+            "toolCalls": 4
+          }
+        ],
+        "observedTokenSubtotal": 52987,
+        "totalTokens": 52987,
+        "contextBytes": 1104,
+        "contextBytesProvenance": "caller_attested",
+        "telemetryComplete": true
+      },
+      {
+        "fixtureId": "context_retrieval",
+        "variant": "routed",
+        "sourceFingerprint": "d8615427d842e8386d6dab72ecdf525fff56848e4bab6c10b4ce4319d53c71ac",
+        "acceptanceFingerprint": "b35668e9940d4b984f69a0caf73656350340966f0b58ff7f80fba62d74b42aad",
+        "outcome": "passed",
+        "safetyPassed": true,
+        "outcomeProvenance": "caller_attested",
+        "safetyProvenance": "caller_attested",
+        "expectedInvocationIds": [
+          "lead-1"
+        ],
+        "observedInvocationIds": [
+          "lead-1"
+        ],
+        "missingInvocationIds": [],
+        "reasonCodes": [],
+        "repeatedRoleInvocations": 0,
+        "retryCount": 0,
+        "retryProvenance": "manifest_attested",
+        "invocations": [
+          {
+            "id": "lead-1",
+            "role": "lead",
+            "provider": "openai-codex-subscription",
+            "model": "gpt-5.6-sol",
+            "effort": "low",
+            "contextBytes": 1104,
+            "elapsedMs": 14424,
+            "observedTokens": 20706,
+            "inputTokens": 20455,
+            "cachedInputTokens": 9344,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 251,
+            "reasoningOutputTokens": 78,
+            "totalTokens": 20706,
+            "usageSource": "codex_jsonl",
+            "elapsedTimeProvenance": "caller_attested",
+            "telemetryComplete": true,
+            "usageReasonCodes": [],
+            "toolCalls": 4
+          }
+        ],
+        "observedTokenSubtotal": 20706,
+        "totalTokens": 20706,
+        "contextBytes": 1104,
+        "contextBytesProvenance": "caller_attested",
+        "telemetryComplete": true
+      },
+      {
+        "fixtureId": "incident_diagnosis",
+        "variant": "single",
+        "sourceFingerprint": "ff04909b2a7bf1b913f5149415333ff237f4f38b55b81a870502ebfb07db492b",
+        "acceptanceFingerprint": "022d265293385e18570bb7f1f2f3e100ae72bdb53cf25d64d4f7052584c7c237",
+        "outcome": "failed",
+        "safetyPassed": true,
+        "outcomeProvenance": "caller_attested",
+        "safetyProvenance": "caller_attested",
+        "expectedInvocationIds": [
+          "lead-1"
+        ],
+        "observedInvocationIds": [
+          "lead-1"
+        ],
+        "missingInvocationIds": [],
+        "reasonCodes": [],
+        "repeatedRoleInvocations": 0,
+        "retryCount": 0,
+        "retryProvenance": "manifest_attested",
+        "invocations": [
+          {
+            "id": "lead-1",
+            "role": "lead",
+            "provider": "openai-codex-subscription",
+            "model": "gpt-5.6-sol",
+            "effort": "low",
+            "contextBytes": 1477,
+            "elapsedMs": 17522,
+            "observedTokens": 21180,
+            "inputTokens": 20810,
+            "cachedInputTokens": 16768,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 370,
+            "reasoningOutputTokens": 111,
+            "totalTokens": 21180,
+            "usageSource": "codex_jsonl",
+            "elapsedTimeProvenance": "caller_attested",
+            "telemetryComplete": true,
+            "usageReasonCodes": [],
+            "toolCalls": 7
+          }
+        ],
+        "observedTokenSubtotal": 21180,
+        "totalTokens": 21180,
+        "contextBytes": 1477,
+        "contextBytesProvenance": "caller_attested",
+        "telemetryComplete": true
+      },
+      {
+        "fixtureId": "incident_diagnosis",
+        "variant": "routed",
+        "sourceFingerprint": "ff04909b2a7bf1b913f5149415333ff237f4f38b55b81a870502ebfb07db492b",
+        "acceptanceFingerprint": "022d265293385e18570bb7f1f2f3e100ae72bdb53cf25d64d4f7052584c7c237",
+        "outcome": "failed",
+        "safetyPassed": true,
+        "outcomeProvenance": "caller_attested",
+        "safetyProvenance": "caller_attested",
+        "expectedInvocationIds": [
+          "worker-1",
+          "qa-2"
+        ],
+        "observedInvocationIds": [
+          "worker-1",
+          "qa-2"
+        ],
+        "missingInvocationIds": [],
+        "reasonCodes": [],
+        "repeatedRoleInvocations": 0,
+        "retryCount": 0,
+        "retryProvenance": "manifest_attested",
+        "invocations": [
+          {
+            "id": "worker-1",
+            "role": "worker",
+            "provider": "openai-codex-subscription",
+            "model": "gpt-5.6-luna",
+            "effort": "low",
+            "contextBytes": 1479,
+            "elapsedMs": 8815,
+            "observedTokens": 18539,
+            "inputTokens": 18223,
+            "cachedInputTokens": 0,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 316,
+            "reasoningOutputTokens": 97,
+            "totalTokens": 18539,
+            "usageSource": "codex_jsonl",
+            "elapsedTimeProvenance": "caller_attested",
+            "telemetryComplete": true,
+            "usageReasonCodes": [],
+            "toolCalls": 7
+          },
+          {
+            "id": "qa-2",
+            "role": "qa",
+            "provider": "openai-codex-subscription",
+            "model": "gpt-5.6-sol",
+            "effort": "low",
+            "contextBytes": 1741,
+            "elapsedMs": 31785,
+            "observedTokens": 87954,
+            "inputTokens": 87316,
+            "cachedInputTokens": 74368,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 638,
+            "reasoningOutputTokens": 51,
+            "totalTokens": 87954,
+            "usageSource": "codex_jsonl",
+            "elapsedTimeProvenance": "caller_attested",
+            "telemetryComplete": true,
+            "usageReasonCodes": [],
+            "toolCalls": 7
+          }
+        ],
+        "observedTokenSubtotal": 106493,
+        "totalTokens": 106493,
+        "contextBytes": 3220,
+        "contextBytesProvenance": "caller_attested",
+        "telemetryComplete": true
+      },
+      {
+        "fixtureId": "resume",
+        "variant": "single",
+        "sourceFingerprint": "62b38609f6c35e228d6028ddfa694439e8b7686b4d582a377d366b6153a195cf",
+        "acceptanceFingerprint": "65e073cc7a791d4f0b244af5135f13af9eeb036c2ae5d38b8c6c5650a1745d97",
+        "outcome": "failed",
+        "safetyPassed": true,
+        "outcomeProvenance": "caller_attested",
+        "safetyProvenance": "caller_attested",
+        "expectedInvocationIds": [
+          "lead-1"
+        ],
+        "observedInvocationIds": [
+          "lead-1"
+        ],
+        "missingInvocationIds": [],
+        "reasonCodes": [],
+        "repeatedRoleInvocations": 0,
+        "retryCount": 0,
+        "retryProvenance": "manifest_attested",
+        "invocations": [
+          {
+            "id": "lead-1",
+            "role": "lead",
+            "provider": "openai-codex-subscription",
+            "model": "gpt-5.6-sol",
+            "effort": "low",
+            "contextBytes": 1273,
+            "elapsedMs": 24257,
+            "observedTokens": 64231,
+            "inputTokens": 63695,
+            "cachedInputTokens": 58752,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 536,
+            "reasoningOutputTokens": 86,
+            "totalTokens": 64231,
+            "usageSource": "codex_jsonl",
+            "elapsedTimeProvenance": "caller_attested",
+            "telemetryComplete": true,
+            "usageReasonCodes": [],
+            "toolCalls": 5
+          }
+        ],
+        "observedTokenSubtotal": 64231,
+        "totalTokens": 64231,
+        "contextBytes": 1273,
+        "contextBytesProvenance": "caller_attested",
+        "telemetryComplete": true
+      },
+      {
+        "fixtureId": "resume",
+        "variant": "routed",
+        "sourceFingerprint": "62b38609f6c35e228d6028ddfa694439e8b7686b4d582a377d366b6153a195cf",
+        "acceptanceFingerprint": "65e073cc7a791d4f0b244af5135f13af9eeb036c2ae5d38b8c6c5650a1745d97",
+        "outcome": "failed",
+        "safetyPassed": true,
+        "outcomeProvenance": "caller_attested",
+        "safetyProvenance": "caller_attested",
+        "expectedInvocationIds": [
+          "lead-1"
+        ],
+        "observedInvocationIds": [
+          "lead-1"
+        ],
+        "missingInvocationIds": [],
+        "reasonCodes": [],
+        "repeatedRoleInvocations": 0,
+        "retryCount": 0,
+        "retryProvenance": "manifest_attested",
+        "invocations": [
+          {
+            "id": "lead-1",
+            "role": "lead",
+            "provider": "openai-codex-subscription",
+            "model": "gpt-5.6-sol",
+            "effort": "low",
+            "contextBytes": 1273,
+            "elapsedMs": 33688,
+            "observedTokens": 64390,
+            "inputTokens": 63846,
+            "cachedInputTokens": 41088,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 544,
+            "reasoningOutputTokens": 104,
+            "totalTokens": 64390,
+            "usageSource": "codex_jsonl",
+            "elapsedTimeProvenance": "caller_attested",
+            "telemetryComplete": true,
+            "usageReasonCodes": [],
+            "toolCalls": 5
+          }
+        ],
+        "observedTokenSubtotal": 64390,
+        "totalTokens": 64390,
+        "contextBytes": 1273,
+        "contextBytesProvenance": "caller_attested",
+        "telemetryComplete": true
+      }
+    ],
+    "single": {
+      "completePairs": 6,
+      "passedRuns": 4,
+      "observedTokenSubtotal": 269135,
+      "medianTotalTokens": 42805.5,
+      "medianContextBytes": 1190.5,
+      "totalElapsedMs": 147161,
+      "totalToolCalls": 28,
+      "totalRetries": 0,
+      "telemetryComplete": true
+    },
+    "routed": {
+      "completePairs": 6,
+      "passedRuns": 4,
+      "observedTokenSubtotal": 490018,
+      "medianTotalTokens": 91968,
+      "medianContextBytes": 1822.5,
+      "totalElapsedMs": 220587,
+      "totalToolCalls": 44,
+      "totalRetries": 0,
+      "telemetryComplete": true
+    },
+    "medianTokenReductionPercent": -114.85089532887129,
+    "medianContextByteReductionPercent": -53.08693826123477,
+    "successRegression": false,
+    "safetyFailures": 0
+  },
+  "artifacts": [
+    {
+      "path": "dist/v1.56.0-local-20261003/packages/Baitonghub-Linux-mcp-1.56.0-amd64.deb",
+      "sha256": "2a4c7812b91e7511e97908b5930cc3725a161362bbb14573206669be251155b5",
+      "bytes": 32904274
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/packages/Baitonghub-Linux-mcp-1.56.0-BUILD-METADATA.json",
+      "sha256": "8519c4dff19b2fd886c8ecd1dd7ce579b52a51db9f31d506cbb6796dad100ba4",
+      "bytes": 918
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/packages/Baitonghub-Linux-mcp-1.56.0-linux-x64.tar.gz",
+      "sha256": "86b83c338416776d7535245ba4222689388ae945ea6e1bfc486610d0f315c161",
+      "bytes": 45067252
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/packages/Baitonghub-Linux-mcp-1.56.0-PROVENANCE-SHA256SUMS",
+      "sha256": "09caf0174658f6e4fcfd353469a5c2aaad1f32eba3d40c34e6e6a4dd29c1b72c",
+      "bytes": 542
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/packages/Baitonghub-Linux-mcp-1.56.0-SBOM.cdx.json",
+      "sha256": "432c2fe52099970024533827911f9bdd8e272dd27a19bf3e73ad0d085953d7cb",
+      "bytes": 14049
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/packages/Baitonghub-Linux-mcp-1.56.0-SHA256SUMS",
+      "sha256": "a6bc12d2aed45c197284cfdd34df55915c8229c7ac254665b30d57f81d655e94",
+      "bytes": 215
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/audit-all.log",
+      "sha256": "e29e8a836f603ece6422173d3539cc707b1a759522c32b232aed69b8ac167a8c",
+      "bytes": 310
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/audit-prod.log",
+      "sha256": "177cfa54657dc8f79e84898affd67dd978f0f1ab2524d0effe060cf6830284c3",
+      "bytes": 308
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/build-package.log",
+      "sha256": "5b4a71b40adfb5f4c05f3f57fba256e1aa7034f0a6bcddb0398ffca8ec5e493f",
+      "bytes": 2992
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/catalog.log",
+      "sha256": "d1335af5828e5a5488705307554f230d176de7b75a6cdd75bcf7ede696efa5e5",
+      "bytes": 570
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/diff-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/gates.tsv",
+      "sha256": "b62dd0117d3f5399de118da684de4ef74d61bf749a88c1f12f704f50d3edf9e3",
+      "bytes": 290
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/install.log",
+      "sha256": "a4ae2829364091596b813a51d3f7857ebaee80ee79dc8198acb9d3fa1a66d04c",
+      "bytes": 1873
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/installed-stdio-candidate.log",
+      "sha256": "fbc6727fdefe19dbe1027d8d66f64683a3e412e4565e203d4f4deba31d6621a4",
+      "bytes": 900
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/integration.log",
+      "sha256": "6521bcd5e209ae9d64ff0b2fa05328d81dcfa601749aa9acbd34d0b50b89c477",
+      "bytes": 1497
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/lint.log",
+      "sha256": "626fbcedb676fb39b6c6bf39af1644713401d54e560824377696d568826d25bd",
+      "bytes": 91
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/packaging-tests.log",
+      "sha256": "003cadcd9f5c9d464fcd27ba85f9ab70c2230fd03602bfa60f117e88e1333974",
+      "bytes": 812
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/provenance.log",
+      "sha256": "a33f4bf1b669b4f94e78248732e2d0e664e7b96fc9fcc3ee1e609792136061f0",
+      "bytes": 114
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/rebrand.log",
+      "sha256": "60e761dc77475ce1d21f173aba2bff5a53d97ddfca6fd116e5f11e570d9c5fa7",
+      "bytes": 149
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/release-gate.log",
+      "sha256": "0e4c2f49a12b18b3ad1bf4fd3079d5171ac55aa16cdd157832ee161a64a90c01",
+      "bytes": 780
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/source-commit.txt",
+      "sha256": "2c96d506ff07bec7b055f8d5ccf1314dd4ad244ac1c60c554b73403e13b07b7d",
+      "bytes": 41
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/typecheck.log",
+      "sha256": "d9d0875c80a0a83a01dd23b2550ad4532f07acaaac2a0a530911be6887e4b450",
+      "bytes": 99
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/unit.log",
+      "sha256": "5246165fec4389a4740d11661e8d023571cd6d14097a8a351fafc1a672f180cf",
+      "bytes": 41608
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/upgrade-preflight.log",
+      "sha256": "bb54ef9e263bce143e1a8d094877d978627002a1b72d8e6bb58e679f1532716b",
+      "bytes": 507
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/v1-acceptance.log",
+      "sha256": "a6f36489e0e6143e83c8a07a9c4917d3bdc4ee8e0b9e7339ba4c7f157fe48d95",
+      "bytes": 1366
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/v1-contract.log",
+      "sha256": "87fd76512527f2d40f690980e06a02a54a8c30a4b045dd6c26d9b0495ded1490",
+      "bytes": 565
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/ubuntu-logs/verify-package.log",
+      "sha256": "9cd571fa6feacc651ed53993b83a0b19f0c070cca73491b6eb5c44896cddec44",
+      "bytes": 2464
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/incident-check.json",
+      "sha256": "937bdfaa6477d271d4cadfd0dedc0fcf40b308635bd11197896cc30b62277693",
+      "bytes": 502
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-benchmark-report.json",
+      "sha256": "9d9359033d282f9c5698ab98287fbaf8ea2c76754c15a8cb6bf441c4f2e7ef0f",
+      "bytes": 34307
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-codex-http.stdout.json",
+      "sha256": "21bd3486f6d20587c05b1c40219fdd178824b94b14c4bf2415cb7a76cf1c2995",
+      "bytes": 693
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-codex-stdio.stdout.json",
+      "sha256": "4ebdc2b1a500341e6a802bcf171fdae4540a0b5499988086671a5d8026357196",
+      "bytes": 694
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-diagnosis-http.json",
+      "sha256": "162ac4f11ed7b977adb03263fd0aa5b37d61312818a4d379536ece81dbfe3c54",
+      "bytes": 1141
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-diagnosis-stdio.json",
+      "sha256": "3f7618a88fc59019e5b867a91e7464a83ce1f06204402bc752ae7a296a4be69d",
+      "bytes": 1142
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-drift-http.json",
+      "sha256": "6d97b3ebecd25d24ea3c293b6f4e671f1cdbe2f6bab26be4722140e86903867d",
+      "bytes": 856
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-drift-stdio.json",
+      "sha256": "f5f9b31603ca995ca6048311c6c479c70a13eb1758dd3c52f44bb093478bec89",
+      "bytes": 857
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-fleet-catalog-http.json",
+      "sha256": "104419487e417e3f53c207839b0b94fe78ce42e779ca38d00905054b13e32696",
+      "bytes": 685
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-fleet-catalog-stdio.json",
+      "sha256": "27b9c1df393950424f5fdda8ccdba5f8886dd82a535c5aad5be1eef0dd266461",
+      "bytes": 686
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-incident-http.json",
+      "sha256": "1cf8df3b00434cf69138ec5ff99d9c797e723442f26b329d6cec6c212de69854",
+      "bytes": 855
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-incident-stdio.json",
+      "sha256": "8655c6e8551101c4cff41f19eeda6733524d7498772de8d2e62a36e2f5c16b00",
+      "bytes": 856
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-readiness.json",
+      "sha256": "29f7ddf1dafdb1b53d7a93775ae5ac8497979afcd12354f2eb18126dd875c51a",
+      "bytes": 192
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-skills-configured-http.json",
+      "sha256": "e30400be3689eded70ac17cf4a5306635c8f6432f7b73065e0aa037b4fb2d667",
+      "bytes": 597
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-skills-http.json",
+      "sha256": "23c25a14bdc412bde148432c1d6ecb12427729f4448aa07e43c32daf99bcb88b",
+      "bytes": 1176
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-skills-stdio.json",
+      "sha256": "4e327ddff67cf2512d1eb399260ebb8771dfc196aadf4f664786e2b9423fb3bd",
+      "bytes": 1177
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-workflow-http.json",
+      "sha256": "30b20739b86a9b26f6475b600948db320543a1d557e8db79b4b61a1be83a666d",
+      "bytes": 1042
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/installed-workflow-stdio.json",
+      "sha256": "bd5bb93637970f6599233c5a6ff8784cc4633445e1e54117a5a9fb7a37fb24e8",
+      "bytes": 1043
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/lifecycle-summary.json",
+      "sha256": "c94d0f71a8c932a39b0c6d7e934a94ae7b4d96422bed46701604d89555793d8e",
+      "bytes": 2778
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/runtime-check.json",
+      "sha256": "b63145ccaf9f9283b30709dc348497201fec66037331d07b7b7f74cd76950d86",
+      "bytes": 2849
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/source-gates-summary.json",
+      "sha256": "f9596bd8f791d29eeb89a38fced7c3ac3aa914223eb5f35331ed82905c1910d4",
+      "bytes": 6366
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/installed-logs/workflow-check.json",
+      "sha256": "d41eadff1bb22c2c84265518df7e0af8069474a73c2e73469135be3677127af4",
+      "bytes": 539
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/lifecycle-logs/reinstall-config.log",
+      "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536",
+      "bytes": 250
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/lifecycle-logs/reinstall-state.log",
+      "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661",
+      "bytes": 11329
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/lifecycle-logs/reinstall.log",
+      "sha256": "7df4308c2f81d80afa18b7f1a90bd7057087e5507ac6f708c53cafc8d7e1f9f1",
+      "bytes": 290
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/lifecycle-logs/rollback-config.log",
+      "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536",
+      "bytes": 250
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/lifecycle-logs/rollback-state.log",
+      "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661",
+      "bytes": 11329
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/lifecycle-logs/rollback.log",
+      "sha256": "b258beb4fb90c0f7b449a6e8ede2b298e7ebba04ab1d8315d2ceca392d4c34bf",
+      "bytes": 312
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/lifecycle-logs/uninstall-config.log",
+      "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536",
+      "bytes": 250
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/lifecycle-logs/uninstall-state.log",
+      "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661",
+      "bytes": 11329
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/lifecycle-logs/uninstall.log",
+      "sha256": "54c355bdc0a5efc11cf8aed0b715891671bfcb264c2b55df09175be99dc9cd11",
+      "bytes": 231
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/lifecycle-logs/upgrade-config.log",
+      "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536",
+      "bytes": 250
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/lifecycle-logs/upgrade-state.log",
+      "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661",
+      "bytes": 11329
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/lifecycle-logs/upgrade.log",
+      "sha256": "f8e587a2635033d0c27e129a700d26c07e97603f878708a30609a4771571cde3",
+      "bytes": 242
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/full-local-logs/catalog.log",
+      "sha256": "4dedbcdac41ac6a57836e2a09ff7b9f1e866b19c1e9b85fa1e17f07f8af6a439",
+      "bytes": 222
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/full-local-logs/contract.log",
+      "sha256": "a319fb660b3ea0eaaa62d6d6efb8521ce7037526e99801e1bffb4e5224a8128e",
+      "bytes": 218
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/full-local-logs/focused.log",
+      "sha256": "9bb38b010d222d6190dcf3aa747d4a4094567ad222f0c44fb225fbf4378a8206",
+      "bytes": 1735
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/full-local-logs/gates.json",
+      "sha256": "4c3c89d1813cb588a0be196686d9ee41411b174c76d7763360bbe9dafbfe41a4",
+      "bytes": 2615
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/full-local-logs/lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/full-local-logs/other.log",
+      "sha256": "67462a457e557357692bb7190f4af7b8c97a934c6476434387c084f66deca503",
+      "bytes": 1078
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/full-local-logs/typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/full-local-logs/unit.log",
+      "sha256": "e33eaf7824b4abfba91acf1e54f90415767a41fcfa2a6d974c6b1a9f96449e1c",
+      "bytes": 7675
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/bugfix-routed-qa-2.jsonl",
+      "sha256": "ac5e2cb1db6e2f42dcdc42bc24a2718a02cb2354c3783e1a7fe3c74520b02a1d",
+      "bytes": 867
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/bugfix-routed-worker-1.jsonl",
+      "sha256": "dbee354977f6ff58f36512e4d95c6fbe82e7f2dce2f5a6f914152db5ec0e37f9",
+      "bytes": 983
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/bugfix-single-worker-1.jsonl",
+      "sha256": "fede16fdd72563c94280870147124f7f280d75f7c785dd2db24d107b60efd107",
+      "bytes": 1029
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/context_retrieval-routed-lead-1.jsonl",
+      "sha256": "ec5debd0d45a99238feae29804b008536720bd643e00b7df3c17adf49232ee9b",
+      "bytes": 553
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/context_retrieval-single-lead-1.jsonl",
+      "sha256": "7fe2b4c9734601498d87ac8b52e0c2302723b5414da7f96a726fcf82ad38cb06",
+      "bytes": 546
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/incident_diagnosis-routed-qa-2.jsonl",
+      "sha256": "e4bea6670e58cb91a8eeeb06e52d99306f54af64cdde026ba8b95554bcb06409",
+      "bytes": 806
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/incident_diagnosis-routed-worker-1.jsonl",
+      "sha256": "95c4cab1dda18d2d2433c96d4b50d7840a1a2edc32baae58cf3d3a8356711f86",
+      "bytes": 921
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/incident_diagnosis-single-lead-1.jsonl",
+      "sha256": "d41c69ed4992c247bd27bfe27011d35476f1e57ed6013de22c4ad20a40bb4ad2",
+      "bytes": 1121
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/manifest.json",
+      "sha256": "2e47566701375d1e7dde7e2820a00b27fb5a40815c392524f3890ca89a406708",
+      "bytes": 3179
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/native-evidence.json",
+      "sha256": "ff72556d58b6e4d7c8901eaece6ac17f53a052b7d0a331af4da3bbfe55f20270",
+      "bytes": 20069
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/native-records.json",
+      "sha256": "df9b7a7c94dd772cc255a1d9bee7c9ae7816769b60ba1dff3a62b5833b2d6cae",
+      "bytes": 17768
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/pairs.json",
+      "sha256": "bdf68ae4fcb2a62fcefc218870115609fe6213f2daaa03a92ae445454cbd7c25",
+      "bytes": 18302
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/refactor-routed-qa-2.jsonl",
+      "sha256": "8cb056cb4a2d7285517dae9c0c925f84ab39827405c32e7fd74f06f9ccf5d511",
+      "bytes": 861
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/refactor-routed-worker-1.jsonl",
+      "sha256": "cefa3689f2a60286423dae9aeac2a76163e241dd4814a91d06d5ba96ae37ec27",
+      "bytes": 1039
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/refactor-single-worker-1.jsonl",
+      "sha256": "194985252d3ef6e5f2b0f9b531ebdbb8c2896950d2ff0016801edb58ba66ef62",
+      "bytes": 986
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/resume-routed-lead-1.jsonl",
+      "sha256": "1995fb5578ba357c7d298b949ad4656ee5b10ff0150b6c7d472a397b67070edb",
+      "bytes": 691
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/resume-single-lead-1.jsonl",
+      "sha256": "d5f1d5abc92bb2c91b261b12503326a3f8927f09c987064f31a7775d116c587b",
+      "bytes": 677
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/runs.json",
+      "sha256": "0d7223b1c7fb751f86ccc783d64495a8f64c508351030c7c9bffdc097f5037f1",
+      "bytes": 23010
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/small_edit-routed-worker-1.jsonl",
+      "sha256": "db929e60458b96a3eacb6c566ff9256667ed2058f40d85ec6e7579992a681895",
+      "bytes": 1209
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/small_edit-single-worker-1.jsonl",
+      "sha256": "8c36c90ba240265b1e56193226cc1dc23feab7fc7a3de0f4493dfa11506a68d3",
+      "bytes": 1176
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r1/workflow-report.json",
+      "sha256": "06b884340a02b2241f23d552f57de8b2635f76c451f020ce9b63cb4239e4b37a",
+      "bytes": 23474
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/bugfix-routed-qa-2.jsonl",
+      "sha256": "9518d8f1e596f9c226a044122eee1406b8d072b5c82e1a24dac2971335515ff8",
+      "bytes": 2870
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/bugfix-routed-worker-1.jsonl",
+      "sha256": "40dc2c01fef503861828b1e40e96bb726ce8e505e1b8f12a94ed6775497de79e",
+      "bytes": 1572
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/bugfix-single-worker-1.jsonl",
+      "sha256": "5d4e4c7524a3d565befa7d6c071535e9184a49eba8fb4a6c15d25e02408dc945",
+      "bytes": 1527
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/context_retrieval-routed-lead-1.jsonl",
+      "sha256": "90dc09366a9c134cbf9b37fbe08d3b06ee31c21b2aa2c97228773eb50aab6998",
+      "bytes": 952
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/context_retrieval-single-lead-1.jsonl",
+      "sha256": "0898a57dc2190bd90307606da77b28f78d2e9432a3d5354bbee698dcaea0c6ba",
+      "bytes": 1187
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/incident_diagnosis-routed-qa-2.jsonl",
+      "sha256": "58e2b20d633ddc915bf12cfc57112f38783f447b182d817ed984ccf1ff324545",
+      "bytes": 3318
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/incident_diagnosis-routed-worker-1.jsonl",
+      "sha256": "8f0d533736ab98904b240545efef3f2f90b2fb95a08036a06c85627364a872bf",
+      "bytes": 4699
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/incident_diagnosis-single-lead-1.jsonl",
+      "sha256": "1a6d9611b1f2862cdf9742236edcbd59c96b2f5777a9cb94b2b3c6f7522f0796",
+      "bytes": 3717
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/manifest.json",
+      "sha256": "2e47566701375d1e7dde7e2820a00b27fb5a40815c392524f3890ca89a406708",
+      "bytes": 3179
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/native-evidence.json",
+      "sha256": "19b588d228d7d8c5e16a03e56c088561be1df8f260ed3d41a76d8959258ac4bd",
+      "bytes": 35322
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/native-records.json",
+      "sha256": "651affafa3c80933923858ddf438922a1a5138e4593daa0c504125c93c7894f8",
+      "bytes": 32273
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/pairs.json",
+      "sha256": "390a5e162c6f292d3ad7c5b224c050febe9c5dc8c402051c10334abe7aa38fb2",
+      "bytes": 18336
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/refactor-routed-qa-2.jsonl",
+      "sha256": "b935c2d64e2fc26589c3a5fd611bc4dc8290a1929825aa64b7be8bf569430604",
+      "bytes": 1918
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/refactor-routed-worker-1.jsonl",
+      "sha256": "0bf74d81b143e716ed3c0392a7ba36206c4cd74319b9bdeaffafc8efb051b00e",
+      "bytes": 1655
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/refactor-single-worker-1.jsonl",
+      "sha256": "57e53a4cadaf7d0eda65bcdeaec820247f1f7671b118755a7339ff840a95cf5b",
+      "bytes": 1606
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/resume-routed-lead-1.jsonl",
+      "sha256": "4582dffcbe314c2412b74412ee9d49ab2fc1632401fa9b170f77f6dd0f0a0748",
+      "bytes": 1691
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/resume-single-lead-1.jsonl",
+      "sha256": "dced3f95e4a4bae7939d6e1998b40de02cb3cc03723698fe638c5472d8fa9cb4",
+      "bytes": 1474
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/runs.json",
+      "sha256": "f4102fd2d2e6646a2cf51db4466392c1aa5d604d656fdd3a28456ef4616d15ec",
+      "bytes": 42813
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/small_edit-routed-worker-1.jsonl",
+      "sha256": "5ac30a1880080c9721ec6f6e4698d3901b742d01428e9fa97be6b27c9f90f97a",
+      "bytes": 1482
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/small_edit-single-worker-1.jsonl",
+      "sha256": "0b301b9b3a6a0a4fcb3be29e91327255195926939030ea75fa767fc1896365f9",
+      "bytes": 1468
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r2/workflow-report.json",
+      "sha256": "4408f8ccaf91777eef9dc24ffff2c9274cb83fa13b211dcb12bd188597243222",
+      "bytes": 23500
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/bugfix-routed-qa-2.jsonl",
+      "sha256": "a73c99510d0e63782a34becfff972d1cd200e238e2fde4f74696cb56a74c066b",
+      "bytes": 7492
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/bugfix-routed-worker-1.jsonl",
+      "sha256": "9ba924acd6d880d5cb606f447edcc075ce91a9c18ef7028110386a4df7bdd023",
+      "bytes": 8293
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/bugfix-single-worker-1.jsonl",
+      "sha256": "4b0699801aceff2e840189c8915672064daad797227bc5650a9e2f09f5571ffc",
+      "bytes": 8261
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/context_retrieval-routed-lead-1.jsonl",
+      "sha256": "f68d8dda260ab312482cabcdca9fd9d6e22dc4d9235d3f304251bd1e89e9bcdb",
+      "bytes": 7399
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/context_retrieval-single-lead-1.jsonl",
+      "sha256": "364b735c2e0e16ce1ece77d2aa905462ce877dafda0c7e06341c4b8076964029",
+      "bytes": 7421
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/incident_diagnosis-routed-qa-2.jsonl",
+      "sha256": "1fdd79c307aca1a2b17c4595a91076a8ceb89b68c420c717d0cbd19e55fd4035",
+      "bytes": 8547
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/incident_diagnosis-routed-worker-1.jsonl",
+      "sha256": "3c948fc3933ae1be4950bb522c2855203f6791fc39b9e4063c5bc5083a26448d",
+      "bytes": 8808
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/incident_diagnosis-single-lead-1.jsonl",
+      "sha256": "873c45120d3028793623e702f6be2f4690851d3768e0db5797e6f7ba3b25673d",
+      "bytes": 9040
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/manifest.json",
+      "sha256": "756f211fccf99612a77328a4530c0630cf2e9dfdc98101bfcd73196490d8385c",
+      "bytes": 3179
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/native-evidence.json",
+      "sha256": "93f47d6655dc0c0af1e012dabdc356d2e39013d87c29655df6116ad05f551fb3",
+      "bytes": 126591
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/native-records.json",
+      "sha256": "8eb1ad015537ac8f4e9655d82e9aa5419fe449bec7c88ee59f5165638d178269",
+      "bytes": 122422
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/pairs.json",
+      "sha256": "557310edf84d90dced35602e4def5b6e306c95f458b015eab94dd25f20dc03a6",
+      "bytes": 35679
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/refactor-routed-qa-2.jsonl",
+      "sha256": "538563f4009d800b57f68cab0c434ff323927fee0e69cf74694b69268dd46056",
+      "bytes": 7570
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/refactor-routed-worker-1.jsonl",
+      "sha256": "f4a0a7e39140475cbb4fd44a9f3bf6d2bdeaf351949e503a0e1e8d1918e5be47",
+      "bytes": 8522
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/refactor-single-worker-1.jsonl",
+      "sha256": "50de422060eb2a1d6f30ae78f4c910c601fb609c1970a8a58007966c22cec75b",
+      "bytes": 8417
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/resume-routed-lead-1.jsonl",
+      "sha256": "566b01c5d9a80a1a85096a4989a40d10c4a38cf8bc9092794f0713b103dfcdc6",
+      "bytes": 8076
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/resume-single-lead-1.jsonl",
+      "sha256": "c3966b810b097b1b0ed79b4870be8ec53041834698bb5b94d13b1275ee5231a0",
+      "bytes": 8110
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/runs.json",
+      "sha256": "59371e6cf1afbc880df4aa2e943a5d49e6bc93fe2cdcc06d1f399157343a6db6",
+      "bytes": 137886
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/small_edit-routed-worker-1.jsonl",
+      "sha256": "58eac1341d4cef0e9995c45b061168fdcf6ed27056c12bedf2ce637589999770",
+      "bytes": 8718
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/small_edit-single-worker-1.jsonl",
+      "sha256": "4e36c86ac69cf49ab43cfe8e97bb63e002e78cd9c6dc3a51811d3da5377f6dd7",
+      "bytes": 8222
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/benchmark-r3/workflow-report.json",
+      "sha256": "fd547c36980f2b32a5e01f695bc2bdbee8f1bea7c34bb75d4ea1f2599976068b",
+      "bytes": 23494
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/cli-pnpm-lock.yaml",
+      "sha256": "22ea9bc1676ebfd77aa3df0089eb6937fe73d62b5ad62624b6f380d3811d147c",
+      "bytes": 2595
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-adapter-gpt-5.6-sol-diagnostic-r2.json",
+      "sha256": "7a89d4d67fd988e0ef2c1bd959ffc4654bacc670fae70214db6925ecd52ab3bb",
+      "bytes": 1431
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-adapter-gpt-5.6-sol-trusted-r3.json",
+      "sha256": "0cd587bc298a776a338131b96d3810e1ccd295958f73cba3cc99f2d81602ddb4",
+      "bytes": 1386
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-adapter-gpt-5.6-sol-trusted-r3.stdout.jsonl",
+      "sha256": "fa8a20e067505426303e034df258c51dabc6dcdb2574acc5c2ca6ea7a229ac34",
+      "bytes": 358
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-adapter-gpt-5.6-sol.json",
+      "sha256": "5183f4aa47e5238bb811fb0c5c14e8e0ec8ec31a6765b32088b42064ef6bcc1c",
+      "bytes": 1298
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-adapter-gpt-6.1-sol-trusted-r3.json",
+      "sha256": "c0d65c8544b7476e93121296215457724615b88cf77bd94a8884c602d0a2e3ed",
+      "bytes": 1357
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-adapter-gpt-6.1-sol-trusted-r3.stdout.jsonl",
+      "sha256": "491fc397fb32de17035144c00f573f1533d1d1874001970546230c28b4036d7c",
+      "bytes": 737
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-cli-source.sha256",
+      "sha256": "36dc02b3999e136697c3406d77913430bd901aad6eeac41ba62c0f7cd934ea34",
+      "bytes": 187
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-installed-native-1.55.0-http.json",
+      "sha256": "5e343b677d0ae5ffaa3bd2bb66437d2d6e7c1bfe94cd4de296c48642104f7f8a",
+      "bytes": 2501
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-installed-native-1.55.0-stdio.json",
+      "sha256": "51088d84a11cd71a3f10ebb1550d9d298949c1b204eae821a3e526bf000a674f",
+      "bytes": 2500
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-launcher-integrity.json",
+      "sha256": "af045b0dabad4df88a161355e32453bab482b38a3318fffb18814ad8ce8e09fb",
+      "bytes": 98
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-native-active-turn-cancellation-r3.json",
+      "sha256": "3d8329fd05a5ca771dda8129474488ea833cba0c74936e56ebf4b1e0364d4835",
+      "bytes": 1182
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-native-cancellation-r1.json",
+      "sha256": "608e6b80dea0e9cd985355ce4ea0c2bbbe94853a497ad7effd80271ec18a20e3",
+      "bytes": 999
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-native-cancellation-r2.json",
+      "sha256": "ddf0557dc4c19c672671f9982a3a8b458992377ab18d100b460fac114dd74b99",
+      "bytes": 999
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-native-cancellation-r2.logs.json",
+      "sha256": "e3bf62d27b673bded0693942ee37161669cddedc990a1ffa41ada98c7568a273",
+      "bytes": 1108
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/evidence-platform-integrity.json",
+      "sha256": "6023e12a20a3146927c8ccc598bb5e647dddea5956fd1867dfab1c0df2194c53",
+      "bytes": 98
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/incident-fix-stdio-integration.json",
+      "sha256": "64e1c92f8c9512074e3142863e889e2a040a86e2583d869c7835ae2019c5367c",
+      "bytes": 908
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/installed-incident-fix-receipt.json",
+      "sha256": "1da49e9cc7576b6d3cf89b7b7d358baf55c8491873158be8b53b73812f5bfea3",
+      "bytes": 1977
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/installed-native-1.56.0-http-inventory-r3.json",
+      "sha256": "2f2131a34c35658b609086b8efd6822b3a48d684ec4225be83795afb7624677f",
+      "bytes": 2649
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/installed-native-1.56.0-stdio-inventory-r3.json",
+      "sha256": "bbc3c3cf466e4360b41b6d76a72cbfa5f9caf9b3fd91e2b905dfd39f25b9c9b1",
+      "bytes": 2648
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/native-evidence.json",
+      "sha256": "ff72556d58b6e4d7c8901eaece6ac17f53a052b7d0a331af4da3bbfe55f20270",
+      "bytes": 20069
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/native-incident-worker-v156.json",
+      "sha256": "7f5ad241c23caac38128579f06ffe3aa01757715e16a58d0a7f287495ef13b96",
+      "bytes": 1357
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/native-preflight-negative-v156.json",
+      "sha256": "0a568d690080558cf34c0cce08cf0149c9ce4d14a2209b07a24f022c90da4374",
+      "bytes": 571
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/native-tool-cancellation-r4.json",
+      "sha256": "e6e41155f9a45112793ae37ea7b3ecb018eb5c5f56ddd74215e851426c339bae",
+      "bytes": 1088
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/native-tool-cancellation-r5.json",
+      "sha256": "112322be6623d5588c5b567a3904dd41aad8bb9ba13c544090f3612c51c9dace",
+      "bytes": 1180
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/native-tool-cancellation-r6.json",
+      "sha256": "c6d391138e673d1f6720f4975c974c1955c9614e1e0fc277355ac51b95df1264",
+      "bytes": 1112
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/native-tool-cancellation-r7.json",
+      "sha256": "6f6f267b6f7430c888daa926232bf8f78cd0af169fc45a3e552ea387d6ec4195",
+      "bytes": 1895
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/pairs.json",
+      "sha256": "bdf68ae4fcb2a62fcefc218870115609fe6213f2daaa03a92ae445454cbd7c25",
+      "bytes": 18302
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/sandbox-runtime-diagnostic-r6.json",
+      "sha256": "f757b3b8359cfdee851a2bb3dad2b1f317a820b7cd91a127fd8feca650d429be",
+      "bytes": 1587
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/sandbox-runtime-diagnostic-r7.json",
+      "sha256": "5f7d45e5fff32329a4ab663bd452edb04f1438b46a255640d8eed4a4959efd91",
+      "bytes": 1436
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/scoped-sandbox-canary-r1.json",
+      "sha256": "3e51933339e92c73f45a8d06dff126b33e06617312837c34c465ab2d0b1b355d",
+      "bytes": 2463
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/scoped-sandbox-canary-r5.json",
+      "sha256": "0f05178f4c2427be53d02993f6a568bc80727cd00d7985c9015d803abdd1abfd",
+      "bytes": 1801
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/scoped-sandbox-canary-r8.json",
+      "sha256": "907a2df4d4913d22e26e0bf8aa6b18075998892c12622f394d5a4a93b0c9f686",
+      "bytes": 3339
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/scoped-sandbox-canary-r9.json",
+      "sha256": "3cf381b0ffe5a0519a7bc09d2d2dfad5c6c2f4c02415318932f59c7827e8a007",
+      "bytes": 3358
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-evidence/workflow-report.json",
+      "sha256": "06b884340a02b2241f23d552f57de8b2635f76c451f020ce9b63cb4239e4b37a",
+      "bytes": 23474
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/source-manifest.json",
+      "sha256": "5ae1e631aed5d584ef9202f52aecbabd0bb238b908d1ee6ed36725106424998a",
+      "bytes": 158816
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/source-candidate.tar.gz",
+      "sha256": "d190b88730f2060745b208e50be7415e6a50d8d30819b9b36244c4086ff3ffbd",
+      "bytes": 3377913
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/source-export-binding.json",
+      "sha256": "d95e9c430749544878de67c89d6d84eb237302b6915bd19c69d394ee0cf9cbe3",
+      "bytes": 329
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-after.json",
+      "sha256": "a861f349df799482fbdaeb1aa72007938f913567acf5310d16cdc6f43e2c4aec",
+      "bytes": 2710
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/lead-closure.mjs",
+      "sha256": "f793054019bdd4a479118da198a72dc12338d41f5c67cde8cbc422afa8d486e4",
+      "bytes": 8937
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/vm39-package-cycle.sh",
+      "sha256": "b64e1a0847f4b1b5d10ca2c0322a34f21ff153fa8fc76431a6d6597708a65c5d",
+      "bytes": 3820
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/collect-evidence.py",
+      "sha256": "4dfa9dac7939cf132bfa6209f1dedcb1f750f6f363a126e79f8df33202f4f120",
+      "bytes": 12185
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/executable-benchmark.mjs",
+      "sha256": "f9f59fad1fcdc408272373b7fb5adfc895a80fdc21955e8b50747d053f111918",
+      "bytes": 20732
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/check-benchmark-contract.mjs",
+      "sha256": "feb391b95c063520968370b3bb91e2eabafd410860c32127def77a1df61b416b",
+      "bytes": 2580
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/benchmark-contract-check.json",
+      "sha256": "ac52ca872c98df772960bcb138029e7d53aa09de30938b145e3043432362722b",
+      "bytes": 259
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/native-incident-worker.mjs",
+      "sha256": "06b46fc96d2b50f2aee64a142fee4887a3317d72a4002299bd8e2d793b9d5ac7",
+      "bytes": 3406
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/integrate-native-incident.py",
+      "sha256": "ce745ad3de493d95bedd802b5c5db1499b8a94e186443d79d366e5931a425a06",
+      "bytes": 2014
+    },
+    {
+      "path": "dist/v1.56.0-local-20261003/v156-scope-review-attestation.json",
+      "sha256": "44997bd2422967e0d60ad8844b3857e7df60ab84eeb1ea9caeff288f5ce8f48f",
+      "bytes": 1671
+    }
+  ],
+  "boundaries": [
+    "Temporary exact-binary AppArmor profile only; sysctl restriction remains 1 and profile unloaded after each proof. No persistent /etc policy or general containment claim.",
+    "Native incident worker used a pinned mirror; Lead applied only after registered baseline matched. Separate independent QA accepted exact source/diff/test receipt.",
+    "Benchmark r3 has four of six accepted cases in both variants and zero observed policy failures. Incident/resume conservative answer checks failed; they do not substitute for installed product recovery/incident acceptance. All earlier attempts retained.",
+    "Median token count increased 114.85%; no token savings claimed, no repeated benchmark to chase the target.",
+    "Provider-session resume is not implemented; durable caller-native coordination resume is the supported boundary. Explicit 5.6 model worked; 6.1 unavailable without fallback.",
+    "Soak waived, not passed. Automated real-use trials do not imply owner usability acceptance or production/publication approval."
+  ],
+  "independentQa": {
+    "reviewer": "v156_acceptance_audit",
+    "result": "approved",
+    "frozenSourceHashes": 800,
+    "archiveMembers": 800,
+    "implementationHashes": 11,
+    "artifactHashes": 180,
+    "runtimeTarMatches": 9,
+    "recomputedBenchmark": "exact match: 4/6 each, zero observed policy failures, median tokens +114.85%",
+    "boundary": "Local independent binding/receipt checks; remote execution lead-observed. r9 is historical exact-CLI/config canary with unchanged role-config bytes, not candidate containment. Owner acceptance, publication and waived soak remain separate."
+  }
+}

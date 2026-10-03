@@ -1,0 +1,223 @@
+{
+  "milestone": "1.49.0",
+  "status": "implementation-reviewed-local-passed-ubuntu-open",
+  "reviewer": "v143_scope_review: gpt-6.1-sol high",
+  "focused": {
+    "passed": 35,
+    "skipped": 0
+  },
+  "unit": {
+    "passed": 878,
+    "skipped": 47
+  },
+  "other": {
+    "passed": 35,
+    "skipped": 6
+  },
+  "sources": [
+    {
+      "path": "packages/storage/src/diagnosis-repository.ts",
+      "sha256": "8de90c735fc048bdd3d2ebd4e985c0e4ddd8856d7f7e7319c387d44a1283d8ad"
+    },
+    {
+      "path": "packages/storage/src/diagnosis-repository.test.ts",
+      "sha256": "c2a0260d02d35635be6cbd1b680df6387f86496500f3ed8edcabc886871c29f8"
+    },
+    {
+      "path": "packages/storage/src/migrations/diagnosis-migration.ts",
+      "sha256": "12a3f0a5c6dc3d4a027ebf6c96c344bddd4c030a8ae7377c6ac7365bf3a82759"
+    },
+    {
+      "path": "packages/storage/src/database.ts",
+      "sha256": "495a19c31549e03559320a940c144ff76bfa5d581c99cc20d494168e883773e3"
+    },
+    {
+      "path": "packages/storage/src/index.ts",
+      "sha256": "048cc74f326ad2f6621be0bf7802a25fd7271cec9ed0e28ebcb42c7a11972987"
+    },
+    {
+      "path": "packages/mcp-server/src/diagnosis-service.ts",
+      "sha256": "276023992b0d3377571c9d74bc8347e20f5a0d6f7d1b6f24fcec407276aa2bb9"
+    },
+    {
+      "path": "packages/mcp-server/src/diagnosis-service.test.ts",
+      "sha256": "a5ab8668f1854cf2327ab3bfc60acdce78dd0b125e67842557596eff7af64614"
+    },
+    {
+      "path": "packages/mcp-server/src/diagnosis-contract.ts",
+      "sha256": "59943aab7ac23e062ff021b8def527e9ebd3a9b2289a4a746abfdc88aec2e139"
+    },
+    {
+      "path": "packages/mcp-server/src/diagnosis-contract.test.ts",
+      "sha256": "9e9d2b31540a3c9dddbd726860510ee35bbc1340a1d205a2b7287db4567a6e9b"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-service.ts",
+      "sha256": "80a90dff142436e69f95f62a5f84baa384fece60048354fda58ca4efcb79386a"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-service.test.ts",
+      "sha256": "3e1352adc6f54a484e3170a341bd6e001e9b20820f4540e2452e1aa0c9ae3701"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/diagnosis-tools.ts",
+      "sha256": "e3a7d323c937314511c1d186c83bc6cad5b8fac51a00cbe34dc016c210a21863"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/diagnosis-tools.test.ts",
+      "sha256": "c63e7aba62591dd04bf5f5bafb807bfb9d733ac0959e29b3d55eab00d08231b2"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/tool-types.ts",
+      "sha256": "4b9b703c1a4cf640df1251c9208b7c96398ca94d88396469ba2f6f7b6c385141"
+    },
+    {
+      "path": "packages/mcp-server/src/tool-registry.ts",
+      "sha256": "dce274e1f99d9ffaeebe0db8ed3eb4e12231bc95cebe0c8353e475d07481ffc7"
+    },
+    {
+      "path": "packages/mcp-server/src/server-profile.ts",
+      "sha256": "5e05a45117781753962cb54e20ae283dce1f6802e1a53ae9be339f06a0c04d94"
+    },
+    {
+      "path": "packages/mcp-server/src/index.ts",
+      "sha256": "4425cef5b4e6d9d4446a4f0d1eab90d7a7e9ca5f50ddfff8fa8a66868ff17f59"
+    },
+    {
+      "path": "apps/cli/src/runtime/stdio-mcp-runtime.ts",
+      "sha256": "20c2b1e1964a92f2a17d73471040fbbb2f429f222ceedc1160178bfb842a973d"
+    },
+    {
+      "path": "scripts/generate-tool-catalog.mjs",
+      "sha256": "6a23fe11729b98410d27e1eb5c86ff089682e2d3abc5d3abd39c4b8eb36094b9"
+    }
+  ],
+  "gates": [
+    {
+      "name": "typecheck",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--build"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 2735
+    },
+    {
+      "name": "lint",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "."
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 5054
+    },
+    {
+      "name": "focused",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages/storage/src/diagnosis-repository.test.ts",
+        "packages/mcp-server/src/diagnosis-service.test.ts",
+        "packages/mcp-server/src/diagnosis-contract.test.ts",
+        "packages/mcp-server/src/tools/diagnosis-tools.test.ts",
+        "packages/mcp-server/src/incident-service.test.ts"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 2642
+    },
+    {
+      "name": "unit",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "packages",
+        "apps",
+        "--maxWorkers=4"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 24043
+    },
+    {
+      "name": "other",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/integration",
+        "tests/packaging",
+        "tests/release",
+        "tests/acceptance",
+        "--maxWorkers=4"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 3310
+    },
+    {
+      "name": "catalog",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-catalog.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 388
+    },
+    {
+      "name": "contract",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/generate-tool-contract-v1.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "latencyMs": 359
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "dist/v1.49.0-local-20261003/full-local-logs/typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/full-local-logs/lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/full-local-logs/focused.log",
+      "sha256": "c5e07fcfb328eef551be05ea782d301b5a9ffc020a0d353a2125b189b82bbaf0"
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/full-local-logs/unit.log",
+      "sha256": "6abb11852aa1683147332c7f4acbd93e18574df595981b45a5b7a0897a32c9d6"
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/full-local-logs/other.log",
+      "sha256": "6d162bf946de81eb0efb5c85771fcbeb17ebd5591ecd450279a7db4e9096332a"
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/full-local-logs/catalog.log",
+      "sha256": "e580d80f05e0bbd51ca5c8e761b34846c9862ec3739f042e85e98d4640fa87d0"
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/full-local-logs/contract.log",
+      "sha256": "a5f59e8f50b2cf0e4c2b1d37b3e9da98dbe7507599a6fb34583c058e4ec56e84"
+    },
+    {
+      "path": "dist/v1.49.0-local-20261003/full-local-logs/gates.json",
+      "sha256": "27a60e74c29d77a7f2c5ba396e56ef6bdc08d4fe7f0e36c34dcd2b2dab9cf43e"
+    }
+  ],
+  "repairHistory": "Independent QA repaired multi-incident source deletion race and incomplete incident unknown requirements. Incident registry timeout now has a distinct sentinel and frozen-clock regression. Final independent focused review passed 35 tests.",
+  "boundary": "Windows source checks only; Ubuntu/package/installed acceptance and final v2 native provider readiness remain separate. Primary dirty process-manager EOF whitespace preserved."
+}

@@ -1,0 +1,85 @@
+{
+  "version": "1.43.0",
+  "status": "ubuntu-source-passed-package-pending",
+  "sourceFiles": 675,
+  "manifestSha256": "5e583c1c956b3e0577720cf6ec8c14643926a59ab317f54e157bb88fc2f6d1ab",
+  "archiveSha256": "e0c86b0a9ecd5e2cd17f4fd801381ea423686306093b693c821b29e6fa89b919",
+  "sourceCommit": "9a3aab7842cff5f9b4f96ad9c3945542a6757a89",
+  "gates": [
+    {
+      "name": "install",
+      "exitCode": 0
+    },
+    {
+      "name": "rebrand",
+      "exitCode": 0
+    },
+    {
+      "name": "lint",
+      "exitCode": 0
+    },
+    {
+      "name": "typecheck",
+      "exitCode": 0
+    },
+    {
+      "name": "unit",
+      "exitCode": 0
+    },
+    {
+      "name": "integration",
+      "exitCode": 0
+    },
+    {
+      "name": "packaging-tests",
+      "exitCode": 0
+    },
+    {
+      "name": "release-gate",
+      "exitCode": 0
+    },
+    {
+      "name": "catalog",
+      "exitCode": 0
+    },
+    {
+      "name": "v1-contract",
+      "exitCode": 0
+    },
+    {
+      "name": "v1-acceptance",
+      "exitCode": 0
+    }
+  ],
+  "unit": {
+    "passed": 812,
+    "skipped": 3
+  },
+  "nativeDurableTests": 14,
+  "finiteProbe": {
+    "completedOnInitialWait": true,
+    "expectedMarkerMatched": true
+  },
+  "localArtifacts": [
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/ubuntu-logs/durable-probe.log",
+      "sha256": "333e305710cf999546e0ccb44b5fc7b1a85885948fad4b8360575850959e77e9"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/ubuntu-logs/gates.tsv",
+      "sha256": "60060541d7f5921d6f1d5862ae1084c85ab3bc1cf338061b482bc732c7a51d2b"
+    },
+    {
+      "path": "dist/v1.43.0-local-20261003-r4/ubuntu-logs/source-commit.txt",
+      "sha256": "0d85c8ebe77eaea0189e876a76e78cf2fd146c11602475f57cd1e33319d35a75"
+    }
+  ],
+  "remoteUnitLog": {
+    "path": "/var/tmp/mcp-linux-v143-20261003-r4/logs/unit.log",
+    "sha256": "1f3f646190b01b43ca909ea54fdbfa9a72fa2a73c45b0249a62c333d7b9fc4ae"
+  },
+  "installedVersion": "1.42.0",
+  "packageLifecycle": "pending-capacity-and-specific-cleanup-approval",
+  "publication": "unapproved",
+  "boundary": "Ubuntu source tests and finite native shell probe; not packaged or native provider acceptance"
+}

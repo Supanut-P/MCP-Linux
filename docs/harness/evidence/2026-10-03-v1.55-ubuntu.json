@@ -1,0 +1,1213 @@
+{
+  "milestone": "1.55.0",
+  "status": "milestone-verification-closed",
+  "sourceCommit": "81d048da6caf661d204b95e8b7e23f05b3046666",
+  "sourceManifestSha256": "dbf2b94a99aa026688c0a6a556d3f2b37436dfd90299f743bf3251eaab17fb46",
+  "sourceFiles": 789,
+  "sourceArchiveSha256": "0d06cdf0c874c00b52ba72da7f3659da0211ce472c050d603d124e4ddcd9510b",
+  "root": "isolated raw-byte export of primary dirty work; no primary commit/branch created",
+  "version": "1.55.0",
+  "ubuntu": "24.04 x64",
+  "runtime": "Node24.14.0",
+  "implementationSources": [
+    {
+      "path": "package.json",
+      "sha256": "cbb31ec8f87a0e3fb39657af0be3d22dd3462438a284db39579fa22b32e0636d"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "sha256": "bad93ddfc34457ec83dff83605ba3f45b6952e28d518f5db2aca364da90e35bd"
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "4768b06637c1e24074d6c9e222192271decc6d50f619fbfff34073f90ecce5de"
+    },
+    {
+      "path": "packages/capabilities/package.json",
+      "sha256": "c6b676416e444c5691043e93a0acde94be32856a6337f23fa42cd6cef541fd73"
+    },
+    {
+      "path": "packages/capabilities/tsconfig.json",
+      "sha256": "a7dddd96399661de1b587cee49b8ac239b3e796b6adc061a3683e8da89753354"
+    },
+    {
+      "path": "packages/mcp-server/tsconfig.json",
+      "sha256": "b846b4fa9843b65bfda129aac02d789da0623131fd0235f0c1db740cab0f7065"
+    },
+    {
+      "path": "packages/capabilities/src/remote-host-backend.ts",
+      "sha256": "8ec3e10cb0459a1a06ebd5c5ec8e50f6d6c37977f3782650c6e98ed371a98fed"
+    },
+    {
+      "path": "packages/capabilities/src/remote-host-backend.test.ts",
+      "sha256": "4083270bb1f2db68b8e55e0051f1546737e18b2001243055c53449d662524e80"
+    },
+    {
+      "path": "packages/capabilities/src/dbus-introspection.test.ts",
+      "sha256": "aa7468d3d8a234b9e0e8e08609083c66086dfe65dd1ebe35082db80011915122"
+    },
+    {
+      "path": "packages/mcp-server/src/remote-fleet-runtime.ts",
+      "sha256": "d4bb7c6afe94c8b72a6f5f98a1090a5a99efd37e71ecc5e6b78e78253c51aa69"
+    },
+    {
+      "path": "packages/mcp-server/src/remote-fleet-runtime.test.ts",
+      "sha256": "e4ea17da0319bcb8d4299c13814855d87fbffbced26589f3b8dfeace665f08d2"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/incident-tools.test.ts",
+      "sha256": "564d539c0668b233cc00cb24fe0a3d76a1d7f562353236759628341e10f3809f"
+    },
+    {
+      "path": "packages/application/src/fleet-catalog-service.test.ts",
+      "sha256": "d18df761038439071b40001153e0964c8f75e257ba80df88b34081b5119ede89"
+    },
+    {
+      "path": "packages/mcp-server/package.json",
+      "sha256": "33eae40429a855ad933a7c8a3f55104cc09ac6232cadeebdc7ebc8929485a3a7"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "8f84201f29fe36339a8462f107fcfbe8ba79d25a2d3059118916a984702c9ff4"
+    },
+    {
+      "path": "scripts/generate-tool-catalog.mjs",
+      "sha256": "58672233291923758e92f636be1405a947d763d0970b1110d5211a0d064354d1"
+    },
+    {
+      "path": "apps/cli/src/runtime/stdio-mcp-runtime.ts",
+      "sha256": "efae45e0c7f9dc86ce9e44ff9e049eda7e2a867cbc7a5cbc0fb6379e216d231b"
+    },
+    {
+      "path": "packages/application/src/fleet-catalog-service.ts",
+      "sha256": "f37a1db12e1bae36ff653912eff4da23d15e28557294c31801a1bd78e8fc436c"
+    },
+    {
+      "path": "packages/application/src/workflow-state-service.ts",
+      "sha256": "73b788e60ae27ffe4a5a3397294df346f064ba46c850632d7b75af653a63ac32"
+    },
+    {
+      "path": "packages/application/src/workflow-state-service.test.ts",
+      "sha256": "3c8646b0c015223e24c8ae9e80d05fa1d0839322820f58685487e75b9cabaf4a"
+    },
+    {
+      "path": "packages/mcp-server/src/diagnosis-service.ts",
+      "sha256": "455ab80794649b4497740e195b4300c78ac41db972cc287f7f3ec7e0d5934da7"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-service.ts",
+      "sha256": "004e3c1221e85fcc811319876bea632074d0ec4d93d720256d7282b0ffbc60fb"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-service.test.ts",
+      "sha256": "05503d693b2a8880a0b9d9b65b2e0238e12de25fc4104df248923b9ce704d44e"
+    },
+    {
+      "path": "packages/mcp-server/src/index.ts",
+      "sha256": "9eba1f0a2911116d4daec2ca6757ca2ae26a53d4382dbd074ea804c2bf695e4d"
+    },
+    {
+      "path": "packages/mcp-server/src/server-profile.ts",
+      "sha256": "e272c19614673609fc5ad6e07312210eb3d64fd426774e2a7b65fced0f38cb56"
+    },
+    {
+      "path": "packages/mcp-server/src/tool-registry.ts",
+      "sha256": "61b9c753e85599386864ea3aa021b41fb473bc9cfd6961877febea92bb55a198"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/tool-types.ts",
+      "sha256": "9175117bdd45868396ad743d0e4df6734acda2800e6b634ff392c923fe72bda9"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/incident-tools.ts",
+      "sha256": "2eadfd48b09c0fdf66098cfe60ea93cb48bb6f2ea2466774cd4da9af01367fe3"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/diagnosis-tools.ts",
+      "sha256": "e3a7d323c937314511c1d186c83bc6cad5b8fac51a00cbe34dc016c210a21863"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/workflow-state-tools.ts",
+      "sha256": "6818592a4b485d1da8f2cd57158844f0975d4e7ceef752ac624a13f4bdd68d11"
+    },
+    {
+      "path": "packages/storage/src/database.ts",
+      "sha256": "1997d7c130d39ca620be432c53e2914dac515b818678ff19328144b21ac5f36e"
+    },
+    {
+      "path": "packages/storage/src/index.ts",
+      "sha256": "aac920dc1c2f28fdcb99eeefde037adff2ab120497def1d9cca17827357c25be"
+    },
+    {
+      "path": "packages/storage/src/workflow-repository.ts",
+      "sha256": "b676e4cd892ad8b11803fda2bafd846115c5e0d6674aa988583d837cde7d31ab"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-fix-contract.ts",
+      "sha256": "ff57871eae1249e6d51f6f0ab3fe0871f7ea7cc7fbc58ad26d3a76d4a8bf9986"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-fix-contract.test.ts",
+      "sha256": "c050f8ff605ffdb220a635d6de9bf790cf76c0237bf621bf84444bb3d867d4e7"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-fix-service.ts",
+      "sha256": "54f9d5dad700520ba54c1f02a6990422940a6537f3639c78b237d94fa2e0b61a"
+    },
+    {
+      "path": "packages/mcp-server/src/incident-fix-service.test.ts",
+      "sha256": "ed913714e27e9f905b686de24b4f940935df14b82e44236b86b219e4f37176fc"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/incident-fix-tools.ts",
+      "sha256": "209419d9228a21ecc9c0625efd29630a724b36412a852b33fb17729e668f926f"
+    },
+    {
+      "path": "packages/mcp-server/src/tools/incident-fix-tools.test.ts",
+      "sha256": "c271a2954b19ab98965811d4b260b3d42f093a0d15577b9d0a6c70e486d1c28c"
+    },
+    {
+      "path": "packages/storage/src/incident-fix-repository.ts",
+      "sha256": "6036091e3a4c40faa95354d11e75197b10b8fbbceee5f267b41dc11e13faa92b"
+    },
+    {
+      "path": "packages/storage/src/incident-fix-repository.test.ts",
+      "sha256": "be255902bb7bff8a9cd62e9f131f7acecd21bc7caef2f2034d7a0f1ec5de3520"
+    },
+    {
+      "path": "packages/storage/src/migrations/incident-fix-migration.ts",
+      "sha256": "b0eefb18fd08422506adf8bb60f0d74a1dbdaf4e6127e2e37747bf2efeb47bdb"
+    }
+  ],
+  "local": {
+    "focused": {
+      "passed": 112,
+      "skipped": 0
+    },
+    "unit": {
+      "passed": 927,
+      "skipped": 47
+    },
+    "other": {
+      "passed": 35,
+      "skipped": 6
+    }
+  },
+  "sourceGates": {
+    "archiveSha256": "0d06cdf0c874c00b52ba72da7f3659da0211ce472c050d603d124e4ddcd9510b",
+    "gateHistory": [
+      {
+        "exitCode": 0,
+        "gate": "install",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "audit-prod",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "audit-all",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "rebrand",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "lint",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "typecheck",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "unit",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "integration",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "packaging-tests",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "release-gate",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "catalog",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "v1-contract",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "v1-acceptance",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "build-package",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "verify-package",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "provenance",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "upgrade-preflight",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "diff-check",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "diff-check",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "source-fingerprints",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "installed-stdio",
+        "origin": "gates.tsv"
+      }
+    ],
+    "gateInputs": [
+      {
+        "file": "gates.tsv",
+        "sha256": "b62dd0117d3f5399de118da684de4ef74d61bf749a88c1f12f704f50d3edf9e3"
+      }
+    ],
+    "gates": [
+      {
+        "exitCode": 0,
+        "gate": "audit-all",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "audit-prod",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "build-package",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "catalog",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "diff-check",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "install",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "installed-stdio",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "integration",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "lint",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "packaging-tests",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "provenance",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "rebrand",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "release-gate",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "source-fingerprints",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "typecheck",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "unit",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "upgrade-preflight",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "v1-acceptance",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "v1-contract",
+        "origin": "gates.tsv"
+      },
+      {
+        "exitCode": 0,
+        "gate": "verify-package",
+        "origin": "gates.tsv"
+      }
+    ],
+    "historicalFailureReason": null,
+    "historicalFailures": [],
+    "integrationPassed": 5,
+    "manifestSha256": "dbf2b94a99aa026688c0a6a556d3f2b37436dfd90299f743bf3251eaab17fb46",
+    "packageArtifacts": [
+      {
+        "bytes": 918,
+        "file": "Baitonghub-Linux-mcp-1.55.0-BUILD-METADATA.json",
+        "sha256": "11c994bdb74fd28daa0a30373aa9f2d80a739fcb1887a9cb7a657ce423a85847"
+      },
+      {
+        "bytes": 542,
+        "file": "Baitonghub-Linux-mcp-1.55.0-PROVENANCE-SHA256SUMS",
+        "sha256": "b18e1e15fed8743e84ddf26b04fcfc2c818f8c520d64e6475e37b98bf780eea3"
+      },
+      {
+        "bytes": 14049,
+        "file": "Baitonghub-Linux-mcp-1.55.0-SBOM.cdx.json",
+        "sha256": "f551c3ceae4394393f21e949eae01893506eb9f29bc6b2b97434d06b264c9b99"
+      },
+      {
+        "bytes": 215,
+        "file": "Baitonghub-Linux-mcp-1.55.0-SHA256SUMS",
+        "sha256": "8c0da40cfbef20b0f6e4a9a58f6f05b397e8617c7216fb5e5670ab91e7a7b025"
+      },
+      {
+        "bytes": 32903212,
+        "file": "Baitonghub-Linux-mcp-1.55.0-amd64.deb",
+        "sha256": "ea7558ae7a9cee6236bace72db40da3e751791625d1c2a22f4b3a9f250833c25"
+      },
+      {
+        "bytes": 45065770,
+        "file": "Baitonghub-Linux-mcp-1.55.0-linux-x64.tar.gz",
+        "sha256": "47d364a4d2d1b68cb0afab013efc47de46d79059cac5dbaf84b6f5e0e5178ff9"
+      }
+    ],
+    "packagingPassed": 16,
+    "releasePassed": 12,
+    "sourceCommit": "81d048da6caf661d204b95e8b7e23f05b3046666",
+    "sourceFiles": 789,
+    "testCounts": {
+      "integration": {
+        "logSha256": "2f179f63210edb2bbb35e626954f99de2a82db6a9ee35bcc030c9e3883f20244",
+        "passed": 5,
+        "skipped": 0,
+        "summaries": 1
+      },
+      "packaging": {
+        "logSha256": "950150d3b4992127fb899a76e46bb0a845b1a1368168733183c1740d5b889cc4",
+        "passed": 16,
+        "skipped": 0,
+        "summaries": 1
+      },
+      "release": {
+        "logSha256": "a7859f845387fc3a17c215267ed0f8737341c78c7f53963d19f3cf11b1ccf66b",
+        "passed": 12,
+        "skipped": 0,
+        "summaries": 1
+      },
+      "unit": {
+        "logSha256": "67571587cd586d75c5e39add9d09fabd33f381d66312adf15e5046c8218de09f",
+        "passed": 971,
+        "skipped": 3,
+        "summaries": 17
+      },
+      "v1Acceptance": {
+        "logSha256": "ba499b5d7677eaaeec46cf4b40acb4a466e3d37ecf42df18d5b25abb74b7ca56",
+        "passed": 5,
+        "skipped": 0,
+        "summaries": 1
+      }
+    },
+    "unitPassed": 971,
+    "unitSkipped": 3,
+    "v1AcceptancePassed": 5
+  },
+  "lifecycle": {
+    "baselineConfigSha256": "d89c549cad8e334b962510e8d56cd6945de8cdfab4b186cf703557f0f611bc0a",
+    "baselineStateSha256": "67ea53309632152eed33d13dbce2429cdfb2edb075da57af0bbeffb73fa10c3b",
+    "configFiles": 4,
+    "owner": "adminops",
+    "packageCycleScriptSha256": "6ff6733187470167261dce3946a1cb32a3aebbeb8076de8df7f5188f962c7276",
+    "packageLogs": [
+      {
+        "phase": "upgrade",
+        "sha256": "0a8956277f824eeb215e7fcf629eb8c24cbf9f275831724f7b2e7a0e74486337"
+      },
+      {
+        "phase": "rollback",
+        "sha256": "dd689ee42b80a93810931fcf5534d5d26273898ac6147dc07f3cb578c1740d45"
+      },
+      {
+        "phase": "uninstall",
+        "sha256": "565c752229bb3c693b3165b2c22ae5f59752e9fd395d1fa44c9f34e1ee70396c"
+      },
+      {
+        "phase": "reinstall",
+        "sha256": "7d025c89e008ddd7808bf16518b764a8cf7c4af6038cc5becc6b72f1ba255e9f"
+      }
+    ],
+    "phases": [
+      {
+        "checks": {
+          "config": {
+            "failed": 0,
+            "passed": 4,
+            "result": "OK",
+            "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536"
+          },
+          "state": {
+            "failed": 0,
+            "passed": 99,
+            "result": "OK",
+            "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661"
+          }
+        },
+        "phase": "upgrade"
+      },
+      {
+        "checks": {
+          "config": {
+            "failed": 0,
+            "passed": 4,
+            "result": "OK",
+            "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536"
+          },
+          "state": {
+            "failed": 0,
+            "passed": 99,
+            "result": "OK",
+            "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661"
+          }
+        },
+        "phase": "rollback"
+      },
+      {
+        "checks": {
+          "config": {
+            "failed": 0,
+            "passed": 4,
+            "result": "OK",
+            "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536"
+          },
+          "state": {
+            "failed": 0,
+            "passed": 99,
+            "result": "OK",
+            "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661"
+          }
+        },
+        "phase": "uninstall"
+      },
+      {
+        "checks": {
+          "config": {
+            "failed": 0,
+            "passed": 4,
+            "result": "OK",
+            "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536"
+          },
+          "state": {
+            "failed": 0,
+            "passed": 99,
+            "result": "OK",
+            "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661"
+          }
+        },
+        "phase": "reinstall"
+      }
+    ],
+    "sourceCommit": "81d048da6caf661d204b95e8b7e23f05b3046666",
+    "sqliteIntegrity": "ok",
+    "stateFiles": 99,
+    "version": "1.55.0"
+  },
+  "installed": {
+    "installed": {
+      "healthChecks": 2,
+      "healthReady": true,
+      "serviceCount": 2,
+      "servicesActive": true,
+      "version": "1.55.0"
+    },
+    "owner": true,
+    "sqliteIntegrity": true
+  },
+  "runtimeCheck": {
+    "utc": "2026-10-03T15:20:16.428071+00:00",
+    "since_utc": "2026-10-03T15:15:59Z",
+    "source_commit": "81d048da6caf661d204b95e8b7e23f05b3046666",
+    "package_version": "1.55.0",
+    "credential_scan": [
+      {
+        "surface": "profile_yaml",
+        "bytes": 668,
+        "credential_matches": 0
+      },
+      {
+        "surface": "baitonghub-linux-mcp@adminops.service:process_argv",
+        "bytes": 91,
+        "credential_matches": 0,
+        "records": 1
+      },
+      {
+        "surface": "baitonghub-linux-mcp@adminops.service:startup_stdout_stderr_journal",
+        "bytes": 746,
+        "credential_matches": 0,
+        "records": 7
+      },
+      {
+        "surface": "baitonghub-linux-mcp-tunnel@adminops.service:process_argv",
+        "bytes": 357,
+        "credential_matches": 0,
+        "records": 2
+      },
+      {
+        "surface": "baitonghub-linux-mcp-tunnel@adminops.service:startup_stdout_stderr_journal",
+        "bytes": 2174,
+        "credential_matches": 0,
+        "records": 28
+      },
+      {
+        "surface": "MCP_audit_since_upgrade",
+        "bytes": 9169,
+        "credential_matches": 0,
+        "records": 24
+      },
+      {
+        "surface": "installed_status_stdout_stderr",
+        "bytes": 205,
+        "credential_matches": 0,
+        "exit_code": 0
+      },
+      {
+        "surface": "installed_doctor_stdout_stderr",
+        "bytes": 621,
+        "credential_matches": 0,
+        "exit_code": 0
+      }
+    ],
+    "installed_package_files": [
+      {
+        "file": "admin.cjs",
+        "sha256": "7a03b6804052b399b62abd8d12f4f53fa95319a89008cbeb926eacc995cf79ff"
+      },
+      {
+        "file": "baitonghub-linux-mcp",
+        "sha256": "fecb7eea8fb82c7667e6cad96d2f105303ba98308ff8e92239ca632bd348efeb"
+      },
+      {
+        "file": "baitonghub-linux-mcp-node",
+        "sha256": "e237a2839d0cbdc9a9a2adda1a184afc0f5b20306ffbe923af5686550472d8a8"
+      },
+      {
+        "file": "configure-linux-tunnel.sh",
+        "sha256": "27396a20607266d356c15fc6bdd33deb45a28358442696e99da4f785175756cc"
+      },
+      {
+        "file": "install-linux-tunnel-client.sh",
+        "sha256": "e89dd303e407060c368f0c592405d2c563214eeb104ea83852d4d4f1ed726383"
+      },
+      {
+        "file": "mcp-http.cjs",
+        "sha256": "132d685d4f234507641863d8346c8b6d284db323b1c23eb9a7d0c48b188990e7"
+      },
+      {
+        "file": "mcp-stdio.cjs",
+        "sha256": "708ad68beaa1cfb10206a2d4103a910d66c1d9ffc061e46bf5a8494df1e80bdd"
+      },
+      {
+        "file": "start-baitonghub-linux-mcp-tunnel.sh",
+        "sha256": "1774cc66f79db0636c3f8b3c847ed128f46d56282084f38fbcaccee8976e41b6"
+      },
+      {
+        "file": "workflow-benchmark.cjs",
+        "sha256": "1aa001a925d32e5dd5f8ae3a598d9433cb937002698a2da9a542bd3f159e9b8a"
+      }
+    ],
+    "boundary": "Known existing credential values and encoded forms, bounded post-upgrade observations only; no arbitrary-secret or seven-day-soak claim",
+    "package_comparison": "Streamed DEB archive; no temporary extraction"
+  },
+  "transports": {
+    "stdio": {
+      "optionRequestsRejected": 6,
+      "catalogChecks": 8,
+      "workflowChecks": 12,
+      "skillsChecks": 15,
+      "standardTools": 234,
+      "registryTools": 240,
+      "nativeProviderUnavailable": true,
+      "authentication": "unknown",
+      "taskDispatches": 0
+    },
+    "http": {
+      "optionRequestsRejected": 6,
+      "catalogChecks": 8,
+      "workflowChecks": 12,
+      "skillsChecks": 15,
+      "standardTools": 234,
+      "registryTools": 240,
+      "nativeProviderUnavailable": true,
+      "authentication": "unknown",
+      "taskDispatches": 0
+    }
+  },
+  "securityScan": {
+    "scanId": "9516dcac-3048-4e9b-a623-a133c1049f1b",
+    "status": "complete",
+    "sourceContentDigest": "codex-security-snapshot/v1:sha256:fd3cfacddaa80c23a7b36a9371b0e4429dc8fcc818e6bd49f4c99b6cfdb640b3",
+    "report": "C:\\Users\\toing\\.codex\\state\\plugins\\codex-security\\scans\\MCP-Linux\\45c940014fe7fb4e7017be8c67c9bdfd75f227a3_20261003T131217Z_361kqoag\\report.md",
+    "severityCounts": {
+      "low": 2
+    },
+    "usage": {
+      "cacheWriteInputTokens": 0,
+      "cachedInputTokens": 20024704,
+      "coverage": "complete",
+      "inputTokens": 21050086,
+      "outputTokens": 62997,
+      "reasoningOutputTokens": 16321,
+      "source": "codex_rollout",
+      "threadCount": 7,
+      "totalTokens": 21113083
+    },
+    "usageBoundary": "Workbench rollout accounting for the selected thread tree; not an incremental v1.55 scan-only token benchmark.",
+    "remediation": "Subsequent v1.55 fixes and regression evidence are recorded separately; original sealed findings remain unchanged.",
+    "coverage": {
+      "changedSourceReviewed": 159,
+      "complete": true
+    },
+    "liveCredentialsUsed": false,
+    "secondaryTargetAccessTested": false
+  },
+  "historicalLifecycleFailure": {
+    "phase": "pre-install-artifact-verification",
+    "exitCode": 1,
+    "reason": "DEB hash sampled before build-package gate had completed; final artifact differs",
+    "supersededSha256": "f1d5135b250c13ebb38826baeb085c8b890905a765376c43124acc7245a19477",
+    "finalSha256": "ea7558ae7a9cee6236bace72db40da3e751791625d1c2a22f4b3a9f250833c25",
+    "failedLab": "/var/tmp/mcp-linux-v155-20261003-operator-r1",
+    "installedVersionAfterRejection": "1.50.0",
+    "bothServicesActiveAfterRejection": true,
+    "servicesStopped": false,
+    "packageInstalled": false,
+    "retryLab": "/var/tmp/mcp-linux-v155-20261003-operator-r2"
+  },
+  "artifacts": [
+    {
+      "path": "dist/v1.55.0-local-20261003/packages/Baitonghub-Linux-mcp-1.55.0-amd64.deb",
+      "sha256": "ea7558ae7a9cee6236bace72db40da3e751791625d1c2a22f4b3a9f250833c25",
+      "bytes": 32903212
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/packages/Baitonghub-Linux-mcp-1.55.0-BUILD-METADATA.json",
+      "sha256": "11c994bdb74fd28daa0a30373aa9f2d80a739fcb1887a9cb7a657ce423a85847",
+      "bytes": 918
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/packages/Baitonghub-Linux-mcp-1.55.0-linux-x64.tar.gz",
+      "sha256": "47d364a4d2d1b68cb0afab013efc47de46d79059cac5dbaf84b6f5e0e5178ff9",
+      "bytes": 45065770
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/packages/Baitonghub-Linux-mcp-1.55.0-PROVENANCE-SHA256SUMS",
+      "sha256": "b18e1e15fed8743e84ddf26b04fcfc2c818f8c520d64e6475e37b98bf780eea3",
+      "bytes": 542
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/packages/Baitonghub-Linux-mcp-1.55.0-SBOM.cdx.json",
+      "sha256": "f551c3ceae4394393f21e949eae01893506eb9f29bc6b2b97434d06b264c9b99",
+      "bytes": 14049
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/packages/Baitonghub-Linux-mcp-1.55.0-SHA256SUMS",
+      "sha256": "8c0da40cfbef20b0f6e4a9a58f6f05b397e8617c7216fb5e5670ab91e7a7b025",
+      "bytes": 215
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/audit-all.log",
+      "sha256": "e29e8a836f603ece6422173d3539cc707b1a759522c32b232aed69b8ac167a8c",
+      "bytes": 310
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/audit-prod.log",
+      "sha256": "177cfa54657dc8f79e84898affd67dd978f0f1ab2524d0effe060cf6830284c3",
+      "bytes": 308
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/build-package.log",
+      "sha256": "00d24fc0521091bd54ee2b79a6d807cce8c4dd8f303699c571f6668f2c9c77fb",
+      "bytes": 2992
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/catalog.log",
+      "sha256": "8b3646d1d877878753cf8b05d4d34a6b02d60cf4a886d7d710afa4490166e3d2",
+      "bytes": 570
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/diff-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/driver.log",
+      "sha256": "b3ca9e18c3b862beec118096b5cef0d0e6534420f84203238278942b0268e9b4",
+      "bytes": 478
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/gates.tsv",
+      "sha256": "b62dd0117d3f5399de118da684de4ef74d61bf749a88c1f12f704f50d3edf9e3",
+      "bytes": 290
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/install.log",
+      "sha256": "23143d976518c03e1a5ab791ba1f2fda42e7618328534b201e34521cfbf192f9",
+      "bytes": 2061
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/installed-stdio-candidate.log",
+      "sha256": "1a87b3da0bfa4780a098cc1d03c9485719321984f4801612c9941f4de66059b2",
+      "bytes": 900
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/integration.log",
+      "sha256": "2f179f63210edb2bbb35e626954f99de2a82db6a9ee35bcc030c9e3883f20244",
+      "bytes": 1497
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/lint.log",
+      "sha256": "644ee9f7383c9f14b401995c3668cf7763a8cd71b56e9b8330373014766b5346",
+      "bytes": 91
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/packaging-tests.log",
+      "sha256": "950150d3b4992127fb899a76e46bb0a845b1a1368168733183c1740d5b889cc4",
+      "bytes": 812
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/provenance.log",
+      "sha256": "a0d515c1e297eae86e2362497d4dff72e056d5a5f2a67698fdf3f0f343cdce77",
+      "bytes": 114
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/rebrand.log",
+      "sha256": "a82665b0ffa1a533e166d20036570de84c981c4befc4a7c12dfeda3acba7b5be",
+      "bytes": 149
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/release-gate.log",
+      "sha256": "a7859f845387fc3a17c215267ed0f8737341c78c7f53963d19f3cf11b1ccf66b",
+      "bytes": 780
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/source-commit.txt",
+      "sha256": "3fd5c1f839be8ccbcf98b604238db48fed6af2b71c1806e99ce27bb85da3da26",
+      "bytes": 41
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/typecheck.log",
+      "sha256": "20f7c43fa2d687854038a383ccae73da640e1430520ab37bc34f34cd5efd7b27",
+      "bytes": 99
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/unit.log",
+      "sha256": "67571587cd586d75c5e39add9d09fabd33f381d66312adf15e5046c8218de09f",
+      "bytes": 41380
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/upgrade-preflight.log",
+      "sha256": "212c738fd6e304af9e84433de13dd163ad4aacfae514f287cfdd524a53b2b986",
+      "bytes": 507
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/v1-acceptance.log",
+      "sha256": "ba499b5d7677eaaeec46cf4b40acb4a466e3d37ecf42df18d5b25abb74b7ca56",
+      "bytes": 1367
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/v1-contract.log",
+      "sha256": "cf6f798e831351f37fbb711f12fb3a2864380f1a4a200f0d777835651644e061",
+      "bytes": 565
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/ubuntu-logs/verify-package.log",
+      "sha256": "f57a1b1b7d618dd92c27efaac412cb376b46ab42aae06911ce6b0eb2e7d2975f",
+      "bytes": 2464
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/incident-check.json",
+      "sha256": "d86ec8d29ad9d552871f722b8f88a7602b23ee94339bf2edd870c8fec23ba451",
+      "bytes": 502
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-benchmark-report.json",
+      "sha256": "9d9359033d282f9c5698ab98287fbaf8ea2c76754c15a8cb6bf441c4f2e7ef0f",
+      "bytes": 34307
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-codex-http.stdout.json",
+      "sha256": "940e5830a6227f9d1c093e362d88efc2bb42089c87c92e78336b0381e65fedaa",
+      "bytes": 693
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-codex-stdio.stdout.json",
+      "sha256": "cfa90809ac9538514592065037006deddb1f100b2135ac506dde945374701ddb",
+      "bytes": 694
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-diagnosis-http.json",
+      "sha256": "cb7664ac19a25f1fd3118e7d82229663ce6078a42f88a1fb313832150017e402",
+      "bytes": 1141
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-diagnosis-stdio.json",
+      "sha256": "2c8deb16be1d8393c29920396a6353f02ba28481bd657cca15fc10b0312f4491",
+      "bytes": 1142
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-drift-http.json",
+      "sha256": "ef71d1099edd3da30ebf09d1835521b894d468f61412551f1dc17e5ee65c06d7",
+      "bytes": 856
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-drift-stdio.json",
+      "sha256": "9fc85df05fb2b8f14f70bca776af94a3b6e514fd7c44e7a6804be45e01e85908",
+      "bytes": 857
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-fleet-catalog-http.json",
+      "sha256": "79867e392963f4715f944127662ca48ed3babf4db373b4634d673adee860cf6c",
+      "bytes": 685
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-fleet-catalog-stdio.json",
+      "sha256": "7d0a3b554b84ff065386a63df49c473abc8752c6e393f79e56d9059fb3fd48bf",
+      "bytes": 686
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-incident-http.json",
+      "sha256": "ec8e137c0e9d7eb396de6fc2f5afba0f29f25138ae00da8b3b7481d7207e1dfa",
+      "bytes": 855
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-incident-stdio.json",
+      "sha256": "2d055110ae5793ae7f965da083b6e7a36c14fd89d2af9821f109f60817f20c78",
+      "bytes": 856
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-readiness.json",
+      "sha256": "44aff8060f0c9a1e2c8574bdc20a0a9271a6ad9fd578eee2bc7ff8fcab86d8c8",
+      "bytes": 192
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-skills-configured-http.json",
+      "sha256": "fbb517af2c8770aa8943f201c101bd42c17855b58e20d57857eaa4cbd6ff8a37",
+      "bytes": 597
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-skills-http.json",
+      "sha256": "9968517cd0cb2791c8964ccce6b21f280ff667740048dd58e42ba3c7730ec287",
+      "bytes": 1176
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-skills-stdio.json",
+      "sha256": "288a8dbc233a1b2d2c2ad201f9bbe900ebd48417df8862bb90c7ec00a6dce27e",
+      "bytes": 1177
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-workflow-http.json",
+      "sha256": "cfbe706c1e9be4de5b452ac669f25a7ff27fe7b2903e53e09607d2e4bcf56151",
+      "bytes": 1042
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/installed-workflow-stdio.json",
+      "sha256": "56c884a425b8cc24a1b50b697e0f14f047312e7668695a9feebf86c0f709201f",
+      "bytes": 1043
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/lifecycle-summary.json",
+      "sha256": "2d5e2333b6e7ffe46b4f8703126f027a94bc16c390249aa908a5a7aaea2191bb",
+      "bytes": 2778
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/runtime-check.json",
+      "sha256": "76eb0e27efdff4273d5cc3893ab018054904eb2307022ad02f70f295104f8246",
+      "bytes": 2849
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/source-gates-summary.json",
+      "sha256": "6de61efe642fc9b0f8216e10199ce2c4c02cd904a159be5f9dad0ec47622251f",
+      "bytes": 6366
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-logs/workflow-check.json",
+      "sha256": "e3d73ef2e5cb9ecd0ea8049eccde8676a9f0f97cb8d554aff2c162ff59e467bb",
+      "bytes": 539
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/lifecycle-logs/reinstall-config.log",
+      "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536",
+      "bytes": 250
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/lifecycle-logs/reinstall-state.log",
+      "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661",
+      "bytes": 11329
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/lifecycle-logs/reinstall.log",
+      "sha256": "7d025c89e008ddd7808bf16518b764a8cf7c4af6038cc5becc6b72f1ba255e9f",
+      "bytes": 290
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/lifecycle-logs/rollback-config.log",
+      "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536",
+      "bytes": 250
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/lifecycle-logs/rollback-state.log",
+      "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661",
+      "bytes": 11329
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/lifecycle-logs/rollback.log",
+      "sha256": "dd689ee42b80a93810931fcf5534d5d26273898ac6147dc07f3cb578c1740d45",
+      "bytes": 312
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/lifecycle-logs/uninstall-config.log",
+      "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536",
+      "bytes": 250
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/lifecycle-logs/uninstall-state.log",
+      "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661",
+      "bytes": 11329
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/lifecycle-logs/uninstall.log",
+      "sha256": "565c752229bb3c693b3165b2c22ae5f59752e9fd395d1fa44c9f34e1ee70396c",
+      "bytes": 231
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/lifecycle-logs/upgrade-config.log",
+      "sha256": "de9fffc1c7ebf9275d075f1f87c21918a4de55a309b70bde0cc026ebaf852536",
+      "bytes": 250
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/lifecycle-logs/upgrade-state.log",
+      "sha256": "d9dd95f658bf50c32bf40d0dcbd604f7d3e12fe490cc02a5c39929c777bd3661",
+      "bytes": 11329
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/lifecycle-logs/upgrade.log",
+      "sha256": "0a8956277f824eeb215e7fcf629eb8c24cbf9f275831724f7b2e7a0e74486337",
+      "bytes": 242
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/full-local-logs/catalog.log",
+      "sha256": "9640ac06e16034d15c885d6198528c7ec941eec63a5c038c05fcfc3675a4b98f",
+      "bytes": 222
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/full-local-logs/contract.log",
+      "sha256": "752de880f07dc3f97da7829457ac61807a6a4ab33452eea4458e215351af2cb9",
+      "bytes": 218
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/full-local-logs/focused.log",
+      "sha256": "64f33d530686e7fe3ad14aac14d93b0db76cd42e93554897d893685eb0fbf558",
+      "bytes": 1734
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/full-local-logs/gates.json",
+      "sha256": "7f9dee2b83d64672bc6dfd6c858a5da5e7b87520565bedb5cae67d29bdf142a7",
+      "bytes": 2511
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/full-local-logs/lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/full-local-logs/other.log",
+      "sha256": "97b15817f6e9b32d33dcf045c318ee17ae672ae6d5100b33dafdc9f55b4c98d4",
+      "bytes": 1080
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/full-local-logs/typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/full-local-logs/unit.log",
+      "sha256": "78e1ef4fda000d05f434ff89936ca25f16df7f073f6486ae7e37ac42de03fdf2",
+      "bytes": 7674
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/source-manifest.json",
+      "sha256": "dbf2b94a99aa026688c0a6a556d3f2b37436dfd90299f743bf3251eaab17fb46",
+      "bytes": 156598
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/source-candidate.tar.gz",
+      "sha256": "0d06cdf0c874c00b52ba72da7f3659da0211ce472c050d603d124e4ddcd9510b",
+      "bytes": 3360405
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/source-export-binding.json",
+      "sha256": "6ec382dd70932ab2722757f624a892fea236aefe2757a5aa7e6cf144f39daf82",
+      "bytes": 329
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/native-before.json",
+      "sha256": "bb40c54a9418a25c15123cea928e4fe735bd13b6ca288b34812f9e704285d08c",
+      "bytes": 2642
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/native-after.json",
+      "sha256": "14f294c31dc2589a26f15263af241e7deeefd06bce09b05af73d24600bd42a2a",
+      "bytes": 2654
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/security-scan-summary.json",
+      "sha256": "dd2b6ef1db925b3e8ba2a94bb643826aa560e4e53f3351e313ac9de731758a6c",
+      "bytes": 1117
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/lifecycle-r1-failure.json",
+      "sha256": "5ce98824de38e70581b213ca6ef6c9e261fbe923f4bd0a302e133b48b528bcd7",
+      "bytes": 611
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/prepare-ubuntu.mjs",
+      "sha256": "0a6d857648e956cb4dd463b3ec22fa9ea5677277e8ef2088ad95f633541187b8",
+      "bytes": 4131
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/vm39-package-cycle.sh",
+      "sha256": "6ff6733187470167261dce3946a1cb32a3aebbeb8076de8df7f5188f962c7276",
+      "bytes": 3820
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/collect-evidence.py",
+      "sha256": "6f14c1a25231b51d7207b364ca1720ce1c5fd4b8c32f4a752be07be557dc99b5",
+      "bytes": 12019
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/lead-closure.mjs",
+      "sha256": "e14e213a6f26740bcdf64a7969de0019320437f219d9022dfc0786548fbcc319",
+      "bytes": 9608
+    },
+    {
+      "path": "dist/v1.55.0-local-20261003/installed-fleet-catalog-check.mjs",
+      "sha256": "cba50cc626d0a4c333f80483ab67d0a2c7be82a03ad6e8a638abaab9874e4f10",
+      "bytes": 11444
+    },
+    {
+      "path": "dist/v155-admission-red.log",
+      "sha256": "828b14f0f07214d5747537dc66ddc46acc211d6f24592d56f7b7325a9c1d3b6d",
+      "bytes": 6661
+    },
+    {
+      "path": "dist/v155-admission-green.log",
+      "sha256": "d0587fe1b6abc3c6ff4d470903736b48e08ec109515c27e4ee756171f41faa82",
+      "bytes": 965
+    },
+    {
+      "path": "dist/v155-focused.log",
+      "sha256": "68b522e6596d3951c5c18954f753bac2314b2588b99429bd9f9d744bfe46f01e",
+      "bytes": 23816
+    },
+    {
+      "path": "dist/v155-focused-r2.log",
+      "sha256": "315228e210259b2b9663c8c835608cea4fb3bb05a7055557ef0f357bda3ddfa3",
+      "bytes": 729
+    },
+    {
+      "path": "dist/v155-dependency-audit-all.json",
+      "sha256": "e29e8a836f603ece6422173d3539cc707b1a759522c32b232aed69b8ac167a8c",
+      "bytes": 310
+    },
+    {
+      "path": "docs/harness/evidence/2026-10-03-v1.55-local.json",
+      "sha256": "3cd0a7c3190dca1428b91f0ad532e52e9678eb5b5ac09e5d641c4cbe547344c8",
+      "bytes": 11187
+    }
+  ],
+  "boundaries": [
+    "Synthetic redaction/option regressions establish fixes, not live credential compromise or secondary target access.",
+    "Installed negative option requests have no SSH dispatch; the catalog fixture legacy label omits these additional rejected diagnostic calls.",
+    "Linux native CLI unavailable/authentication unknown; Windows native and caller-native worker evidence remain separate.",
+    "Benchmark median token target missed; context-byte savings are not token savings.",
+    "Seven-day soak waived, not passed; publication unapproved."
+  ],
+  "independentQa": {
+    "reviewer": "v155_closure_qa: gpt-6.1-sol high",
+    "result": "APPROVE; no material evidence gap",
+    "scope": "789 source/export/archive,42 implementation,88 artifact hashes,20 Ubuntu gates,lifecycle,installed transports and sealed scan. Native Linux provider,benchmark target,soak and publication excluded."
+  }
+}

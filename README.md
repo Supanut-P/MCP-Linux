@@ -24,6 +24,9 @@ Baitonghub-Linux-mcp lets an MCP client work with a Linux machine through a
 controlled local runtime. It is intended for repository maintenance, coding,
 testing, Git workflows, command execution, and long-running development tasks.
 
+[v2.0.0 is published](https://github.com/Supanut-P/MCP-Linux/releases/tag/v2.0.0), together with all 17 implemented roadmap milestones.
+See [version history](VERSION_HISTORY.md) and the [publication receipt](docs/harness/evidence/2026-10-04-roadmap-publication.md) for original source identities and verified artifacts.
+
 The v2.0.0 release is **headless**. It does not require Electron, a desktop
 session, Chrome, Wayland, X11, or a system-installed Node.js runtime.
 

@@ -1,0 +1,1175 @@
+{
+  "repository": "Supanut-P/MCP-Linux",
+  "startedAt": "2026-10-03T19:24:57.489Z",
+  "approval": "Owner requested completion and release of all roadmap versions on 2026-10-04",
+  "versions": [
+    {
+      "tag": "v1.37.0",
+      "sourceCommit": "bbd47e10c0575f9ddb9312d8c61e752f1a8858c9",
+      "releaseId": 402658050,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.37.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.37.0-amd64.deb",
+          "bytes": 32824466,
+          "sha256": "1a01ef081970d34d19831163e2877d8e57435e1ff1de47bb98f9db4604902de5",
+          "githubDigest": "sha256:1a01ef081970d34d19831163e2877d8e57435e1ff1de47bb98f9db4604902de5",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.37.0/Baitonghub-Linux-mcp-1.37.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.37.0-linux-x64.tar.gz",
+          "bytes": 44892780,
+          "sha256": "fc6ec46e95ef66da496498c413a4105878921133abe55b7415af5de3680c1a14",
+          "githubDigest": "sha256:fc6ec46e95ef66da496498c413a4105878921133abe55b7415af5de3680c1a14",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.37.0/Baitonghub-Linux-mcp-1.37.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.37.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "129fda9da11f42f11f9e258711389d3f71a8b881389e31838bb2a8d440f64193",
+          "githubDigest": "sha256:129fda9da11f42f11f9e258711389d3f71a8b881389e31838bb2a8d440f64193",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.37.0/Baitonghub-Linux-mcp-1.37.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.37.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "a283ca78d5fe09df8cab8402db27d577637b72256468ead7c640a092edd7c034",
+          "githubDigest": "sha256:a283ca78d5fe09df8cab8402db27d577637b72256468ead7c640a092edd7c034",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.37.0/Baitonghub-Linux-mcp-1.37.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.37.0-SBOM.cdx.json",
+          "bytes": 27989,
+          "sha256": "fec3719fa5b8bc45421bf39e1b3faacc8b66e1a3794853127b54b776947fe15e",
+          "githubDigest": "sha256:fec3719fa5b8bc45421bf39e1b3faacc8b66e1a3794853127b54b776947fe15e",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.37.0/Baitonghub-Linux-mcp-1.37.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.37.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "2099903e46568aa65a7c501c197ceada33861822e0356996d8e842af16686f7b",
+          "githubDigest": "sha256:2099903e46568aa65a7c501c197ceada33861822e0356996d8e842af16686f7b",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.37.0/Baitonghub-Linux-mcp-1.37.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:25:25Z"
+    },
+    {
+      "tag": "v1.38.0",
+      "sourceCommit": "d64c175f33f03815315881a3abf7056435238701",
+      "releaseId": 402658227,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.38.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.38.0-amd64.deb",
+          "bytes": 32817890,
+          "sha256": "053b5cc31a9bef930e6dff5e2542033038cc1bc42516ebb23cb3e9a5bd080198",
+          "githubDigest": "sha256:053b5cc31a9bef930e6dff5e2542033038cc1bc42516ebb23cb3e9a5bd080198",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.38.0/Baitonghub-Linux-mcp-1.38.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.38.0-linux-x64.tar.gz",
+          "bytes": 44903807,
+          "sha256": "332118cfe95d24d0247451ca92bc018d79e5cecf664e63f1ec1330016beb8ed8",
+          "githubDigest": "sha256:332118cfe95d24d0247451ca92bc018d79e5cecf664e63f1ec1330016beb8ed8",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.38.0/Baitonghub-Linux-mcp-1.38.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.38.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "7c9c3625f5fbf6311217bd4f4c9dceab1c35c683f0396f3ff8a3666ca7666a77",
+          "githubDigest": "sha256:7c9c3625f5fbf6311217bd4f4c9dceab1c35c683f0396f3ff8a3666ca7666a77",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.38.0/Baitonghub-Linux-mcp-1.38.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.38.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "d5067502cdc5f6f5bdd201959218f13ae767463db99e18c6377afae0b963a16d",
+          "githubDigest": "sha256:d5067502cdc5f6f5bdd201959218f13ae767463db99e18c6377afae0b963a16d",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.38.0/Baitonghub-Linux-mcp-1.38.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.38.0-SBOM.cdx.json",
+          "bytes": 27989,
+          "sha256": "b55be547169dae7e68b0da1436a19c7aa2acc09ab3d47a61e515462db0250110",
+          "githubDigest": "sha256:b55be547169dae7e68b0da1436a19c7aa2acc09ab3d47a61e515462db0250110",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.38.0/Baitonghub-Linux-mcp-1.38.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.38.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "204f0cb1d7423762f28633ac9cf6bd854c9a9c83bbeefc48f2c16729fe28b469",
+          "githubDigest": "sha256:204f0cb1d7423762f28633ac9cf6bd854c9a9c83bbeefc48f2c16729fe28b469",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.38.0/Baitonghub-Linux-mcp-1.38.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:25:55Z"
+    },
+    {
+      "tag": "v1.39.0",
+      "sourceCommit": "146bfe50b4d4ee623dc0ab9e46a23ddf22e9ebed",
+      "releaseId": 402658433,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.39.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.39.0-amd64.deb",
+          "bytes": 32824264,
+          "sha256": "e1bdf5cdcbd53ab0f995c9b08f245c80b4da3c03016d1b47e89756ed87e290be",
+          "githubDigest": "sha256:e1bdf5cdcbd53ab0f995c9b08f245c80b4da3c03016d1b47e89756ed87e290be",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.39.0/Baitonghub-Linux-mcp-1.39.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.39.0-linux-x64.tar.gz",
+          "bytes": 44924497,
+          "sha256": "b0baeb2432e2c166233aecd97291051e717ed63b8092d7a2c145d864eb2b1898",
+          "githubDigest": "sha256:b0baeb2432e2c166233aecd97291051e717ed63b8092d7a2c145d864eb2b1898",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.39.0/Baitonghub-Linux-mcp-1.39.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.39.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "5376b15c842226d69dece12238d4bde751ce17072b5557c084ba34ca5c992b29",
+          "githubDigest": "sha256:5376b15c842226d69dece12238d4bde751ce17072b5557c084ba34ca5c992b29",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.39.0/Baitonghub-Linux-mcp-1.39.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.39.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "e48cc785183225c415080da2aad3e4d25680a0a3a1a81217342067048544e681",
+          "githubDigest": "sha256:e48cc785183225c415080da2aad3e4d25680a0a3a1a81217342067048544e681",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.39.0/Baitonghub-Linux-mcp-1.39.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.39.0-SBOM.cdx.json",
+          "bytes": 27989,
+          "sha256": "cf3fbeb25cad72c6ec77cf28e522f10cf2554f72c0d0c328736b73770cb1d8e2",
+          "githubDigest": "sha256:cf3fbeb25cad72c6ec77cf28e522f10cf2554f72c0d0c328736b73770cb1d8e2",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.39.0/Baitonghub-Linux-mcp-1.39.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.39.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "eeb6de1399b39b08e184f3d6dc553dfddea98aba3c44b23af6b19ed5de44ead7",
+          "githubDigest": "sha256:eeb6de1399b39b08e184f3d6dc553dfddea98aba3c44b23af6b19ed5de44ead7",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.39.0/Baitonghub-Linux-mcp-1.39.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:26:19Z"
+    },
+    {
+      "tag": "v1.40.0",
+      "sourceCommit": "3a031c5d1f531925b66bac780c5e6509fef79a7a",
+      "releaseId": 402658565,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.40.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.40.0-amd64.deb",
+          "bytes": 32826850,
+          "sha256": "3b865093b00e68763c86cbd2ae628f586bfa739c60d339072e0de60485030e23",
+          "githubDigest": "sha256:3b865093b00e68763c86cbd2ae628f586bfa739c60d339072e0de60485030e23",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.40.0/Baitonghub-Linux-mcp-1.40.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.40.0-linux-x64.tar.gz",
+          "bytes": 44918829,
+          "sha256": "78952bb537559676ca5b0d2e5d3366488554d42a7c7783ae64bd0534ec30367e",
+          "githubDigest": "sha256:78952bb537559676ca5b0d2e5d3366488554d42a7c7783ae64bd0534ec30367e",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.40.0/Baitonghub-Linux-mcp-1.40.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.40.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "4cc8c544702ed46ed6c6fd7bc9b4366a70d1e2e8f8a471a6f1acb57a1e6a6c9f",
+          "githubDigest": "sha256:4cc8c544702ed46ed6c6fd7bc9b4366a70d1e2e8f8a471a6f1acb57a1e6a6c9f",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.40.0/Baitonghub-Linux-mcp-1.40.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.40.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "c04f9b9f6223378079c394180bd52099bb02d1008e0ce7fff7009a398a0007e2",
+          "githubDigest": "sha256:c04f9b9f6223378079c394180bd52099bb02d1008e0ce7fff7009a398a0007e2",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.40.0/Baitonghub-Linux-mcp-1.40.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.40.0-SBOM.cdx.json",
+          "bytes": 27989,
+          "sha256": "d6453ba25fd8385c2f0860e592a676a048888ff6c4a367e5a40cb31bce0a4cb3",
+          "githubDigest": "sha256:d6453ba25fd8385c2f0860e592a676a048888ff6c4a367e5a40cb31bce0a4cb3",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.40.0/Baitonghub-Linux-mcp-1.40.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.40.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "b9a896a4877e1ad9e775bc3fc6916fb6646ad1c4bf638fa666cc8b90d6cc705b",
+          "githubDigest": "sha256:b9a896a4877e1ad9e775bc3fc6916fb6646ad1c4bf638fa666cc8b90d6cc705b",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.40.0/Baitonghub-Linux-mcp-1.40.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:26:44Z"
+    },
+    {
+      "tag": "v1.41.0",
+      "sourceCommit": "e545b5a7da8e21ae5ab11c727c9e9d582bb70a24",
+      "releaseId": 402658708,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.41.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.41.0-amd64.deb",
+          "bytes": 32832646,
+          "sha256": "92cf76277e5e7285a7bafbdbbd2a02cf10e5717da3045ad063d9e0d476374c8c",
+          "githubDigest": "sha256:92cf76277e5e7285a7bafbdbbd2a02cf10e5717da3045ad063d9e0d476374c8c",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.41.0/Baitonghub-Linux-mcp-1.41.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.41.0-linux-x64.tar.gz",
+          "bytes": 44939240,
+          "sha256": "cb8636f334ef338c3abe908f36ec1430185d7348eef3c3739af584f1bc276a62",
+          "githubDigest": "sha256:cb8636f334ef338c3abe908f36ec1430185d7348eef3c3739af584f1bc276a62",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.41.0/Baitonghub-Linux-mcp-1.41.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.41.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "37cfa4431e673d3598ab0700a8008fa531ebab42076241dc8f0361422ca6f2ba",
+          "githubDigest": "sha256:37cfa4431e673d3598ab0700a8008fa531ebab42076241dc8f0361422ca6f2ba",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.41.0/Baitonghub-Linux-mcp-1.41.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.41.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "4c154d0416845a45226567ec4e871c2a1c17896ac8109fbcc73ace766ef6a82b",
+          "githubDigest": "sha256:4c154d0416845a45226567ec4e871c2a1c17896ac8109fbcc73ace766ef6a82b",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.41.0/Baitonghub-Linux-mcp-1.41.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.41.0-SBOM.cdx.json",
+          "bytes": 27989,
+          "sha256": "9eec5303f3c0e4d84c655189dcb9f5b7684a5faeaca9891b9b7956997a8eb9c7",
+          "githubDigest": "sha256:9eec5303f3c0e4d84c655189dcb9f5b7684a5faeaca9891b9b7956997a8eb9c7",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.41.0/Baitonghub-Linux-mcp-1.41.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.41.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "c1dbcf51730621f0c4fc1bf26511fc8439ea995e844efc06665339dc5edfbc5f",
+          "githubDigest": "sha256:c1dbcf51730621f0c4fc1bf26511fc8439ea995e844efc06665339dc5edfbc5f",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.41.0/Baitonghub-Linux-mcp-1.41.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:27:08Z"
+    },
+    {
+      "tag": "v1.42.0",
+      "sourceCommit": "0bdfffbd2214302dc5950ba2ce2f7a7fc158b293",
+      "releaseId": 402658831,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.42.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.42.0-amd64.deb",
+          "bytes": 32826594,
+          "sha256": "79c0e005dcefdf0df52fa5a766c56f9b45a943c14875a34a8161281347a1ac34",
+          "githubDigest": "sha256:79c0e005dcefdf0df52fa5a766c56f9b45a943c14875a34a8161281347a1ac34",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.42.0/Baitonghub-Linux-mcp-1.42.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.42.0-linux-x64.tar.gz",
+          "bytes": 44944933,
+          "sha256": "42ebc90061659cd2b4f152d0f9274e88d8f5a9c1af926c1c6368c04f7e7c8f47",
+          "githubDigest": "sha256:42ebc90061659cd2b4f152d0f9274e88d8f5a9c1af926c1c6368c04f7e7c8f47",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.42.0/Baitonghub-Linux-mcp-1.42.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.42.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "da5e1c476381de661bb74948ec6157e653904acdc98e6bdee6bde054eade7ca1",
+          "githubDigest": "sha256:da5e1c476381de661bb74948ec6157e653904acdc98e6bdee6bde054eade7ca1",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.42.0/Baitonghub-Linux-mcp-1.42.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.42.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "e02393787f5c95615f56f94ef94d3145be3e00f2172c236ac2e1414ce4cbd835",
+          "githubDigest": "sha256:e02393787f5c95615f56f94ef94d3145be3e00f2172c236ac2e1414ce4cbd835",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.42.0/Baitonghub-Linux-mcp-1.42.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.42.0-SBOM.cdx.json",
+          "bytes": 27989,
+          "sha256": "db9e695fcd42e894bc9bfefe0bd6b795876ce570d8a269c2da329be73464f561",
+          "githubDigest": "sha256:db9e695fcd42e894bc9bfefe0bd6b795876ce570d8a269c2da329be73464f561",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.42.0/Baitonghub-Linux-mcp-1.42.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.42.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "904444df596cedfb2fe5ea0a4efe59e44c0476bf331d70b9794a2f01fca5460c",
+          "githubDigest": "sha256:904444df596cedfb2fe5ea0a4efe59e44c0476bf331d70b9794a2f01fca5460c",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.42.0/Baitonghub-Linux-mcp-1.42.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:27:33Z"
+    },
+    {
+      "tag": "v1.43.0",
+      "sourceCommit": "9a3aab7842cff5f9b4f96ad9c3945542a6757a89",
+      "releaseId": 402659006,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.43.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.43.0-amd64.deb",
+          "bytes": 32823326,
+          "sha256": "2df0562213219d07f3fee122c2a7b8449d69c83a1f317ffb7422d8e879e3a9c5",
+          "githubDigest": "sha256:2df0562213219d07f3fee122c2a7b8449d69c83a1f317ffb7422d8e879e3a9c5",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.43.0/Baitonghub-Linux-mcp-1.43.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.43.0-linux-x64.tar.gz",
+          "bytes": 44970920,
+          "sha256": "ef594ed634b8b211252c2ee283f8c47f4a47b8306db4572f1b05f48fd6bac774",
+          "githubDigest": "sha256:ef594ed634b8b211252c2ee283f8c47f4a47b8306db4572f1b05f48fd6bac774",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.43.0/Baitonghub-Linux-mcp-1.43.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.43.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "2523f72e96b37593177e52621fffde3ad92c89670baad42b53d2307e357e25a8",
+          "githubDigest": "sha256:2523f72e96b37593177e52621fffde3ad92c89670baad42b53d2307e357e25a8",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.43.0/Baitonghub-Linux-mcp-1.43.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.43.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "375817a356ba60623de332231298db9b5d8c5f1b78adbfec2afe6110fa7983e7",
+          "githubDigest": "sha256:375817a356ba60623de332231298db9b5d8c5f1b78adbfec2afe6110fa7983e7",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.43.0/Baitonghub-Linux-mcp-1.43.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.43.0-SBOM.cdx.json",
+          "bytes": 27989,
+          "sha256": "43e8b47d5eb99c6ae5d34a1af8c26753bbdd9423cbea6000bae1de7db34a3d61",
+          "githubDigest": "sha256:43e8b47d5eb99c6ae5d34a1af8c26753bbdd9423cbea6000bae1de7db34a3d61",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.43.0/Baitonghub-Linux-mcp-1.43.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.43.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "28d3e2a33038412174e1e62f1794fa11d3a56e9d192cef945a4e0689efec4caa",
+          "githubDigest": "sha256:28d3e2a33038412174e1e62f1794fa11d3a56e9d192cef945a4e0689efec4caa",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.43.0/Baitonghub-Linux-mcp-1.43.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:27:53Z"
+    },
+    {
+      "tag": "v1.44.0",
+      "sourceCommit": "b785d586b1597f61c66687a7cbd6c7d2891b42a9",
+      "releaseId": 402659133,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.44.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.44.0-amd64.deb",
+          "bytes": 32862846,
+          "sha256": "e4e3e9972430b9117588a262c445846e335d283414555906432b194fdf1b542f",
+          "githubDigest": "sha256:e4e3e9972430b9117588a262c445846e335d283414555906432b194fdf1b542f",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.44.0/Baitonghub-Linux-mcp-1.44.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.44.0-linux-x64.tar.gz",
+          "bytes": 44988129,
+          "sha256": "c66becf7eff0bfb0e0d4c20213c9cf55a3034a27fe907e2b10a4e93eb47d3c4b",
+          "githubDigest": "sha256:c66becf7eff0bfb0e0d4c20213c9cf55a3034a27fe907e2b10a4e93eb47d3c4b",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.44.0/Baitonghub-Linux-mcp-1.44.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.44.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "6a1fb15ab0747992e7ce867b46902e14e0a0700d51c864ee54bca270c5b413fb",
+          "githubDigest": "sha256:6a1fb15ab0747992e7ce867b46902e14e0a0700d51c864ee54bca270c5b413fb",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.44.0/Baitonghub-Linux-mcp-1.44.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.44.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "3e7dc35095503aa30d953bd401706c221c771a8dbf3a6831b79cfec6788caafa",
+          "githubDigest": "sha256:3e7dc35095503aa30d953bd401706c221c771a8dbf3a6831b79cfec6788caafa",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.44.0/Baitonghub-Linux-mcp-1.44.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.44.0-SBOM.cdx.json",
+          "bytes": 27989,
+          "sha256": "3071302c6b778dba2621ed0b8ad3683f27bbef23d38dc1087c29925472c6f107",
+          "githubDigest": "sha256:3071302c6b778dba2621ed0b8ad3683f27bbef23d38dc1087c29925472c6f107",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.44.0/Baitonghub-Linux-mcp-1.44.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.44.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "1f8bbac3ae16926978455aaae26b143adbb53e4e8dfda2fe73a9a26a0cf6445c",
+          "githubDigest": "sha256:1f8bbac3ae16926978455aaae26b143adbb53e4e8dfda2fe73a9a26a0cf6445c",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.44.0/Baitonghub-Linux-mcp-1.44.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:28:13Z"
+    },
+    {
+      "tag": "v1.45.0",
+      "sourceCommit": "519fad59a9a183541609f34f0dce2c222f7f8f18",
+      "releaseId": 402659244,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.45.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.45.0-amd64.deb",
+          "bytes": 32868218,
+          "sha256": "74c1224ccc44b4c11aa2e4e0cdf8298753b91d28bb112c564ff1abad7d791b91",
+          "githubDigest": "sha256:74c1224ccc44b4c11aa2e4e0cdf8298753b91d28bb112c564ff1abad7d791b91",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.45.0/Baitonghub-Linux-mcp-1.45.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.45.0-linux-x64.tar.gz",
+          "bytes": 44989681,
+          "sha256": "d1d1c3fcb73d864bdf160d5d9e21563998046f72cea1e953a9a5fcd1c8bcd430",
+          "githubDigest": "sha256:d1d1c3fcb73d864bdf160d5d9e21563998046f72cea1e953a9a5fcd1c8bcd430",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.45.0/Baitonghub-Linux-mcp-1.45.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.45.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "48022931dd9c5099a099df97326e17cd6ffad7a90cfd9820bdc9c3843a4fd93b",
+          "githubDigest": "sha256:48022931dd9c5099a099df97326e17cd6ffad7a90cfd9820bdc9c3843a4fd93b",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.45.0/Baitonghub-Linux-mcp-1.45.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.45.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "b1ef93ac8338de0f2124f8c7fca5c5c528695eecba567337bbfcc2156c809ca8",
+          "githubDigest": "sha256:b1ef93ac8338de0f2124f8c7fca5c5c528695eecba567337bbfcc2156c809ca8",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.45.0/Baitonghub-Linux-mcp-1.45.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.45.0-SBOM.cdx.json",
+          "bytes": 27989,
+          "sha256": "e26630021f0d49ba73f9f082c5ff93eb86a070b02598ab1f4849145e5e20ac75",
+          "githubDigest": "sha256:e26630021f0d49ba73f9f082c5ff93eb86a070b02598ab1f4849145e5e20ac75",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.45.0/Baitonghub-Linux-mcp-1.45.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.45.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "2683c9d1ab42c7d2175494ba5044e9e3f26eec131745f227148f7ec489a88c1e",
+          "githubDigest": "sha256:2683c9d1ab42c7d2175494ba5044e9e3f26eec131745f227148f7ec489a88c1e",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.45.0/Baitonghub-Linux-mcp-1.45.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:28:34Z"
+    },
+    {
+      "tag": "v1.46.0",
+      "sourceCommit": "9173ab00b2426244809638c58060c84ef01ce02f",
+      "releaseId": 402659359,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.46.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.46.0-amd64.deb",
+          "bytes": 32864796,
+          "sha256": "a4e318e3e0eccba9715f90324c66a6f2e57704948d3b965bc3765bd1854b93c3",
+          "githubDigest": "sha256:a4e318e3e0eccba9715f90324c66a6f2e57704948d3b965bc3765bd1854b93c3",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.46.0/Baitonghub-Linux-mcp-1.46.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.46.0-linux-x64.tar.gz",
+          "bytes": 45007224,
+          "sha256": "807e0000ead37044c16d64accf4fa759c21f4078c457de3a4397db1524c790b9",
+          "githubDigest": "sha256:807e0000ead37044c16d64accf4fa759c21f4078c457de3a4397db1524c790b9",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.46.0/Baitonghub-Linux-mcp-1.46.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.46.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "1ddb0fa7d688d59f7a30b822e4d998aabeb205b5d720b907d6e3ef4585f1143f",
+          "githubDigest": "sha256:1ddb0fa7d688d59f7a30b822e4d998aabeb205b5d720b907d6e3ef4585f1143f",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.46.0/Baitonghub-Linux-mcp-1.46.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.46.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "617ab03b302b254266f8eb9a706bc2c30f00600587ee8ae43f4912b5b41875eb",
+          "githubDigest": "sha256:617ab03b302b254266f8eb9a706bc2c30f00600587ee8ae43f4912b5b41875eb",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.46.0/Baitonghub-Linux-mcp-1.46.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.46.0-SBOM.cdx.json",
+          "bytes": 27989,
+          "sha256": "674e3a8e2459be3b8f491a52b0e3ac37fce9f88c7793fc13126d47b8bbfc33dc",
+          "githubDigest": "sha256:674e3a8e2459be3b8f491a52b0e3ac37fce9f88c7793fc13126d47b8bbfc33dc",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.46.0/Baitonghub-Linux-mcp-1.46.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.46.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "292aaf8c2e42beb64b1f111a9e3d42ad7bef60679c019419e1579b80d9695ef0",
+          "githubDigest": "sha256:292aaf8c2e42beb64b1f111a9e3d42ad7bef60679c019419e1579b80d9695ef0",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.46.0/Baitonghub-Linux-mcp-1.46.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:28:56Z"
+    },
+    {
+      "tag": "v1.47.0",
+      "sourceCommit": "b7894d794fc7bd5c82ac48abdaf2c060d85d63c0",
+      "releaseId": 402659455,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.47.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.47.0-amd64.deb",
+          "bytes": 32871102,
+          "sha256": "b528c64474178ad7989403be0da7360544a5d88cc499c7228b56e43c24123801",
+          "githubDigest": "sha256:b528c64474178ad7989403be0da7360544a5d88cc499c7228b56e43c24123801",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.47.0/Baitonghub-Linux-mcp-1.47.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.47.0-linux-x64.tar.gz",
+          "bytes": 45022578,
+          "sha256": "c6cc28fb3ffb74d6437ea29aeb1646c0bdc6296cd05dfce13f43d7f2c57c1305",
+          "githubDigest": "sha256:c6cc28fb3ffb74d6437ea29aeb1646c0bdc6296cd05dfce13f43d7f2c57c1305",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.47.0/Baitonghub-Linux-mcp-1.47.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.47.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "6483d705ab27aa02bb158efbe38a50610c205066c0846b4457256ae752bee3a7",
+          "githubDigest": "sha256:6483d705ab27aa02bb158efbe38a50610c205066c0846b4457256ae752bee3a7",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.47.0/Baitonghub-Linux-mcp-1.47.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.47.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "a5d8a3cae97928933796a0cc6fd41afe18319aae98fe77a56ed4b50d72296226",
+          "githubDigest": "sha256:a5d8a3cae97928933796a0cc6fd41afe18319aae98fe77a56ed4b50d72296226",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.47.0/Baitonghub-Linux-mcp-1.47.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.47.0-SBOM.cdx.json",
+          "bytes": 27989,
+          "sha256": "089e5e2dd2fb676c445145440f1d9e36378d9f972d57b9f0657e9737f8a939a3",
+          "githubDigest": "sha256:089e5e2dd2fb676c445145440f1d9e36378d9f972d57b9f0657e9737f8a939a3",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.47.0/Baitonghub-Linux-mcp-1.47.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.47.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "d58c192bb78a30f12cc6026ea791ecab58f35cbfa794787f05dc37060d147fde",
+          "githubDigest": "sha256:d58c192bb78a30f12cc6026ea791ecab58f35cbfa794787f05dc37060d147fde",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.47.0/Baitonghub-Linux-mcp-1.47.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:29:20Z"
+    },
+    {
+      "tag": "v1.48.0",
+      "sourceCommit": "7e3e7a85d24e424abbe85e0fb866b024cee9d42d",
+      "releaseId": 402659573,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.48.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.48.0-amd64.deb",
+          "bytes": 32883434,
+          "sha256": "5ade7482e2d48ef835ec0fa9b16ed2c9358ca73156b230494306b86e6f199267",
+          "githubDigest": "sha256:5ade7482e2d48ef835ec0fa9b16ed2c9358ca73156b230494306b86e6f199267",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.48.0/Baitonghub-Linux-mcp-1.48.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.48.0-linux-x64.tar.gz",
+          "bytes": 45036242,
+          "sha256": "851056067fc783ec24c8d38e3d5932c46f34369def31e273be74a407fdce9835",
+          "githubDigest": "sha256:851056067fc783ec24c8d38e3d5932c46f34369def31e273be74a407fdce9835",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.48.0/Baitonghub-Linux-mcp-1.48.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.48.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "a091b5cc784b36f7b2487cb713cd27d7e5272d948eb1341eec520b68edf7554e",
+          "githubDigest": "sha256:a091b5cc784b36f7b2487cb713cd27d7e5272d948eb1341eec520b68edf7554e",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.48.0/Baitonghub-Linux-mcp-1.48.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.48.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "ce37b7f7599e6f5f3d4382ed91ecb7a05912603c401914c6c4ea6699089d33f6",
+          "githubDigest": "sha256:ce37b7f7599e6f5f3d4382ed91ecb7a05912603c401914c6c4ea6699089d33f6",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.48.0/Baitonghub-Linux-mcp-1.48.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.48.0-SBOM.cdx.json",
+          "bytes": 27989,
+          "sha256": "73c2d61b15591e9105fdd6465291bdabdcad1ec8a9ff54726de62eb0f400afdf",
+          "githubDigest": "sha256:73c2d61b15591e9105fdd6465291bdabdcad1ec8a9ff54726de62eb0f400afdf",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.48.0/Baitonghub-Linux-mcp-1.48.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.48.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "16c924b431d84f9fb50c9878e0dce80fc81795edad6374e73fbf96e0fbde4919",
+          "githubDigest": "sha256:16c924b431d84f9fb50c9878e0dce80fc81795edad6374e73fbf96e0fbde4919",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.48.0/Baitonghub-Linux-mcp-1.48.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:29:48Z"
+    },
+    {
+      "tag": "v1.49.0",
+      "sourceCommit": "6a5b4262bdb55d01d19ac716683f09b70702752f",
+      "releaseId": 402659704,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.49.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.49.0-amd64.deb",
+          "bytes": 32896540,
+          "sha256": "c372c881b8f082911ff8f07d1388a03005e69de89cc2bd410ee1c750db2411eb",
+          "githubDigest": "sha256:c372c881b8f082911ff8f07d1388a03005e69de89cc2bd410ee1c750db2411eb",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.49.0/Baitonghub-Linux-mcp-1.49.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.49.0-linux-x64.tar.gz",
+          "bytes": 45057526,
+          "sha256": "fd4b7f435a1dd32463422d0dd396ba897a3ae1d9226c63ca2c2e533c217301bd",
+          "githubDigest": "sha256:fd4b7f435a1dd32463422d0dd396ba897a3ae1d9226c63ca2c2e533c217301bd",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.49.0/Baitonghub-Linux-mcp-1.49.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.49.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "d6123f485e104f0bac0641f27e638df5e542abb3ac17d5fae8d027d15f09f486",
+          "githubDigest": "sha256:d6123f485e104f0bac0641f27e638df5e542abb3ac17d5fae8d027d15f09f486",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.49.0/Baitonghub-Linux-mcp-1.49.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.49.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "562b859641755c56f9fda2d45ac47332b27ab320fc41b6d4b5242d99ba8f9c26",
+          "githubDigest": "sha256:562b859641755c56f9fda2d45ac47332b27ab320fc41b6d4b5242d99ba8f9c26",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.49.0/Baitonghub-Linux-mcp-1.49.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.49.0-SBOM.cdx.json",
+          "bytes": 27989,
+          "sha256": "ecfd6f036b57a233886403b8a50b4fb34a47198b8a4a8a01a3895818b3cb52e4",
+          "githubDigest": "sha256:ecfd6f036b57a233886403b8a50b4fb34a47198b8a4a8a01a3895818b3cb52e4",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.49.0/Baitonghub-Linux-mcp-1.49.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.49.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "a5a9bd8323fbb06582b4850725434bb16aa1f1df2b044edfd58512b615f3c5b8",
+          "githubDigest": "sha256:a5a9bd8323fbb06582b4850725434bb16aa1f1df2b044edfd58512b615f3c5b8",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.49.0/Baitonghub-Linux-mcp-1.49.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:30:10Z"
+    },
+    {
+      "tag": "v1.50.0",
+      "sourceCommit": "ba214b5ffe5d627faa9b632ed1716338be9f55d1",
+      "releaseId": 402659811,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.50.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.50.0-amd64.deb",
+          "bytes": 32903302,
+          "sha256": "5267d89208f0e80aed27185908ffda0566539e67b3e40793f3428ffdd0da0f1c",
+          "githubDigest": "sha256:5267d89208f0e80aed27185908ffda0566539e67b3e40793f3428ffdd0da0f1c",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.50.0/Baitonghub-Linux-mcp-1.50.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.50.0-linux-x64.tar.gz",
+          "bytes": 45069432,
+          "sha256": "a5c559f384e201a618c1f00b74a1c03dc3da1572bfc51be1396d5d55f8d6b72f",
+          "githubDigest": "sha256:a5c559f384e201a618c1f00b74a1c03dc3da1572bfc51be1396d5d55f8d6b72f",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.50.0/Baitonghub-Linux-mcp-1.50.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.50.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "dda70d6cf6d7df57d3ccc95a66e817720fbf8416b29dab870f9f569014bc6217",
+          "githubDigest": "sha256:dda70d6cf6d7df57d3ccc95a66e817720fbf8416b29dab870f9f569014bc6217",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.50.0/Baitonghub-Linux-mcp-1.50.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.50.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "dc3914a949fb17bb2441d7494c96d84c8e73e0dddffc9cb4919e4836715ace12",
+          "githubDigest": "sha256:dc3914a949fb17bb2441d7494c96d84c8e73e0dddffc9cb4919e4836715ace12",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.50.0/Baitonghub-Linux-mcp-1.50.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.50.0-SBOM.cdx.json",
+          "bytes": 27989,
+          "sha256": "6225fd841ab73af9c58b4dc170a5b4ab56b0239bd5f10e5556ed44bd71ace8a1",
+          "githubDigest": "sha256:6225fd841ab73af9c58b4dc170a5b4ab56b0239bd5f10e5556ed44bd71ace8a1",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.50.0/Baitonghub-Linux-mcp-1.50.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.50.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "58ed8f36906c23a588a8345fd034c491b28172033243aba6d561c2c077cba7dc",
+          "githubDigest": "sha256:58ed8f36906c23a588a8345fd034c491b28172033243aba6d561c2c077cba7dc",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.50.0/Baitonghub-Linux-mcp-1.50.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:30:32Z"
+    },
+    {
+      "tag": "v1.55.0",
+      "sourceCommit": "81d048da6caf661d204b95e8b7e23f05b3046666",
+      "releaseId": 402659940,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.55.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.55.0-amd64.deb",
+          "bytes": 32903212,
+          "sha256": "ea7558ae7a9cee6236bace72db40da3e751791625d1c2a22f4b3a9f250833c25",
+          "githubDigest": "sha256:ea7558ae7a9cee6236bace72db40da3e751791625d1c2a22f4b3a9f250833c25",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.55.0/Baitonghub-Linux-mcp-1.55.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.55.0-linux-x64.tar.gz",
+          "bytes": 45065770,
+          "sha256": "47d364a4d2d1b68cb0afab013efc47de46d79059cac5dbaf84b6f5e0e5178ff9",
+          "githubDigest": "sha256:47d364a4d2d1b68cb0afab013efc47de46d79059cac5dbaf84b6f5e0e5178ff9",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.55.0/Baitonghub-Linux-mcp-1.55.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.55.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "8c0da40cfbef20b0f6e4a9a58f6f05b397e8617c7216fb5e5670ab91e7a7b025",
+          "githubDigest": "sha256:8c0da40cfbef20b0f6e4a9a58f6f05b397e8617c7216fb5e5670ab91e7a7b025",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.55.0/Baitonghub-Linux-mcp-1.55.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.55.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "11c994bdb74fd28daa0a30373aa9f2d80a739fcb1887a9cb7a657ce423a85847",
+          "githubDigest": "sha256:11c994bdb74fd28daa0a30373aa9f2d80a739fcb1887a9cb7a657ce423a85847",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.55.0/Baitonghub-Linux-mcp-1.55.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.55.0-SBOM.cdx.json",
+          "bytes": 14049,
+          "sha256": "f551c3ceae4394393f21e949eae01893506eb9f29bc6b2b97434d06b264c9b99",
+          "githubDigest": "sha256:f551c3ceae4394393f21e949eae01893506eb9f29bc6b2b97434d06b264c9b99",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.55.0/Baitonghub-Linux-mcp-1.55.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.55.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "b18e1e15fed8743e84ddf26b04fcfc2c818f8c520d64e6475e37b98bf780eea3",
+          "githubDigest": "sha256:b18e1e15fed8743e84ddf26b04fcfc2c818f8c520d64e6475e37b98bf780eea3",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.55.0/Baitonghub-Linux-mcp-1.55.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:30:54Z"
+    },
+    {
+      "tag": "v1.56.0",
+      "sourceCommit": "8ced2d7d18890a3703a9519797cfd34b719cfa06",
+      "releaseId": 402660089,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.56.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-1.56.0-amd64.deb",
+          "bytes": 32904274,
+          "sha256": "2a4c7812b91e7511e97908b5930cc3725a161362bbb14573206669be251155b5",
+          "githubDigest": "sha256:2a4c7812b91e7511e97908b5930cc3725a161362bbb14573206669be251155b5",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.56.0/Baitonghub-Linux-mcp-1.56.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.56.0-linux-x64.tar.gz",
+          "bytes": 45067252,
+          "sha256": "86b83c338416776d7535245ba4222689388ae945ea6e1bfc486610d0f315c161",
+          "githubDigest": "sha256:86b83c338416776d7535245ba4222689388ae945ea6e1bfc486610d0f315c161",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.56.0/Baitonghub-Linux-mcp-1.56.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.56.0-SHA256SUMS",
+          "bytes": 215,
+          "sha256": "a6bc12d2aed45c197284cfdd34df55915c8229c7ac254665b30d57f81d655e94",
+          "githubDigest": "sha256:a6bc12d2aed45c197284cfdd34df55915c8229c7ac254665b30d57f81d655e94",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.56.0/Baitonghub-Linux-mcp-1.56.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.56.0-BUILD-METADATA.json",
+          "bytes": 918,
+          "sha256": "8519c4dff19b2fd886c8ecd1dd7ce579b52a51db9f31d506cbb6796dad100ba4",
+          "githubDigest": "sha256:8519c4dff19b2fd886c8ecd1dd7ce579b52a51db9f31d506cbb6796dad100ba4",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.56.0/Baitonghub-Linux-mcp-1.56.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.56.0-SBOM.cdx.json",
+          "bytes": 14049,
+          "sha256": "432c2fe52099970024533827911f9bdd8e272dd27a19bf3e73ad0d085953d7cb",
+          "githubDigest": "sha256:432c2fe52099970024533827911f9bdd8e272dd27a19bf3e73ad0d085953d7cb",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.56.0/Baitonghub-Linux-mcp-1.56.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-1.56.0-PROVENANCE-SHA256SUMS",
+          "bytes": 542,
+          "sha256": "09caf0174658f6e4fcfd353469a5c2aaad1f32eba3d40c34e6e6a4dd29c1b72c",
+          "githubDigest": "sha256:09caf0174658f6e4fcfd353469a5c2aaad1f32eba3d40c34e6e6a4dd29c1b72c",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v1.56.0/Baitonghub-Linux-mcp-1.56.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:31:15Z"
+    },
+    {
+      "tag": "v2.0.0",
+      "sourceCommit": "db6b3d011f723d3a72239776c7256eec3ef34970",
+      "releaseId": 402661167,
+      "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v2.0.0",
+      "assets": [
+        {
+          "name": "Baitonghub-Linux-mcp-2.0.0-amd64.deb",
+          "bytes": 32903698,
+          "sha256": "4eb785ab61daaf3b99ff43e65b600af7e2c6f1328ac100b3f06ea9aec8d3f2c5",
+          "githubDigest": "sha256:4eb785ab61daaf3b99ff43e65b600af7e2c6f1328ac100b3f06ea9aec8d3f2c5",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v2.0.0/Baitonghub-Linux-mcp-2.0.0-amd64.deb"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-2.0.0-linux-x64.tar.gz",
+          "bytes": 45067314,
+          "sha256": "4c108c4f7f4326abfd392a1b7171a15fe5dd8f7136d22c5a6eb29c0723d1d428",
+          "githubDigest": "sha256:4c108c4f7f4326abfd392a1b7171a15fe5dd8f7136d22c5a6eb29c0723d1d428",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v2.0.0/Baitonghub-Linux-mcp-2.0.0-linux-x64.tar.gz"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-2.0.0-SHA256SUMS",
+          "bytes": 213,
+          "sha256": "b5e93c21b11ba4bcfdc2d725c128879142f7e8d494ba6519dc9e21fc2a38c8d1",
+          "githubDigest": "sha256:b5e93c21b11ba4bcfdc2d725c128879142f7e8d494ba6519dc9e21fc2a38c8d1",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v2.0.0/Baitonghub-Linux-mcp-2.0.0-SHA256SUMS"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-2.0.0-BUILD-METADATA.json",
+          "bytes": 914,
+          "sha256": "f6f41c105f161ad8aad1e6d0c10adca8d9b25f573a85c4cc8313da7084d32bb5",
+          "githubDigest": "sha256:f6f41c105f161ad8aad1e6d0c10adca8d9b25f573a85c4cc8313da7084d32bb5",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v2.0.0/Baitonghub-Linux-mcp-2.0.0-BUILD-METADATA.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-2.0.0-SBOM.cdx.json",
+          "bytes": 13993,
+          "sha256": "96869d01e04f7cfcc7e4ab3d758afbc9d5279cbf0967d740ebed5d717bb1f929",
+          "githubDigest": "sha256:96869d01e04f7cfcc7e4ab3d758afbc9d5279cbf0967d740ebed5d717bb1f929",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v2.0.0/Baitonghub-Linux-mcp-2.0.0-SBOM.cdx.json"
+        },
+        {
+          "name": "Baitonghub-Linux-mcp-2.0.0-PROVENANCE-SHA256SUMS",
+          "bytes": 537,
+          "sha256": "268d0759b94099395e801adcb39db349b4f10f6c749886d1e34a833d7aa84993",
+          "githubDigest": "sha256:268d0759b94099395e801adcb39db349b4f10f6c749886d1e34a833d7aa84993",
+          "url": "https://github.com/Supanut-P/MCP-Linux/releases/download/v2.0.0/Baitonghub-Linux-mcp-2.0.0-PROVENANCE-SHA256SUMS"
+        }
+      ],
+      "published": true,
+      "publishedAt": "2026-10-03T19:34:27Z"
+    }
+  ],
+  "boundaries": [
+    "Original accepted Ubuntu package bytes and source commits",
+    "P1 1.51–1.54 remain backlog",
+    "Seven-day soak waived",
+    "No production deployment",
+    "Token reduction objective missed",
+    "Personal owner trial results unreported"
+  ],
+  "releaseWorkflowInitialState": "active",
+  "workflowTemporarilyDisabledAt": "2026-10-03T19:33:09.454Z",
+  "releaseWorkflowRestoredAt": "2026-10-03T19:34:32.677Z",
+  "recovery": {
+    "firstPublisherExitCode": 1,
+    "reason": "Unpublished old Windows local v2.0.0 tag conflicted with accepted Linux source; publisher safely stopped and restored workflow.",
+    "legacyTag": "refs/tags/legacy/windows-desktop-v2.0.0",
+    "legacyTagObject": "8ce2da3d98240afaee064bed8bd25fa484dba9ad",
+    "legacyCommit": "6a9b76846c2e0f451a5f22245d52b87187582687",
+    "action": "Atomically preserve legacy local tag object under a distinct local name and point local v2.0.0 to accepted Ubuntu source. No remote tag was replaced or force-pushed.",
+    "resolvedAt": "2026-10-03T19:33:07.678Z"
+  },
+  "completedAt": "2026-10-03T19:34:31.808Z",
+  "remoteVerifiedAt": "2026-10-03T19:35:15.618Z",
+  "artifactBytes": 1323966013,
+  "originalSourceVerification": {
+    "verifiedAt": "2026-10-03T19:22:37.223Z",
+    "versions": [
+      {
+        "tag": "v1.37.0",
+        "sourceCommit": "bbd47e10c0575f9ddb9312d8c61e752f1a8858c9",
+        "files": 580,
+        "assets": 6
+      },
+      {
+        "tag": "v1.38.0",
+        "sourceCommit": "d64c175f33f03815315881a3abf7056435238701",
+        "files": 600,
+        "assets": 6
+      },
+      {
+        "tag": "v1.39.0",
+        "sourceCommit": "146bfe50b4d4ee623dc0ab9e46a23ddf22e9ebed",
+        "files": 613,
+        "assets": 6
+      },
+      {
+        "tag": "v1.40.0",
+        "sourceCommit": "3a031c5d1f531925b66bac780c5e6509fef79a7a",
+        "files": 624,
+        "assets": 6
+      },
+      {
+        "tag": "v1.41.0",
+        "sourceCommit": "e545b5a7da8e21ae5ab11c727c9e9d582bb70a24",
+        "files": 646,
+        "assets": 6
+      },
+      {
+        "tag": "v1.42.0",
+        "sourceCommit": "0bdfffbd2214302dc5950ba2ce2f7a7fc158b293",
+        "files": 660,
+        "assets": 6
+      },
+      {
+        "tag": "v1.43.0",
+        "sourceCommit": "9a3aab7842cff5f9b4f96ad9c3945542a6757a89",
+        "files": 675,
+        "assets": 6
+      },
+      {
+        "tag": "v1.44.0",
+        "sourceCommit": "b785d586b1597f61c66687a7cbd6c7d2891b42a9",
+        "files": 691,
+        "assets": 6
+      },
+      {
+        "tag": "v1.45.0",
+        "sourceCommit": "519fad59a9a183541609f34f0dce2c222f7f8f18",
+        "files": 704,
+        "assets": 6
+      },
+      {
+        "tag": "v1.46.0",
+        "sourceCommit": "9173ab00b2426244809638c58060c84ef01ce02f",
+        "files": 717,
+        "assets": 6
+      },
+      {
+        "tag": "v1.47.0",
+        "sourceCommit": "b7894d794fc7bd5c82ac48abdaf2c060d85d63c0",
+        "files": 733,
+        "assets": 6
+      },
+      {
+        "tag": "v1.48.0",
+        "sourceCommit": "7e3e7a85d24e424abbe85e0fb866b024cee9d42d",
+        "files": 749,
+        "assets": 6
+      },
+      {
+        "tag": "v1.49.0",
+        "sourceCommit": "6a5b4262bdb55d01d19ac716683f09b70702752f",
+        "files": 765,
+        "assets": 6
+      },
+      {
+        "tag": "v1.50.0",
+        "sourceCommit": "ba214b5ffe5d627faa9b632ed1716338be9f55d1",
+        "files": 781,
+        "assets": 6
+      },
+      {
+        "tag": "v1.55.0",
+        "sourceCommit": "81d048da6caf661d204b95e8b7e23f05b3046666",
+        "files": 789,
+        "assets": 6
+      },
+      {
+        "tag": "v1.56.0",
+        "sourceCommit": "8ced2d7d18890a3703a9519797cfd34b719cfa06",
+        "files": 800,
+        "assets": 6
+      },
+      {
+        "tag": "v2.0.0",
+        "sourceCommit": "db6b3d011f723d3a72239776c7256eec3ef34970",
+        "files": 807,
+        "assets": 6
+      }
+    ]
+  },
+  "remoteVerification": {
+    "verifiedAt": "2026-10-03T19:35:15.616Z",
+    "versions": [
+      {
+        "tag": "v1.37.0",
+        "sourceCommit": "bbd47e10c0575f9ddb9312d8c61e752f1a8858c9",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.37.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v1.38.0",
+        "sourceCommit": "d64c175f33f03815315881a3abf7056435238701",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.38.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v1.39.0",
+        "sourceCommit": "146bfe50b4d4ee623dc0ab9e46a23ddf22e9ebed",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.39.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v1.40.0",
+        "sourceCommit": "3a031c5d1f531925b66bac780c5e6509fef79a7a",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.40.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v1.41.0",
+        "sourceCommit": "e545b5a7da8e21ae5ab11c727c9e9d582bb70a24",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.41.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v1.42.0",
+        "sourceCommit": "0bdfffbd2214302dc5950ba2ce2f7a7fc158b293",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.42.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v1.43.0",
+        "sourceCommit": "9a3aab7842cff5f9b4f96ad9c3945542a6757a89",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.43.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v1.44.0",
+        "sourceCommit": "b785d586b1597f61c66687a7cbd6c7d2891b42a9",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.44.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v1.45.0",
+        "sourceCommit": "519fad59a9a183541609f34f0dce2c222f7f8f18",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.45.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v1.46.0",
+        "sourceCommit": "9173ab00b2426244809638c58060c84ef01ce02f",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.46.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v1.47.0",
+        "sourceCommit": "b7894d794fc7bd5c82ac48abdaf2c060d85d63c0",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.47.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v1.48.0",
+        "sourceCommit": "7e3e7a85d24e424abbe85e0fb866b024cee9d42d",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.48.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v1.49.0",
+        "sourceCommit": "6a5b4262bdb55d01d19ac716683f09b70702752f",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.49.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v1.50.0",
+        "sourceCommit": "ba214b5ffe5d627faa9b632ed1716338be9f55d1",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.50.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v1.55.0",
+        "sourceCommit": "81d048da6caf661d204b95e8b7e23f05b3046666",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.55.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v1.56.0",
+        "sourceCommit": "8ced2d7d18890a3703a9519797cfd34b719cfa06",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.56.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      },
+      {
+        "tag": "v2.0.0",
+        "sourceCommit": "db6b3d011f723d3a72239776c7256eec3ef34970",
+        "url": "https://github.com/Supanut-P/MCP-Linux/releases/tag/v2.0.0",
+        "assets": 6,
+        "githubSha256Verified": true
+      }
+    ],
+    "releaseWorkflow": "active",
+    "ciWorkflow": "active",
+    "latest": "v2.0.0"
+  },
+  "publicationMethod": "Owner-approved manual draft/upload/digest verification/publication; historical tag auto-publisher temporarily disabled and restored. CI remained active.",
+  "releaseWorkflowCorrection": {
+    "commit": "7ca027136ab9d3d015c307f4d565ad35a50a96a5",
+    "focusedTests": {
+      "passed": 19,
+      "skipped": 1
+    },
+    "ubuntuCi": "https://github.com/Supanut-P/MCP-Linux/actions/runs/37147771115",
+    "conclusion": "success"
+  },
+  "independentQa": {
+    "result": "approved bounded publication logic; no material provenance/integrity blocker",
+    "verified": "102 local artifact sizes/hashes and 17 metadata bindings; verifier/publisher logic reviewed",
+    "boundary": "QA tree replay blocked by process sandbox; lead replay verified original Git trees. Final remote audit independently queried public tag/release/asset inventories.",
+    "corrections": "Draft asset URLs refreshed from public inventory; workflow restoration independently asserted."
+  },
+  "commands": [
+    "node dist/release-publish/verify-originals.mjs",
+    "node dist/release-publish/publish.mjs",
+    "node dist/release-publish/audit-remote.mjs"
+  ],
+  "commandExitCodes": {
+    "verifyOriginals": 0,
+    "publish": 0,
+    "auditRemote": 0
+  },
+  "sourceIdentity": "Release tags point at original accepted Ubuntu source commits matching BUILD-METADATA. Ordered main imports retain distinct Git identities; no branches were rewritten or force-pushed."
+}

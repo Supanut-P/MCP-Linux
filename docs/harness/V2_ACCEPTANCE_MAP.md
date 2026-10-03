@@ -5,7 +5,8 @@ It binds 807 frozen source files, 87 current artifacts and 180 revalidated
 historical artifact bindings. The approved test VM runs 2.0.0.
 Seven Windows and twenty Ubuntu gates passed; v1 contracts remain compatible.
 Owner milestone delivery and Git push are approved; personal trial results
-remain unreported and publication is separately gated in the [approval record](evidence/2026-10-04-v2.0.0-owner-acceptance.md).
+remain unreported. Publication was separately approved and completed under the
+[publication receipt](evidence/2026-10-04-roadmap-publication.md).
 
 The compatible promotion changes version metadata/documentation only.
 Historical native proofs keep their original source, inputs and execution time;
@@ -46,9 +47,13 @@ are retained; no token savings or new v2-guidance result is claimed.
 Seven-day soak is waived, not passed. Automated fixtures and independent QA
 do not supply owner usability acceptance or publication approval.
 
-## Owner approval and Git delivery — 2026-10-04
+## Earlier Git-only approval — 2026-10-04
 
 The owner approved milestone delivery and pushing all verified versions to the
 existing origin/main. Personal coding/incident trial results remain unreported;
 automated fixture evidence is not relabeled as an owner trial. Publication/tagging
 remains a separate human gate. See [approval record](evidence/2026-10-04-v2.0.0-owner-acceptance.md).
+
+## Completed release publication — 2026-10-04
+
+The owner's later explicit release request approved the publication gate. All 17 implemented milestones are public, with 102 matching GitHub asset digests and original accepted source tags. The earlier Git-delivery-only entry above is historical. [Publication receipt](evidence/2026-10-04-roadmap-publication.md).

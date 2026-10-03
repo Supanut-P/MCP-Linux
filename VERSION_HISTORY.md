@@ -48,40 +48,46 @@ semantic-version order.
 | v1.34.0 | Workspace checkpoint prune | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.34.0) |
 | v1.35.0 | Workspace checkpoint stats | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.35.0) |
 | v1.36.0 | Workspace checkpoint summary and stable v1 contract | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.36.0) |
-| v1.37.0 | Bounded remote fleet journal reads | [notes](docs/releases/v1.37.0.md) |
-| v1.38.0 | Native task contract, role prompts and QA preparation (Ubuntu and independent QA passed) | [notes](docs/releases/v1.38.0.md) |
-| v1.39.0 | Task context packets (Ubuntu, installed transports and independent QA passed) | [notes](docs/releases/v1.39.0.md) |
-| v1.40.0 | Verified skill guidance (Ubuntu, installed transports and independent QA passed) | [notes](docs/releases/v1.40.0.md) |
-| v1.41.0 | Codex selection/results (bounded Windows native, Ubuntu/package and independent QA passed) | [notes](docs/releases/v1.41.0.md) |
-| v1.42.0 | Durable caller-native workflow (Ubuntu/package, installed recovery and independent QA passed) | [notes](docs/releases/v1.42.0.md) |
-| v1.43.0 | Coordinated file scopes and fenced leases (Ubuntu/package, installed recovery and independent QA passed) | [notes](docs/releases/v1.43.0.md) |
-| v1.44.0 | Source-bound QA receipts and bounded retry (verification closed; publication unapproved) | [notes](docs/releases/v1.44.0.md) |
-| v1.45.0 | Bounded usage reports and native fixture benchmarks (Ubuntu/package verification closed; token goal missed) | [notes](docs/releases/v1.45.0.md) |
-| v1.46.0 | Registered fleet groups and service mappings (Ubuntu/package verification closed) | [notes](docs/releases/v1.46.0.md) |
-| v1.47.0 | Durable incident observations (Ubuntu/package verification closed; publication unapproved) | [notes](docs/releases/v1.47.0.md) |
-| v1.48.0 | Approved baseline drift (Ubuntu/package verification closed; publication unapproved) | [notes](docs/releases/v1.48.0.md) |
-| v1.49.0 | Evidence-linked diagnosis (Ubuntu/package verification closed; publication unapproved) | [notes](docs/releases/v1.49.0.md) |
-| v1.50.0 | Incident-to-local-fix workflow (Ubuntu/package and independent fixture QA closed; publication unapproved) | [notes](docs/releases/v1.50.0.md) |
+| v1.37.0 | Bounded remote fleet journal reads | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.37.0) |
+| v1.38.0 | Native task contract, role prompts and QA preparation (Ubuntu and independent QA passed) | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.38.0) |
+| v1.39.0 | Task context packets (Ubuntu, installed transports and independent QA passed) | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.39.0) |
+| v1.40.0 | Verified skill guidance (Ubuntu, installed transports and independent QA passed) | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.40.0) |
+| v1.41.0 | Codex selection/results (bounded Windows native, Ubuntu/package and independent QA passed) | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.41.0) |
+| v1.42.0 | Durable caller-native workflow (Ubuntu/package, installed recovery and independent QA passed) | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.42.0) |
+| v1.43.0 | Coordinated file scopes and fenced leases (Ubuntu/package, installed recovery and independent QA passed) | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.43.0) |
+| v1.44.0 | Source-bound QA receipts and bounded retry (verification closed) | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.44.0) |
+| v1.45.0 | Bounded usage reports and native fixture benchmarks (Ubuntu/package verification closed; token goal missed) | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.45.0) |
+| v1.46.0 | Registered fleet groups and service mappings (Ubuntu/package verification closed) | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.46.0) |
+| v1.47.0 | Durable incident observations (Ubuntu/package verification closed) | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.47.0) |
+| v1.48.0 | Approved baseline drift (Ubuntu/package verification closed) | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.48.0) |
+| v1.49.0 | Evidence-linked diagnosis (Ubuntu/package verification closed) | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.49.0) |
+| v1.50.0 | Incident-to-local-fix workflow (Ubuntu/package and independent fixture QA closed) | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.50.0) |
+| v1.55.0 | Diagnostic redaction, ownership and supply-chain hardening | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.55.0) |
+| v1.56.0 | Native Linux acceptance, benchmark and package lifecycle | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v1.56.0) |
+| v2.0.0 | Compatible AI engineering and Linux operations product milestone | [release](https://github.com/Supanut-P/MCP-Linux/releases/tag/v2.0.0) |
+
+All 17 roadmap releases above were published with explicit owner approval on 2026-10-04.
+[Publication/source identity receipt](docs/harness/evidence/2026-10-04-roadmap-publication.md). P1 v1.51–v1.54 remain backlog.
 
 The old Windows desktop tags are intentionally not part of this sequence.
 They are not Linux releases and are not published from the Linux-only branch.
 
-## v1.55.0 verified local milestone
+## v1.55.0 accepted hardening milestone
 
 Shared diagnostic secret redaction, literal service-unit boundaries and pinned
 patched dependencies passed full local/Ubuntu/package/installed gates and
 independent QA. [Evidence](docs/harness/evidence/2026-10-03-v1.55-ubuntu.md).
-No tag or publication is approved. P1 versions151–154 remain reserved.
+Publication is complete under the receipt above. P1 v1.51–v1.54 remain reserved.
 
 ## Approved ordered roadmap Git history
 
 Owner approved pushing all verified versions on 2026-10-04. These commits
 import the verified milestone snapshots in delivery order. P1 v1.51–v1.54
-remain unimplemented; no empty releases are created. No tags or GitHub release
-publication are performed by this source push. Packages retain original lab
-provenance, as recorded in each linked receipt.
+remain unimplemented; no empty releases are created. The source push itself performed no publication. Later approved release tags point
+to the original accepted Ubuntu source commits, which differ from these ordered
+main imports and match package BUILD-METADATA. See the publication receipt above.
 
-| Version | Source commit | Verified snapshot files |
+| Version | Ordered main import commit | Verified snapshot files |
 | --- | --- | --- |
 | v1.37.0 | [d2535cf3](https://github.com/Supanut-P/MCP-Linux/commit/d2535cf32ad2c7fb7d1efa729f43e541fc55ac10) | 580 |
 | v1.38.0 | [99785ee1](https://github.com/Supanut-P/MCP-Linux/commit/99785ee1e6a0379651d3fba58ba2c216b4373ab7) | 600 |

@@ -1,12 +1,13 @@
 # MCP-Linux harness state
 
-Current technical candidate: **2.0.0**, installed on the approved disposable VM.
+Current published release: **2.0.0**, installed on the approved disposable VM.
 P0 v1.37–v1.50 and v1.55–v1.56 are verified; P1 v1.51–v1.54 remain backlog.
 The [v2 technical receipt](evidence/2026-10-04-v2.0.0-ubuntu.md) records seven Windows
 and twenty Ubuntu gates, 807 frozen files, 87 current artifacts, 180 revalidated
 historical bindings, package lifecycle and installed native STDIO/HTTP checks.
-Independent QA approved closure. Owner approved milestone delivery and Git push. Personal owner trial results
-remain unreported; publication/tagging requires separate approval.
+Independent QA approved closure. Owner approved milestone delivery, Git push and release publication.
+All 17 implemented milestones are published with 102 verified assets under the
+[publication receipt](evidence/2026-10-04-roadmap-publication.md). Personal owner trial results remain unreported.
 
 See [native execution/routing](NATIVE_LINUX_ACCEPTANCE.md),
 [acceptance evidence](V2_ACCEPTANCE_MAP.md), and the
@@ -145,7 +146,7 @@ a remote target. Existing v1.36 artifacts are historical evidence only.
 
 
 
-## Owner approval and Git delivery — 2026-10-04
+## Earlier Git-only approval — 2026-10-04
 
 The owner approved milestone delivery and pushing all verified versions to the
 existing origin/main. Personal coding/incident trial results remain unreported;
